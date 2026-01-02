@@ -13,14 +13,14 @@ export const storePrice = mutation({
   },
   handler: async (ctx, args) => {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    
+
     // Check if price for today already exists
     const existingPrice = await ctx.db
       .query("vegPrices")
-      .withIndex("by_vegetable_location_date", (q: any) => 
+      .withIndex("by_vegetable_location_date", (q: any) =>
         q.eq("vegetable", args.vegetable.toLowerCase())
-         .eq("location", args.location.toLowerCase())
-         .eq("date", today)
+          .eq("location", args.location.toLowerCase())
+          .eq("date", today)
       )
       .unique();
 
@@ -62,9 +62,9 @@ export const getPriceHistory = query({
     const daysToFetch = args.days || 7;
     const prices = await ctx.db
       .query("vegPrices")
-      .withIndex("by_vegetable_location", (q: any) => 
+      .withIndex("by_vegetable_location", (q: any) =>
         q.eq("vegetable", args.vegetable.toLowerCase())
-         .eq("location", args.location.toLowerCase())
+          .eq("location", args.location.toLowerCase())
       )
       .order("desc")
       .take(daysToFetch);
@@ -84,10 +84,10 @@ export const performWebSearch = action({
       // Construct search query for vegetable prices
       const query = `${args.vegetable} price per kg in ${args.location} India market today`;
       console.log(`Performing DuckDuckGo search for: ${query}`);
-      
+
       // Use DuckDuckGo HTML search endpoint
       const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-      
+
       const response = await fetch(searchUrl, {
         method: "GET",
         headers: {
@@ -102,7 +102,7 @@ export const performWebSearch = action({
       }
 
       const html = await response.text();
-      
+
       // Extract price information from HTML using regex patterns
       // Look for Indian Rupee prices (₹XX/kg, Rs. XX/kg, XX rupees per kg)
       const pricePatterns = [
@@ -119,7 +119,7 @@ export const performWebSearch = action({
       // Extract prices from HTML
       const priceRegex = /(?:₹|Rs\.?)\s*(\d+(?:\.\d+)?)\s*\/?\s*(?:kg|quintal|pkt|bag)/gi;
       const numberOnlyRegex = /(\d+)\s*(?:rupees|rs)/gi;
-      
+
       let match;
       while ((match = priceRegex.exec(html)) !== null) {
         const price = parseFloat(match[1]);
@@ -141,10 +141,10 @@ export const performWebSearch = action({
       try {
         const instantUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
         const instantResponse = await fetch(instantUrl);
-        
+
         if (instantResponse.ok) {
           const instantData = await instantResponse.json();
-          
+
           // Extract from AbstractText if available
           if (instantData.AbstractText) {
             const abstractPrices = instantData.AbstractText.match(/(\d+)\s*\/?\s*kg/gi);
@@ -164,18 +164,18 @@ export const performWebSearch = action({
 
       // Remove duplicates and get unique prices
       const uniquePrices = [...new Set(prices)];
-      
+
       // If we found prices, create search results
       if (uniquePrices.length > 0) {
         // Take top 5 prices (sorted)
         const sortedPrices = uniquePrices.sort((a, b) => a - b).slice(0, 5);
-        
+
         const searchResults = sortedPrices.map((price, index) => {
           // Extract more descriptive sources from the HTML content
           // Look for common Indian market news sites
           const sourceMatch = html.match(/<cite class="[^"]+">([^<]+)<\/cite>/g);
           let source = "MarketData.in";
-          
+
           if (sourceMatch && sourceMatch[index]) {
             const tempSource = sourceMatch[index].replace(/<[^>]*>/g, '').trim();
             if (tempSource && !tempSource.includes('w3.org') && tempSource.length > 3) {
@@ -185,7 +185,7 @@ export const performWebSearch = action({
             const genericSources = ["CommodityOnline.com", "MandiRates.in", "E-Nam.gov.in", "Agmarknet.gov.in"];
             source = genericSources[index % genericSources.length];
           }
-          
+
           return {
             title: `${args.vegetable.charAt(0).toUpperCase() + args.vegetable.slice(1)} price in ${args.location} - ${source}`,
             snippet: `Live market update: Current ${args.vegetable} rate is ₹${price}/kg at ${args.location} market.`,
@@ -202,7 +202,7 @@ export const performWebSearch = action({
       // Search for market price websites specifically
       const marketQuery = `${args.vegetable} mandi price ${args.location} today`;
       const marketUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(marketQuery)}`;
-      
+
       const marketResponse = await fetch(marketUrl, {
         method: "GET",
         headers: {
@@ -214,7 +214,7 @@ export const performWebSearch = action({
       if (marketResponse.ok) {
         const marketHtml = await marketResponse.text();
         const marketPrices: number[] = [];
-        
+
         for (const pattern of pricePatterns) {
           const matches = marketHtml.matchAll(pattern);
           for (const match of matches) {
@@ -264,7 +264,7 @@ export const performWebSearch = action({
 
     } catch (error) {
       console.error("Web search error:", error);
-      
+
       // Fallback to estimated prices if search fails
       const fallbackRanges: Record<string, { min: number; max: number }> = {
         tomato: { min: 15, max: 45 },
@@ -313,17 +313,17 @@ export const predictWithAI = action({
     try {
       // Get AI API key from environment variables
       const aiApiKey = process.env.OPENROUTER_API_KEY;
-      
+
       if (!aiApiKey) {
         throw new Error("OPENROUTER_API_KEY environment variable is not set. Please set it using 'convex env set OPENROUTER_API_KEY your-key'");
       }
-      
+
       // Prepare comprehensive context for AI
       const currentPricesText = args.currentPrices
         .map(p => `- ₹${p.price}/kg from ${p.source}`)
         .join('\n');
-      
-      const historicalText = args.historicalData.length > 0 
+
+      const historicalText = args.historicalData.length > 0
         ? args.historicalData.map(h => `- ${h.date}: ₹${h.price}/kg`).join('\n')
         : "No historical data available";
 
@@ -369,7 +369,7 @@ CONFIDENCE: [High/Medium/Low]`;
           "X-Title": "AgroHorizon Price Predictor"
         },
         body: JSON.stringify({
-          model: "meta-llama/llama-3.1-8b-instruct:free",
+          model: "google/gemini-2.0-flash-exp:free",
           messages: [
             {
               role: "system",
@@ -393,7 +393,7 @@ CONFIDENCE: [High/Medium/Low]`;
 
       const aiResult = await response.json();
       const aiText = aiResult.choices[0]?.message?.content || "";
-      
+
       console.log("AI Response:", aiText);
 
       // Parse AI response with robust extraction
@@ -404,15 +404,15 @@ CONFIDENCE: [High/Medium/Low]`;
       const confidenceMatch = aiText.match(/CONFIDENCE:\s*(High|Medium|Low)/i);
 
       // Extract values with fallbacks
-      const currentPrice = currentPriceMatch ? parseInt(currentPriceMatch[1]) : 
-                          Math.round(args.currentPrices.reduce((sum, p) => sum + p.price, 0) / args.currentPrices.length);
-      
+      const currentPrice = currentPriceMatch ? parseInt(currentPriceMatch[1]) :
+        Math.round(args.currentPrices.reduce((sum, p) => sum + p.price, 0) / args.currentPrices.length);
+
       const tomorrowMin = tomorrowMinMatch ? parseInt(tomorrowMinMatch[1]) : Math.floor(currentPrice * 0.95);
       const tomorrowMax = tomorrowMaxMatch ? parseInt(tomorrowMaxMatch[1]) : Math.ceil(currentPrice * 1.05);
-      
-      const analysis = analysisMatch ? analysisMatch[1].trim() : 
-                      "AI analysis indicates market conditions are influenced by current supply and demand factors.";
-      
+
+      const analysis = analysisMatch ? analysisMatch[1].trim() :
+        "AI analysis indicates market conditions are influenced by current supply and demand factors.";
+
       const confidence = confidenceMatch ? confidenceMatch[1] : "Medium";
 
       return {
@@ -431,11 +431,11 @@ CONFIDENCE: [High/Medium/Low]`;
 
     } catch (error) {
       console.error("AI Prediction Error:", error);
-      
+
       // Fallback to statistical analysis if AI fails
       const avgPrice = args.currentPrices.reduce((sum, p) => sum + p.price, 0) / args.currentPrices.length;
       const currentPrice = Math.round(avgPrice);
-      
+
       // Simple trend analysis from historical data
       let trendMultiplier = 1.0;
       if (args.historicalData.length >= 2) {
@@ -444,7 +444,7 @@ CONFIDENCE: [High/Medium/Low]`;
         if (recent > older * 1.1) trendMultiplier = 1.05;
         else if (recent < older * 0.9) trendMultiplier = 0.95;
       }
-      
+
       return {
         currentPrice,
         tomorrowPrediction: {
@@ -471,7 +471,7 @@ export const fetchCurrentPrice = action({
   handler: async (ctx, args): Promise<any> => {
     try {
       console.log(`Fetching prices for ${args.vegetable} in ${args.location}`);
-      
+
       // Step 1: Perform real DuckDuckGo web search
       const searchResults = await ctx.runAction(api.vegPrices.performWebSearch, {
         vegetable: args.vegetable,
@@ -544,7 +544,7 @@ export const getComprehensivePriceData = action({
 
     try {
       console.log("Starting comprehensive price analysis...");
-      
+
       // Fetch current price with AI prediction
       const priceData = await ctx.runAction(api.vegPrices.fetchCurrentPrice, {
         vegetable: args.vegetable,
