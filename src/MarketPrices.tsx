@@ -180,8 +180,8 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
             {/* Buyer-specific recommendations */}
             {userRole === "buyer" && trend && (
               <div className={`p-8 rounded-3xl border-2 animate-scale-up ${trend.trend === "down" ? "bg-emerald-50 border-emerald-200 text-emerald-900" :
-                  trend.trend === "up" ? "bg-amber-50 border-amber-200 text-amber-900" :
-                    "bg-blue-50 border-blue-200 text-blue-900"
+                trend.trend === "up" ? "bg-amber-50 border-amber-200 text-amber-900" :
+                  "bg-blue-50 border-blue-200 text-blue-900"
                 }`}>
                 <h4 className="text-lg font-black mb-3 flex items-center gap-3">
                   <span className="text-2xl">
@@ -230,7 +230,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
                         const maxPrice = Math.max(...priceData.history.map(h => h.price));
                         const height = (entry.price / maxPrice) * 100;
                         return (
-                          <div key={index} className="flex flex-col items-center relative z-10 group/bar">
+                          <div key={index} className="flex flex-col items-center relative z-10 group/bar h-full justify-end">
                             <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-10 bg-slate-900 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg transition-all mb-2">
                               {formatPrice(entry.price)}
                             </div>

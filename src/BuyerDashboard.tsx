@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
 import paymentQr from "./assets/payment-qr.jpg";
 import { useLanguage } from "./App";
+import buyerBg from "./assets/buyer_bg.png";
 
 interface UserProfile {
   user: any;
@@ -195,9 +196,23 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Premium Welcome Header */}
-      <div className="glass-card rounded-2xl p-8 modern-shadow overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl animate-pulse"></div>
-        <div className="flex items-center justify-between relative z-10">
+      <div className="rounded-2xl p-8 modern-shadow overflow-hidden relative min-h-[220px] flex items-center">
+        {/* Dynamic Background Image with Overlay */}
+        <div
+          className="absolute inset-0 z-0 scale-105 animate-slow-zoom"
+          style={{
+            backgroundImage: `url(${buyerBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'brightness(0.7)'
+          }}
+        >
+          <div className="absolute inset-0 bg-slate-900/30 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
+        </div>
+
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl animate-pulse z-10"></div>
+        <div className="flex items-center justify-between relative z-20 w-full">
           <div className="flex items-center gap-6">
             <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner animate-float">
               <span className="text-4xl">🛒</span>
