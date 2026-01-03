@@ -6,6 +6,7 @@ import { MarketPrices } from "./MarketPrices";
 import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
 import paymentQr from "./assets/payment-qr.jpg";
+import { useLanguage } from "./App";
 
 interface UserProfile {
   user: any;
@@ -36,6 +37,7 @@ interface Product {
   stockQuantity: number;
   imageEmoji: string;
   isActive: boolean;
+  priceTiers?: Array<{ minQuantity: number; price: number }>;
   seller: {
     user: any;
     profile: {
@@ -53,6 +55,8 @@ interface Order {
   unitPrice: number;
   totalAmount: number;
   orderDate: number;
+  productId: Id<"products">;
+  sellerId: Id<"users">;
   deliveryAddress?: string;
   isPaid?: boolean;
   paymentDate?: number;
@@ -82,6 +86,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
 
   const [showCart, setShowCart] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const { t } = useLanguage();
 
   const { user, profile } = userProfile;
   const marketplaceProducts: Product[] = (useQuery(api.products.getMarketplaceProducts) as any) || [];
@@ -89,13 +94,8 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const createOrder = useMutation(api.orders.createOrder);
   const markOrdersAsPaid = useMutation(api.orders.markOrdersAsPaid);
 
-  // Split orders into cart (unpaid) and history (paid)
-  // Split orders into cart (unpaid) and history (paid)
-  // Treat undefined isPaid as true (legacy orders are considered paid)
   const cartItems = useMemo(() => allOrders.filter((o: any) => o.isPaid === false), [allOrders]);
   const buyerOrders = useMemo(() => allOrders.filter((o: any) => o.isPaid === true || o.isPaid === undefined), [allOrders]);
-
-  const cartTotal = cartItems.reduce((sum, item) => sum + item.totalAmount, 0);
 
   const handlePayment = async () => {
     try {
@@ -141,18 +141,39 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
         deliveryAddress: profile.location,
       });
 
-      toast.success("Added to cart successfully!");
+      toast.success(t('addedToCart'));
       setOrderQuantities(prev => ({ ...prev, [productId]: 1 }));
     } catch (error) {
-      toast.error("Failed to add to cart. Please try again.");
+      toast.error(t('addToCartFailed'));
       console.error(error);
     }
   };
 
+  const calculateItemTotal = (item: Order) => {
+    // Frontend logic to find the correct tier price for cart display
+    let unitPrice = item.unitPrice || 0;
+    const product = marketplaceProducts.find(p => p._id === item.productId);
+
+    if (product?.priceTiers && product.priceTiers.length > 0) {
+      const sortedTiers = [...product.priceTiers].sort((a, b) => b.minQuantity - a.minQuantity);
+      const tier = sortedTiers.find(t => item.quantity >= t.minQuantity);
+      if (tier) {
+        unitPrice = tier.price;
+      }
+    }
+    return unitPrice * item.quantity;
+  };
+
+  const calculateCartTotal = () => {
+    return cartItems.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+  };
+
+  const cartTotal = calculateCartTotal();
+
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(price);
   };
 
@@ -182,9 +203,9 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               <span className="text-4xl">🛒</span>
             </div>
             <div>
-              <p className="text-primary font-bold tracking-widest uppercase text-xs mb-1">Buyer Terminal</p>
+              <p className="text-primary font-bold tracking-widest uppercase text-xs mb-1">{t('buyerTerminal')}</p>
               <h1 className="text-4xl font-black text-slate-900 leading-tight">
-                Welcome back, <span className="text-primary">{profile.fullName}!</span>
+                {t('welcome')}, <span className="text-primary">{profile.fullName}!</span>
               </h1>
               <div className="flex items-center gap-4 mt-2">
                 {profile.location && (
@@ -204,7 +225,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               className="relative bg-white text-slate-900 px-6 py-3 rounded-xl hover:bg-slate-50 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl active:scale-95 group"
             >
               <span className="text-xl">🛒</span>
-              <span className="font-bold">Cart</span>
+              <span className="font-bold">{t('cart')}</span>
               {cartItems.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full animate-bounce">
                   {cartItems.length}
@@ -216,7 +237,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
             >
               <span className="text-xl group-hover:rotate-12 transition-transform">💬</span>
-              <span className="font-bold">Messages</span>
+              <span className="font-bold">{t('messages')}</span>
             </button>
           </div>
         </div>
@@ -226,10 +247,10 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 modern-shadow">
         <nav className="flex items-center gap-1">
           {[
-            { id: "overview", label: "Overview", icon: "📊" },
-            { id: "marketplace", label: "Marketplace", icon: "🏪" },
-            { id: "orders", label: "My Orders", icon: "📦" },
-            { id: "prices", label: "Market Intelligence", icon: "💰" },
+            { id: "overview", label: t('overview'), icon: "📊" },
+            { id: "marketplace", label: t('marketplace'), icon: "🏪" },
+            { id: "orders", label: t('myOrders'), icon: "📦" },
+            { id: "prices", label: t('marketIntelligence'), icon: "💰" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -251,9 +272,9 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
           <div className="space-y-8 animate-slide-up">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { label: "Market Inventory", value: marketplaceProducts.length, sub: "Verified products", color: "from-emerald-500 to-emerald-600", bg: "bg-emerald-50", text: "text-emerald-900" },
-                { label: "Active Orders", value: activeOrders, sub: "Currently processing", color: "from-amber-500 to-amber-600", bg: "bg-amber-50", text: "text-amber-900" },
-                { label: "Lifetime Orders", value: buyerOrders.length, sub: "All time records", color: "from-slate-700 to-slate-800", bg: "bg-slate-50", text: "text-slate-900" },
+                { label: t('marketplace'), value: marketplaceProducts.length, sub: "Verified products", color: "from-emerald-500 to-emerald-600", bg: "bg-emerald-50", text: "text-emerald-900" },
+                { label: t('myOrders'), value: activeOrders, sub: "Currently processing", color: "from-amber-500 to-amber-600", bg: "bg-amber-50", text: "text-amber-900" },
+                { label: "Lifetime Records", value: buyerOrders.length, sub: "All time records", color: "from-slate-700 to-slate-800", bg: "bg-slate-50", text: "text-slate-900" },
               ].map((stat, i) => (
                 <div key={i} className={`p-8 rounded-2xl ${stat.bg} border border-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-300 modern-shadow`}>
                   <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.color} opacity-5 -mr-8 -mt-8 rounded-full group-hover:scale-150 transition-transform duration-500`}></div>
@@ -313,7 +334,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                 ))}
                 {buyerOrders.length === 0 && (
                   <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                    <p className="text-slate-400 font-bold">No recent orders detected. Start exploring the marketplace!</p>
+                    <p className="text-slate-400 font-bold">{t('noOrders')}</p>
                   </div>
                 )}
               </div>
@@ -324,11 +345,11 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
         {activeTab === "marketplace" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">Marketplace</h2>
+              <h2 className="text-2xl font-bold text-gray-800">{t('marketplace')}</h2>
               <div className="flex gap-4">
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder={t('searchProducts')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -338,7 +359,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="all">All Categories</option>
+                  <option value="all">{t('allCategories')}</option>
                   {categories.map(category => (
                     <option key={category} value={category}>
                       {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -353,14 +374,26 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                 <div key={product._id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
                   <div className="text-4xl text-center mb-3">{product.imageEmoji}</div>
                   <h3 className="font-semibold text-gray-800 mb-1">{product.name}</h3>
-                  <p className="text-blue-600 font-bold mb-1">
-                    {formatPrice(product.price)}/{product.unit}
-                  </p>
+                  <div className="space-y-1 mb-2">
+                    <p className="text-blue-600 font-bold">
+                      {formatPrice(product.price)}/{product.unit}
+                    </p>
+                    {product.priceTiers && product.priceTiers.length > 0 && (
+                      <div className="bg-amber-50 p-2 rounded border border-amber-100">
+                        <p className="text-[10px] font-black uppercase text-amber-700 mb-1">{t('tieredPricing')}</p>
+                        {product.priceTiers.map((tier, idx) => (
+                          <p key={idx} className="text-xs text-amber-800">
+                            {tier.minQuantity}+ {product.unit}: <span className="font-bold">{formatPrice(tier.price)}</span>
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-600 mb-1">
-                    by {product.seller.profile?.businessName || product.seller.profile?.fullName}
+                    {t('by')} {product.seller.profile?.businessName || product.seller.profile?.fullName}
                   </p>
                   <p className="text-sm text-gray-500 mb-3">
-                    Stock: {product.stockQuantity} {product.unit}
+                    {t('stock')}: {product.stockQuantity} {product.unit}
                   </p>
 
                   <div className="flex items-center gap-2 mb-3">
@@ -382,9 +415,9 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                     <button
                       onClick={() => handleCreateOrder(product._id, product.sellerId)}
                       disabled={product.stockQuantity === 0}
-                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
                     >
-                      {product.stockQuantity === 0 ? "Out of Stock" : "Add to Cart"}
+                      {product.stockQuantity === 0 ? t('outOfStock') : t('addToCart')}
                     </button>
                     <button
                       onClick={() => setShowMessaging(true)}
@@ -408,7 +441,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
 
         {activeTab === "orders" && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">My Orders</h2>
+            <h2 className="text-2xl font-bold text-gray-800">{t('myOrders')}</h2>
             <div className="space-y-4">
               {buyerOrders.map((order) => (
                 <div key={order._id} className="bg-white border border-gray-200 rounded-lg p-4">
@@ -418,13 +451,13 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                       <div>
                         <h3 className="font-semibold text-gray-800">{order.product?.name}</h3>
                         <p className="text-sm text-gray-600">
-                          Seller: {order.seller.profile?.businessName || order.seller.profile?.fullName}
+                          {t('seller')}: {order.seller.profile?.businessName || order.seller.profile?.fullName}
                         </p>
                         <p className="text-sm text-gray-600">
-                          Quantity: {order.quantity} {order.product?.unit}
+                          {t('quantity')}: {order.quantity} {order.product?.unit}
                         </p>
                         <p className="text-sm text-gray-600">
-                          Order Date: {formatDate(order.orderDate)}
+                          {t('orderDate')}: {formatDate(order.orderDate)}
                         </p>
                       </div>
                     </div>
@@ -432,8 +465,8 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                       <p className="font-semibold text-gray-800 text-lg">
                         {formatPrice(order.totalAmount)}
                       </p>
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm ${getStatusColor(order.status)}`}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${getStatusColor(order.status)}`}>
+                        {t(order.status as any)}
                       </span>
                     </div>
                   </div>
@@ -441,12 +474,12 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               ))}
               {buyerOrders.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">You haven't placed any orders yet.</p>
+                  <p className="text-gray-500 text-lg">{t('noOrders')}</p>
                   <button
                     onClick={() => setActiveTab("marketplace")}
                     className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    Browse Marketplace
+                    {t('marketplace')}
                   </button>
                 </div>
               )}
@@ -466,7 +499,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-scale-up">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-                  <span>🛒</span> Your Cart
+                  <span>🛒</span> {t('yourCart')}
                 </h2>
                 <button onClick={() => setShowCart(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 font-bold transition-colors">✕</button>
               </div>
@@ -475,39 +508,51 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                 {cartItems.length === 0 ? (
                   <div className="text-center py-12 text-slate-400">
                     <p className="text-4xl mb-4">🛒</p>
-                    <p className="font-bold">Your cart is empty</p>
+                    <p className="font-bold">{t('cartEmpty')}</p>
                   </div>
                 ) : (
-                  cartItems.map((item) => (
-                    <div key={item._id} className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all">
-                      <div className="w-16 h-16 bg-slate-50 rounded-lg flex items-center justify-center text-3xl shadow-sm">
-                        {item.product?.imageEmoji}
+                  cartItems.map((item) => {
+                    const product = marketplaceProducts.find(p => p._id === item.productId);
+                    const isTiered = product?.priceTiers?.some(tier => item.quantity >= tier.minQuantity);
+                    const itemTotal = calculateItemTotal(item);
+                    const unitPrice = item.quantity > 0 ? itemTotal / item.quantity : item.unitPrice;
+
+                    return (
+                      <div key={item._id} className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all">
+                        <div className="w-16 h-16 bg-slate-50 rounded-lg flex items-center justify-center text-3xl shadow-sm">
+                          {item.product?.imageEmoji}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-slate-900">{item.product?.name}</h4>
+                          <p className="text-sm text-slate-500">
+                            {item.quantity} {item.product?.unit} × {formatPrice(unitPrice || 0)}
+                          </p>
+                          {isTiered && (
+                            <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full mt-1 inline-block">
+                              {t('tieredPricing')} Applied
+                            </span>
+                          )}
+                        </div>
+                        <div className="font-black text-lg text-primary">
+                          {formatPrice(itemTotal)}
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-slate-900">{item.product?.name}</h4>
-                        <p className="text-sm text-slate-500">
-                          {item.quantity} {item.product?.unit} × {formatPrice(item.unitPrice || 0)}
-                        </p>
-                      </div>
-                      <div className="font-black text-lg text-primary">
-                        {formatPrice(item.totalAmount)}
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
               {cartItems.length > 0 && (
                 <div className="p-6 border-t border-slate-100 bg-slate-50 space-y-4">
                   <div className="flex justify-between items-center text-slate-600 text-sm font-bold">
-                    <span>Subtotal ({cartItems.length} items)</span>
+                    <span>{t('subtotal')} ({cartItems.length} items)</span>
                     <span className="text-slate-900 text-xl font-black">{formatPrice(cartTotal)}</span>
                   </div>
                   <button
                     onClick={() => setShowPayment(true)}
                     className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/25 active:scale-95 flex items-center justify-center gap-2"
                   >
-                    <span>Proceed to Payment</span>
+                    <span>{t('proceedToPayment')}</span>
                     <span>→</span>
                   </button>
                 </div>
@@ -525,27 +570,27 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-8 text-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                 <button onClick={() => setShowPayment(false)} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors font-bold">✕</button>
-                <h3 className="text-white/80 font-bold uppercase tracking-widest text-xs mb-2">Total Amount Due</h3>
+                <h3 className="text-white/80 font-bold uppercase tracking-widest text-xs mb-2">{t('totalAmountDue')}</h3>
                 <p className="text-5xl font-black text-white">{formatPrice(cartTotal)}</p>
               </div>
 
               <div className="p-8 flex flex-col items-center gap-6">
                 <div className="w-full bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center">
                   <img src={paymentQr} alt="Payment QR Code" className="w-64 h-64 object-contain mix-blend-multiply mb-4" />
-                  <p className="text-sm text-center text-slate-500 font-medium">Scan this QR code with any UPI app to pay</p>
+                  <p className="text-sm text-center text-slate-500 font-medium">{t('paymentInstructions')}</p>
                 </div>
 
                 <div className="w-full space-y-3">
                   <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-lg text-sm border border-amber-100">
                     <span className="text-lg">💡</span>
-                    <p className="leading-snug">Click the button below <b>after</b> completing the payment on your phone.</p>
+                    <p className="leading-snug">{t('paymentWarning')}</p>
                   </div>
 
                   <button
                     onClick={handlePayment}
                     className="w-full bg-emerald-500 text-white py-4 rounded-xl font-black text-lg hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/30 active:scale-95 flex items-center justify-center gap-2"
                   >
-                    <span>Verify & Pay {formatPrice(cartTotal)}</span>
+                    <span>{t('verifyAndPay')} {formatPrice(cartTotal)}</span>
                     <span>✓</span>
                   </button>
                 </div>

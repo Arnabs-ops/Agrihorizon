@@ -5,6 +5,7 @@ import { MessagingSystem } from "./MessagingSystem";
 import { MarketPrices } from "./MarketPrices";
 import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
+import { useLanguage } from "./App";
 
 interface UserProfile {
   user: any;
@@ -34,6 +35,7 @@ interface Product {
   stockQuantity: number;
   imageEmoji: string;
   isActive: boolean;
+  priceTiers?: Array<{ minQuantity: number; price: number }>;
 }
 
 interface Order {
@@ -64,6 +66,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const [showMessaging, setShowMessaging] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const { t } = useLanguage();
 
   const { user, profile } = userProfile;
   const sellerProducts: Product[] = (useQuery(api.products.getSellerProducts) as any) || [];
@@ -100,9 +103,9 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(price);
   };
 
@@ -122,8 +125,8 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   };
 
   const getProductStatus = (product: any) => {
-    if (!product.isActive) return { text: "Inactive", color: "bg-red-100 text-red-800" };
-    if (product.stockQuantity === 0) return { text: "Out of Stock", color: "bg-red-100 text-red-800" };
+    if (!product.isActive) return { text: t('cancelled'), color: "bg-red-100 text-red-800" };
+    if (product.stockQuantity === 0) return { text: t('outOfStock'), color: "bg-red-100 text-red-800" };
     if (product.stockQuantity < 10) return { text: "Low Stock", color: "bg-yellow-100 text-yellow-800" };
     return { text: "Active", color: "bg-green-100 text-green-800" };
   };
@@ -139,14 +142,14 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
               <span className="text-4xl">🚜</span>
             </div>
             <div>
-              <p className="text-primary font-bold tracking-widest uppercase text-xs mb-1">Seller Terminal</p>
+              <p className="text-primary font-bold tracking-widest uppercase text-xs mb-1">{t('sellerTerminal')}</p>
               <h1 className="text-4xl font-black text-slate-900 leading-tight">
-                Welcome back, <span className="text-primary">{profile.fullName}!</span>
+                {t('welcome')}, <span className="text-primary">{profile.fullName}!</span>
               </h1>
               <div className="flex items-center gap-4 mt-2">
                 {profile.businessName && (
                   <span className="flex items-center text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                    🏢 {profile.businessName}
+                    🏪 {profile.businessName}
                   </span>
                 )}
                 {profile.location && (
@@ -157,13 +160,21 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => setShowMessaging(true)}
-            className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
-          >
-            <span className="text-xl group-hover:rotate-12 transition-transform">💬</span>
-            <span className="font-bold">Messages</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowAddProduct(true)}
+              className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all flex items-center gap-2 shadow-lg active:scale-95"
+            >
+              <span className="text-xl">+</span> {t('addProduct')}
+            </button>
+            <button
+              onClick={() => setShowMessaging(true)}
+              className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
+            >
+              <span className="text-xl group-hover:rotate-12 transition-transform">💬</span>
+              <span className="font-bold">{t('messages')}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -171,11 +182,11 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 modern-shadow">
         <nav className="flex items-center gap-1">
           {[
-            { id: "overview", label: "Overview", icon: "📊" },
-            { id: "products", label: "My Products", icon: "🌾" },
-            { id: "orders", label: "Orders", icon: "📦" },
-            { id: "analytics", label: "Analytics", icon: "📈" },
-            { id: "prices", label: "Market Intelligence", icon: "💹" },
+            { id: "overview", label: t('overview'), icon: "📊" },
+            { id: "products", label: t('inventory'), icon: "🌾" },
+            { id: "orders", label: t('myOrders'), icon: "📦" },
+            { id: "analytics", label: t('analytics'), icon: "📈" },
+            { id: "prices", label: t('marketIntelligence'), icon: "💹" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -196,56 +207,57 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
         {activeTab === "overview" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-green-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-green-800 mb-2">
-                  Total Products
+              <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 shadow-sm">
+                <h3 className="text-sm font-black text-emerald-800 mb-2 uppercase tracking-widest opacity-70">
+                  {t('marketplace')}
                 </h3>
-                <p className="text-3xl font-bold text-green-600">{analytics?.totalProducts || 0}</p>
-                <p className="text-sm text-green-600">Active listings</p>
+                <p className="text-4xl font-black text-emerald-600">{analytics?.totalProducts || 0}</p>
+                <p className="text-xs font-bold text-emerald-600/60 mt-1">Active listings</p>
               </div>
-              <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                  Pending Orders
+              <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100 shadow-sm">
+                <h3 className="text-sm font-black text-amber-800 mb-2 uppercase tracking-widest opacity-70">
+                  {t('pending')}
                 </h3>
-                <p className="text-3xl font-bold text-blue-600">{analytics?.pendingOrders || 0}</p>
-                <p className="text-sm text-blue-600">Awaiting fulfillment</p>
+                <p className="text-4xl font-black text-amber-600">{analytics?.pendingOrders || 0}</p>
+                <p className="text-xs font-bold text-amber-600/60 mt-1">Awaiting fulfillment</p>
               </div>
-              <div className="bg-yellow-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                  Monthly Revenue
+              <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 shadow-sm">
+                <h3 className="text-sm font-black text-blue-800 mb-2 uppercase tracking-widest opacity-70">
+                  {t('monthlyRevenue')}
                 </h3>
-                <p className="text-3xl font-bold text-yellow-600">
+                <p className="text-3xl font-black text-blue-600">
                   {formatPrice(analytics?.monthlyRevenue || 0)}
                 </p>
-                <p className="text-sm text-yellow-600">This month</p>
+                <p className="text-xs font-bold text-blue-600/60 mt-1">This month</p>
               </div>
-              <div className="bg-purple-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-purple-800 mb-2">
-                  Completed Orders
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <h3 className="text-sm font-black text-slate-800 mb-2 uppercase tracking-widest opacity-70">
+                  {t('delivered')}
                 </h3>
-                <p className="text-3xl font-bold text-purple-600">{analytics?.completedOrders || 0}</p>
-                <p className="text-sm text-purple-600">All time</p>
+                <p className="text-4xl font-black text-slate-600">{analytics?.completedOrders || 0}</p>
+                <p className="text-xs font-bold text-slate-600/60 mt-1">All time</p>
               </div>
             </div>
 
             {profile.farmSize && (
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 modern-shadow">
+                <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+                  <span className="w-1 h-6 bg-primary rounded-full"></span>
                   Farm Information
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-sm text-gray-600">Farm Size</p>
-                    <p className="font-semibold capitalize">{profile.farmSize}</p>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Farm Size</p>
+                    <p className="font-bold text-slate-900 capitalize text-lg">{profile.farmSize}</p>
                   </div>
                   {profile.cropTypes && profile.cropTypes.length > 0 && (
                     <div>
-                      <p className="text-sm text-gray-600 mb-2">Crop Types</p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Crop Types</p>
                       <div className="flex flex-wrap gap-2">
                         {profile.cropTypes.map((crop, index) => (
                           <span
                             key={index}
-                            className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                            className="bg-primary/5 text-primary px-3 py-1.5 rounded-xl text-sm font-bold border border-primary/10"
                           >
                             {crop}
                           </span>
@@ -290,12 +302,12 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
         {activeTab === "products" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">My Products</h2>
+              <h2 className="text-2xl font-black text-slate-900">{t('inventory')}</h2>
               <button
                 onClick={() => setShowAddProduct(true)}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg active:scale-95"
               >
-                + Add New Product
+                + {t('addProduct')}
               </button>
             </div>
 
@@ -303,24 +315,41 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
               {sellerProducts.map((product) => {
                 const status = getProductStatus(product);
                 return (
-                  <div key={product._id} className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="text-4xl text-center mb-3">{product.imageEmoji}</div>
-                    <h3 className="font-semibold text-gray-800 mb-1">{product.name}</h3>
-                    <p className="text-green-600 font-bold mb-1">
-                      {formatPrice(product.price)}/{product.unit}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-2">Stock: {product.stockQuantity} {product.unit}</p>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs mb-3 ${status.color}`}>
-                      {status.text}
-                    </span>
+                  <div key={product._id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-xl transition-all group modern-shadow">
+                    <div className="text-5xl text-center mb-4 bg-slate-50 rounded-xl py-6 group-hover:scale-110 transition-transform duration-500">{product.imageEmoji}</div>
+                    <h3 className="font-black text-slate-900 text-lg mb-1">{product.name}</h3>
+
+                    <div className="space-y-1 mb-3">
+                      <p className="text-primary font-black text-xl">
+                        {formatPrice(product.price)}<span className="text-sm font-bold text-slate-400">/{product.unit}</span>
+                      </p>
+                      {product.priceTiers && product.priceTiers.length > 0 && (
+                        <div className="bg-amber-50 p-2 rounded-lg border border-amber-100">
+                          <p className="text-[10px] font-black uppercase text-amber-700 mb-1">{t('tieredPricing')}</p>
+                          {product.priceTiers.map((tier, idx) => (
+                            <p key={idx} className="text-xs text-amber-800 font-bold">
+                              {tier.minQuantity}+ {product.unit}: <span className="text-amber-600">{formatPrice(tier.price)}</span>
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm font-bold text-slate-500">{t('stock')}: <span className="text-slate-900">{product.stockQuantity} {product.unit}</span></p>
+                      <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${status.color}`}>
+                        {t(status.text.toLowerCase() as any) || status.text}
+                      </span>
+                    </div>
+
                     <div className="flex gap-2">
                       <button
                         onClick={() => setEditingProduct(product)}
-                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm"
+                        className="flex-1 bg-slate-900 text-white py-3 px-4 rounded-xl font-bold hover:bg-slate-800 transition-all text-sm active:scale-95"
                       >
-                        Edit
+                        {t('update')}
                       </button>
-                      <button className="p-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                      <button className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all active:scale-95">
                         📊
                       </button>
                     </div>
@@ -330,13 +359,13 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             </div>
 
             {sellerProducts.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg mb-4">You haven't added any products yet.</p>
+              <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                <p className="text-slate-400 text-xl font-bold mb-6">{t('cartEmpty')}</p>
                 <button
                   onClick={() => setShowAddProduct(true)}
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                  className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all active:scale-95"
                 >
-                  Add Your First Product
+                  {t('addProduct')}
                 </button>
               </div>
             )}
@@ -345,65 +374,70 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
 
         {activeTab === "orders" && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Orders</h2>
+            <h2 className="text-2xl font-black text-slate-900">{t('myOrders')}</h2>
             <div className="space-y-4">
               {sellerOrders.map((order) => (
-                <div key={order._id} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div key={order._id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-primary/30 transition-all modern-shadow">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-4">
-                      <div className="text-3xl">{order.product?.imageEmoji}</div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-4xl w-16 h-16 bg-slate-50 flex items-center justify-center rounded-xl">{order.product?.imageEmoji}</div>
                       <div>
-                        <h3 className="font-semibold text-gray-800">
+                        <h3 className="font-black text-slate-900 text-xl mb-1">
                           {order.product?.name}
                         </h3>
-                        <p className="text-sm text-gray-600">
-                          Customer: {order.buyer.profile?.fullName}
+                        <p className="text-sm font-bold text-slate-500 flex items-center gap-2">
+                          👤 {order.buyer.profile?.fullName}
                         </p>
-                        <p className="text-sm text-gray-600">
-                          Quantity: {order.quantity} {order.product?.unit}
+                        <p className="text-sm font-bold text-slate-500 mt-1">
+                          📦 {order.quantity} {order.product?.unit}
                         </p>
-                        <p className="text-sm text-gray-600">
-                          Order Date: {formatDate(order.orderDate)}
-                        </p>
-                        {order.deliveryAddress && (
-                          <p className="text-sm text-gray-600">
-                            Delivery: {order.deliveryAddress}
+                        <div className="flex items-center gap-4 mt-2">
+                          <p className="text-xs font-bold text-slate-400">
+                            📅 {formatDate(order.orderDate)}
                           </p>
-                        )}
+                          {order.deliveryAddress && (
+                            <p className="text-xs font-bold text-primary">
+                              📍 {order.deliveryAddress}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-800 text-lg mb-2">
+                      <p className="font-black text-slate-900 text-2xl mb-2">
                         {formatPrice(order.totalAmount)}
                       </p>
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm mb-2 ${getStatusColor(order.status)}`}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </span>
-                      <div className="flex gap-2">
-                        {order.status === "pending" && (
-                          <button
-                            onClick={() => handleProcessOrder(order._id)}
-                            className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors"
-                          >
-                            Process Order
-                          </button>
-                        )}
-                        {order.status === "processing" && (
-                          <button
-                            onClick={() => handleCompleteOrder(order._id)}
-                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
-                          >
-                            Mark Delivered
-                          </button>
-                        )}
+                      <div className="flex flex-col items-end gap-3">
+                        <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
+                          {t(order.status as any)}
+                        </span>
+
+                        <div className="flex gap-2">
+                          {order.status === "pending" && (
+                            <button
+                              onClick={() => handleProcessOrder(order._id)}
+                              className="bg-amber-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-amber-600 transition-all shadow-lg active:scale-95"
+                            >
+                              {t('processOrder')}
+                            </button>
+                          )}
+                          {order.status === "processing" && (
+                            <button
+                              onClick={() => handleCompleteOrder(order._id)}
+                              className="bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
+                            >
+                              {t('markDelivered')}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
               {sellerOrders.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">No orders received yet.</p>
+                <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                  <p className="text-slate-400 text-xl font-bold">{t('cartEmpty')}</p>
                 </div>
               )}
             </div>
@@ -412,47 +446,53 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
 
         {activeTab === "analytics" && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Analytics</h2>
+            <h2 className="text-2xl font-black text-slate-900">{t('analytics')}</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Products</h3>
-                <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-white border border-slate-200 rounded-3xl p-8 modern-shadow">
+                <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-primary rounded-full"></span>
+                  Top Products
+                </h3>
+                <div className="space-y-6">
                   {analytics?.topProducts?.map((product, index) => (
-                    <div key={index}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{product.name}</span>
-                        <span>{product.sales} sold</span>
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between text-sm font-bold">
+                        <span className="text-slate-700">{product.name}</span>
+                        <span className="text-primary">{product.sales} {t('delivered')}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
                         <div
-                          className="bg-green-500 h-2 rounded-full"
+                          className="bg-gradient-to-r from-primary to-emerald-400 h-full rounded-full transition-all duration-1000"
                           style={{ width: `${product.percentage}%` }}
                         ></div>
                       </div>
                     </div>
                   )) || (
-                      <p className="text-gray-500 text-center py-4">No sales data yet.</p>
+                      <p className="text-slate-400 text-center py-8 font-medium italic">No sales data yet.</p>
                     )}
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Performance</h3>
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-green-600">
+              <div className="bg-slate-900 text-white rounded-3xl p-8 modern-shadow relative overflow-hidden group">
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+                <h3 className="text-lg font-black mb-8 relative z-10">{t('monthlyRevenue')}</h3>
+                <div className="space-y-8 relative z-10">
+                  <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+                    <p className="text-4xl font-black text-primary mb-1">
                       {formatPrice(analytics?.monthlyRevenue || 0)}
                     </p>
-                    <p className="text-sm text-gray-600">Total Revenue</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('monthlyRevenue')}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-blue-600">{analytics?.completedOrders || 0}</p>
-                    <p className="text-sm text-gray-600">Orders Completed</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-purple-600">{analytics?.activeProducts || 0}</p>
-                    <p className="text-sm text-gray-600">Active Products</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                      <p className="text-2xl font-black text-blue-400">{analytics?.completedOrders || 0}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('delivered')}</p>
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                      <p className="text-2xl font-black text-emerald-400">{analytics?.activeProducts || 0}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('inventory')}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -506,14 +546,16 @@ function ProductModal({ product, onClose, onSave }: {
   onClose: () => void;
   onSave: (data: any) => void;
 }) {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: product?.name || "",
     description: product?.description || "",
     price: product?.price || 0,
-    unit: product?.unit || "lb",
+    unit: product?.unit || "kg",
     category: product?.category || "vegetables",
     stockQuantity: product?.stockQuantity || 0,
     imageEmoji: product?.imageEmoji || "🥬",
+    priceTiers: product?.priceTiers || [],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -521,70 +563,96 @@ function ProductModal({ product, onClose, onSave }: {
     onSave(formData);
   };
 
+  const addTier = () => {
+    setFormData(prev => ({
+      ...prev,
+      priceTiers: [...prev.priceTiers, { minQuantity: 0, price: 0 }]
+    }));
+  };
+
+  const removeTier = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      priceTiers: prev.priceTiers.filter((_: any, i: number) => i !== index)
+    }));
+  };
+
+  const updateTier = (index: number, field: string, value: number) => {
+    setFormData(prev => ({
+      ...prev,
+      priceTiers: prev.priceTiers.map((tier: any, i: number) =>
+        i === index ? { ...tier, [field]: value } : tier
+      )
+    }));
+  };
+
   const categories = ["vegetables", "fruits", "grains", "dairy", "herbs", "nuts"];
   const units = ["lb", "kg", "dozen", "head", "bunch", "bag", "box"];
   const emojis = ["🍅", "🥬", "🥕", "🌽", "🍎", "🍊", "🥚", "🥛", "🌾", "🥜"];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-4">
-          {product ? "Edit Product" : "Add New Product"}
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-up">
+        <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+          <span className="text-3xl">📦</span>
+          {product ? t('editProduct') : t('addProduct')}
         </h3>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Name
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                {t('productName')}
               </label>
               <input
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
                 required
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unit
+              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                {t('basePrice')}
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                {t('unit')}
               </label>
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData(prev => ({ ...prev, unit: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-bold text-slate-700"
               >
                 {units.map(unit => (
                   <option key={unit} value={unit}>{unit}</option>
                 ))}
               </select>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
+              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                {t('category')}
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-bold text-slate-700"
               >
                 {categories.map(category => (
                   <option key={category} value={category}>
@@ -593,32 +661,91 @@ function ProductModal({ product, onClose, onSave }: {
                 ))}
               </select>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Stock Quantity
+              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                {t('stock')}
               </label>
               <input
                 type="number"
                 value={formData.stockQuantity}
                 onChange={(e) => setFormData(prev => ({ ...prev, stockQuantity: parseInt(e.target.value) || 0 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
                 required
               />
             </div>
           </div>
 
+          <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h4 className="text-amber-900 font-bold uppercase tracking-wider text-sm">{t('tieredPricing')}</h4>
+                <p className="text-xs text-amber-700 font-medium">Add discounts for larger quantities</p>
+              </div>
+              <button
+                type="button"
+                onClick={addTier}
+                className="bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors shadow-sm"
+              >
+                + {t('addTier')}
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {formData.priceTiers.map((tier: any, index: number) => (
+                <div key={index} className="flex items-center gap-3 animate-fade-in">
+                  <div className="flex-1 grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">MIN. QTY</span>
+                      <input
+                        type="number"
+                        placeholder="Min Qty"
+                        value={tier.minQuantity}
+                        onChange={(e) => updateTier(index, 'minQuantity', parseInt(e.target.value) || 0)}
+                        className="w-full pl-3 pr-16 py-2 bg-white border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold"
+                      />
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="Tier Price"
+                        value={tier.price}
+                        onChange={(e) => updateTier(index, 'price', parseFloat(e.target.value) || 0)}
+                        className="w-full pl-7 pr-3 py-2 bg-white border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeTier(index)}
+                    className="text-amber-500 hover:text-red-500 p-2 font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {formData.priceTiers.length === 0 && (
+                <p className="text-center text-amber-600/60 text-xs italic font-medium py-2">No discount tiers added yet</p>
+              )}
+            </div>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Image (Emoji)
+            <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">
+              {t('productEmoji')}
             </label>
-            <div className="bg-white border border-slate-200 rounded-lg p-3">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
               <div className="flex flex-wrap gap-2">
                 {emojis.map(emoji => (
                   <button
                     key={emoji}
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, imageEmoji: emoji }))}
-                    className={`text-2xl p-3 rounded-lg border-2 transition-all ${formData.imageEmoji === emoji ? "bg-primary/10 border-primary shadow-sm" : "border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+                    className={`text-2xl p-3 w-14 h-14 flex items-center justify-center rounded-xl border-2 transition-all active:scale-95 ${formData.imageEmoji === emoji
+                      ? "bg-white border-primary shadow-lg shadow-primary/20 scale-110"
+                      : "border-transparent bg-white/50 hover:bg-white hover:border-slate-300"
                       }`}
                   >
                     {emoji}
@@ -629,30 +756,31 @@ function ProductModal({ product, onClose, onSave }: {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description (Optional)
+            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
+              {t('description')}
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
               rows={3}
+              placeholder="Tell buyers about your harvest..."
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-6 py-4 border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95"
             >
-              Cancel
+              {t('cancel')}
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex-1 px-6 py-4 bg-primary text-white rounded-xl font-black text-lg shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all active:scale-95"
             >
-              {product ? "Update" : "Add"} Product
+              {product ? t('update') : t('add')}
             </button>
           </div>
         </form>

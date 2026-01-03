@@ -25,6 +25,7 @@ const applicationTables = {
     stockQuantity: v.number(),
     isActive: v.boolean(),
     imageEmoji: v.string(), // For now using emojis as images
+    priceTiers: v.optional(v.array(v.object({ minQuantity: v.number(), price: v.number() }))),
   }).index("by_seller", ["sellerId"])
     .index("by_category", ["category"])
     .index("by_active", ["isActive"]),

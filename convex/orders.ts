@@ -38,8 +38,18 @@ export const createOrder = mutation({
       throw new Error("Insufficient stock available");
     }
 
-    // Calculate total amount
-    const totalAmount = product.price * args.quantity;
+    // Calculate total amount with tiered pricing
+    let unitPrice = product.price;
+    if (product.priceTiers && product.priceTiers.length > 0) {
+      // Find the best tier (highest minQuantity <= args.quantity)
+      const sortedTiers = [...product.priceTiers].sort((a, b) => b.minQuantity - a.minQuantity);
+      const tier = sortedTiers.find(t => args.quantity >= t.minQuantity);
+      if (tier) {
+        unitPrice = tier.price;
+      }
+    }
+
+    const totalAmount = unitPrice * args.quantity;
 
     // Create order (unpaid initially)
     const orderId = await ctx.db.insert("orders", {
@@ -47,7 +57,7 @@ export const createOrder = mutation({
       sellerId: product.sellerId,
       productId: args.productId,
       quantity: args.quantity,
-      unitPrice: product.price,
+      unitPrice: unitPrice,
       totalAmount,
       status: "pending",
       orderDate: Date.now(),
