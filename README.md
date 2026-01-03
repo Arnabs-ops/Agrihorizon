@@ -1,6 +1,6 @@
 # AgroHorizon - Agriculture Role-Based Authentication App
   
-This is a project built with [Chef](https://chef.convex.dev) using [Convex](https://convex.dev) as its backend.
+This is a project built with [Chef](https://chef.convex.dev) [ note that only the prototype was made using chef ]  using [Convex](https://convex.dev) as its backend.
  You can find docs about Chef with useful information like how to deploy to production [here](https://docs.convex.dev/chef).
   
 This project is connected to the Convex deployment named [`modest-swan-464`](https://dashboard.convex.dev/d/modest-swan-464).
