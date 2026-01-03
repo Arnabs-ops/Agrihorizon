@@ -46,10 +46,13 @@ const applicationTables = {
     orderDate: v.number(),
     deliveryAddress: v.optional(v.string()),
     notes: v.optional(v.string()),
+    isPaid: v.optional(v.boolean()),
+    paymentDate: v.optional(v.number()),
   }).index("by_buyer", ["buyerId"])
     .index("by_seller", ["sellerId"])
     .index("by_status", ["status"])
-    .index("by_product", ["productId"]),
+    .index("by_product", ["productId"])
+    .index("by_paid", ["isPaid"]),
 
   vegPrices: defineTable({
     vegetable: v.string(),

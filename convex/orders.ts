@@ -41,7 +41,7 @@ export const createOrder = mutation({
     // Calculate total amount
     const totalAmount = product.price * args.quantity;
 
-    // Create order
+    // Create order (unpaid initially)
     const orderId = await ctx.db.insert("orders", {
       buyerId: userId,
       sellerId: product.sellerId,
@@ -53,14 +53,73 @@ export const createOrder = mutation({
       orderDate: Date.now(),
       deliveryAddress: args.deliveryAddress,
       notes: args.notes,
+      isPaid: false,
     });
 
-    // Update product stock
-    await ctx.db.patch(args.productId, {
-      stockQuantity: product.stockQuantity - args.quantity,
-    });
-
+    // Stock will be reduced when payment is confirmed
     return orderId;
+  },
+});
+
+// Mark orders as paid (buyer)
+export const markOrdersAsPaid = mutation({
+  args: {
+    orderIds: v.array(v.id("orders")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User must be authenticated");
+    }
+
+    // Verify user is a buyer
+    const userProfile = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_user_id", (q) => q.eq("userId", userId))
+      .unique();
+
+    if (!userProfile || userProfile.role !== "buyer") {
+      throw new Error("Only buyers can mark orders as paid");
+    }
+
+    const paymentDate = Date.now();
+
+    // Process each order
+    for (const orderId of args.orderIds) {
+      const order = await ctx.db.get(orderId);
+
+      if (!order || order.buyerId !== userId) {
+        throw new Error("Order not found or access denied");
+      }
+
+      if (order.isPaid || order.isPaid === undefined) {
+        continue; // Skip already paid or legacy orders
+      }
+
+      // Get product to reduce stock
+      const product = await ctx.db.get(order.productId);
+      if (!product) {
+        throw new Error("Product not found");
+      }
+
+      // Check stock availability
+      if (product.stockQuantity < order.quantity) {
+        throw new Error(`Insufficient stock for ${product.name}`);
+      }
+
+      // Mark order as paid
+      await ctx.db.patch(orderId, {
+        isPaid: true,
+        paymentDate,
+      });
+
+      // Reduce product stock
+      await ctx.db.patch(order.productId, {
+        stockQuantity: product.stockQuantity - order.quantity,
+      });
+    }
+
+    return { success: true, paidCount: args.orderIds.length };
   },
 });
 
@@ -113,11 +172,14 @@ export const getSellerOrders = query({
       throw new Error("User must be authenticated");
     }
 
-    const orders = await ctx.db
+    // Only show paid orders to sellers
+    const allOrders = await ctx.db
       .query("orders")
       .withIndex("by_seller", (q) => q.eq("sellerId", userId))
       .order("desc")
       .collect();
+
+    const orders = allOrders.filter(order => order.isPaid === true || order.isPaid === undefined);
 
     // Get product and buyer details for each order
     const ordersWithDetails = await Promise.all(
@@ -199,16 +261,16 @@ export const getSellerAnalytics = query({
     const activeProducts = products.filter(p => p.isActive).length;
     const pendingOrders = orders.filter(o => o.status === "pending").length;
     const completedOrders = orders.filter(o => o.status === "delivered").length;
-    
+
     // Calculate monthly revenue (current month)
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     const monthlyRevenue = orders
       .filter(order => {
         const orderDate = new Date(order.orderDate);
-        return orderDate.getMonth() === currentMonth && 
-               orderDate.getFullYear() === currentYear &&
-               order.status === "delivered";
+        return orderDate.getMonth() === currentMonth &&
+          orderDate.getFullYear() === currentYear &&
+          order.status === "delivered";
       })
       .reduce((sum, order) => sum + order.totalAmount, 0);
 
@@ -223,7 +285,7 @@ export const getSellerAnalytics = query({
 
     const topProducts = await Promise.all(
       Array.from(productSales.entries())
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 4)
         .map(async ([productId, sales]) => {
           const product = await ctx.db.get(productId as Id<"products">);

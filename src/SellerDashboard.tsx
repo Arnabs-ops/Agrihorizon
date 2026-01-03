@@ -24,6 +24,41 @@ interface SellerDashboardProps {
   userProfile: UserProfile;
 }
 
+interface Product {
+  _id: Id<"products">;
+  name: string;
+  description?: string;
+  price: number;
+  unit: string;
+  category: string;
+  stockQuantity: number;
+  imageEmoji: string;
+  isActive: boolean;
+}
+
+interface Order {
+  _id: Id<"orders">;
+  status: string;
+  quantity: number;
+  totalAmount: number;
+  orderDate: number;
+  deliveryAddress?: string;
+  product: {
+    name: string;
+    unit: string;
+    imageEmoji: string;
+    [key: string]: any;
+  } | null;
+  buyer: {
+    user: any;
+    profile: {
+      fullName: string;
+      businessName?: string;
+      [key: string]: any;
+    } | null;
+  };
+}
+
 export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [showMessaging, setShowMessaging] = useState(false);
@@ -31,10 +66,11 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
   const { user, profile } = userProfile;
-  const sellerProducts = useQuery(api.products.getSellerProducts) || [];
-  const sellerOrders = useQuery(api.orders.getSellerOrders) || [];
+  const sellerProducts: Product[] = (useQuery(api.products.getSellerProducts) as any) || [];
+  const sellerOrders: Order[] = (useQuery(api.orders.getSellerOrders) as any) || [];
   const analytics = useQuery(api.orders.getSellerAnalytics);
-  
+
+
   const addProduct = useMutation(api.products.addProduct);
   const updateProduct = useMutation(api.products.updateProduct);
   const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
@@ -93,335 +129,340 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl">🚜</span>
+    <div className="space-y-8 animate-fade-in">
+      {/* Premium Welcome Header */}
+      <div className="glass-card rounded-2xl p-8 modern-shadow overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl animate-pulse"></div>
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner animate-float">
+              <span className="text-4xl">🚜</span>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">
-                Welcome, {profile.fullName}!
+              <p className="text-primary font-bold tracking-widest uppercase text-xs mb-1">Seller Terminal</p>
+              <h1 className="text-4xl font-black text-slate-900 leading-tight">
+                Welcome back, <span className="text-primary">{profile.fullName}!</span>
               </h1>
-              <p className="text-gray-600">Seller Dashboard - Manage your agricultural business</p>
-              {profile.businessName && (
-                <p className="text-sm text-gray-500">🏢 {profile.businessName}</p>
-              )}
-              {profile.location && (
-                <p className="text-sm text-gray-500">📍 {profile.location}</p>
-              )}
+              <div className="flex items-center gap-4 mt-2">
+                {profile.businessName && (
+                  <span className="flex items-center text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                    🏢 {profile.businessName}
+                  </span>
+                )}
+                {profile.location && (
+                  <span className="flex items-center text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                    📍 {profile.location}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <button
             onClick={() => setShowMessaging(true)}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
           >
-            💬 Messages
+            <span className="text-xl group-hover:rotate-12 transition-transform">💬</span>
+            <span className="font-bold">Messages</span>
           </button>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white rounded-lg shadow-lg">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
-            {[
-              { id: "overview", label: "Overview", icon: "📊" },
-              { id: "products", label: "My Products", icon: "🌾" },
-              { id: "orders", label: "Orders", icon: "📦" },
-              { id: "analytics", label: "Analytics", icon: "📈" },
-              { id: "prices", label: "Market Prices", icon: "💹" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? "border-green-500 text-green-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+      {/* Modern Navigation Tabs */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 modern-shadow">
+        <nav className="flex items-center gap-1">
+          {[
+            { id: "overview", label: "Overview", icon: "📊" },
+            { id: "products", label: "My Products", icon: "🌾" },
+            { id: "orders", label: "Orders", icon: "📦" },
+            { id: "analytics", label: "Analytics", icon: "📈" },
+            { id: "prices", label: "Market Intelligence", icon: "💹" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-3 py-3 px-6 rounded-xl font-bold text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
+                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
+            >
+              <span className={`text-xl ${activeTab === tab.id ? "animate-subtle-bounce" : ""}`}>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
 
-        <div className="p-6">
-          {activeTab === "overview" && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-green-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-green-800 mb-2">
-                    Total Products
-                  </h3>
-                  <p className="text-3xl font-bold text-green-600">{analytics?.totalProducts || 0}</p>
-                  <p className="text-sm text-green-600">Active listings</p>
-                </div>
-                <div className="bg-blue-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                    Pending Orders
-                  </h3>
-                  <p className="text-3xl font-bold text-blue-600">{analytics?.pendingOrders || 0}</p>
-                  <p className="text-sm text-blue-600">Awaiting fulfillment</p>
-                </div>
-                <div className="bg-yellow-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                    Monthly Revenue
-                  </h3>
-                  <p className="text-3xl font-bold text-yellow-600">
-                    {formatPrice(analytics?.monthlyRevenue || 0)}
-                  </p>
-                  <p className="text-sm text-yellow-600">This month</p>
-                </div>
-                <div className="bg-purple-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-purple-800 mb-2">
-                    Completed Orders
-                  </h3>
-                  <p className="text-3xl font-bold text-purple-600">{analytics?.completedOrders || 0}</p>
-                  <p className="text-sm text-purple-600">All time</p>
-                </div>
+      <div className="p-6">
+        {activeTab === "overview" && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-green-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-green-800 mb-2">
+                  Total Products
+                </h3>
+                <p className="text-3xl font-bold text-green-600">{analytics?.totalProducts || 0}</p>
+                <p className="text-sm text-green-600">Active listings</p>
               </div>
+              <div className="bg-blue-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                  Pending Orders
+                </h3>
+                <p className="text-3xl font-bold text-blue-600">{analytics?.pendingOrders || 0}</p>
+                <p className="text-sm text-blue-600">Awaiting fulfillment</p>
+              </div>
+              <div className="bg-yellow-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                  Monthly Revenue
+                </h3>
+                <p className="text-3xl font-bold text-yellow-600">
+                  {formatPrice(analytics?.monthlyRevenue || 0)}
+                </p>
+                <p className="text-sm text-yellow-600">This month</p>
+              </div>
+              <div className="bg-purple-50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-purple-800 mb-2">
+                  Completed Orders
+                </h3>
+                <p className="text-3xl font-bold text-purple-600">{analytics?.completedOrders || 0}</p>
+                <p className="text-sm text-purple-600">All time</p>
+              </div>
+            </div>
 
-              {profile.farmSize && (
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Farm Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Farm Size</p>
-                      <p className="font-semibold capitalize">{profile.farmSize}</p>
-                    </div>
-                    {profile.cropTypes && profile.cropTypes.length > 0 && (
-                      <div>
-                        <p className="text-sm text-gray-600 mb-2">Crop Types</p>
-                        <div className="flex flex-wrap gap-2">
-                          {profile.cropTypes.map((crop, index) => (
-                            <span
-                              key={index}
-                              className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
-                            >
-                              {crop}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
+            {profile.farmSize && (
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  Recent Orders
+                  Farm Information
                 </h3>
-                <div className="space-y-3">
-                  {sellerOrders.slice(0, 3).map((order) => (
-                    <div key={order._id} className="flex items-center gap-3 p-3 bg-white rounded">
-                      <span className="text-2xl">{order.product?.imageEmoji}</span>
-                      <div className="flex-1">
-                        <span className="font-medium">
-                          Order from {order.buyer.profile?.fullName}
-                        </span>
-                        <span className="text-sm text-gray-500 ml-2">
-                          {order.product?.name} - {order.quantity} {order.product?.unit}
-                        </span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Farm Size</p>
+                    <p className="font-semibold capitalize">{profile.farmSize}</p>
+                  </div>
+                  {profile.cropTypes && profile.cropTypes.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Crop Types</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.cropTypes.map((crop, index) => (
+                          <span
+                            key={index}
+                            className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                          >
+                            {crop}
+                          </span>
+                        ))}
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                      <span className="text-sm text-gray-500">{formatDate(order.orderDate)}</span>
                     </div>
-                  ))}
-                  {sellerOrders.length === 0 && (
-                    <p className="text-gray-500 text-center py-4">No orders yet.</p>
                   )}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === "products" && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">My Products</h2>
-                <button 
-                  onClick={() => setShowAddProduct(true)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  + Add New Product
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sellerProducts.map((product) => {
-                  const status = getProductStatus(product);
-                  return (
-                    <div key={product._id} className="bg-white border border-gray-200 rounded-lg p-4">
-                      <div className="text-4xl text-center mb-3">{product.imageEmoji}</div>
-                      <h3 className="font-semibold text-gray-800 mb-1">{product.name}</h3>
-                      <p className="text-green-600 font-bold mb-1">
-                        {formatPrice(product.price)}/{product.unit}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-2">Stock: {product.stockQuantity} {product.unit}</p>
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs mb-3 ${status.color}`}>
-                        {status.text}
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Recent Orders
+              </h3>
+              <div className="space-y-3">
+                {sellerOrders.slice(0, 3).map((order) => (
+                  <div key={order._id} className="flex items-center gap-3 p-3 bg-white rounded">
+                    <span className="text-2xl">{order.product?.imageEmoji}</span>
+                    <div className="flex-1">
+                      <span className="font-medium">
+                        Order from {order.buyer.profile?.fullName}
                       </span>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => setEditingProduct(product)}
-                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm"
-                        >
-                          Edit
-                        </button>
-                        <button className="p-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-                          📊
-                        </button>
-                      </div>
+                      <span className="text-sm text-gray-500 ml-2">
+                        {order.product?.name} - {order.quantity} {order.product?.unit}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-
-              {sellerProducts.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg mb-4">You haven't added any products yet.</p>
-                  <button
-                    onClick={() => setShowAddProduct(true)}
-                    className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Add Your First Product
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "orders" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800">Orders</h2>
-              <div className="space-y-4">
-                {sellerOrders.map((order) => (
-                  <div key={order._id} className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-4">
-                        <div className="text-3xl">{order.product?.imageEmoji}</div>
-                        <div>
-                          <h3 className="font-semibold text-gray-800">
-                            {order.product?.name}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            Customer: {order.buyer.profile?.fullName}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Quantity: {order.quantity} {order.product?.unit}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Order Date: {formatDate(order.orderDate)}
-                          </p>
-                          {order.deliveryAddress && (
-                            <p className="text-sm text-gray-600">
-                              Delivery: {order.deliveryAddress}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-800 text-lg mb-2">
-                          {formatPrice(order.totalAmount)}
-                        </p>
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm mb-2 ${getStatusColor(order.status)}`}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </span>
-                        <div className="flex gap-2">
-                          {order.status === "pending" && (
-                            <button 
-                              onClick={() => handleProcessOrder(order._id)}
-                              className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors"
-                            >
-                              Process Order
-                            </button>
-                          )}
-                          {order.status === "processing" && (
-                            <button 
-                              onClick={() => handleCompleteOrder(order._id)}
-                              className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
-                            >
-                              Mark Delivered
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.status)}`}>
+                      {order.status}
+                    </span>
+                    <span className="text-sm text-gray-500">{formatDate(order.orderDate)}</span>
                   </div>
                 ))}
                 {sellerOrders.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 text-lg">No orders received yet.</p>
-                  </div>
+                  <p className="text-gray-500 text-center py-4">No orders yet.</p>
                 )}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {activeTab === "analytics" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800">Analytics</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Products</h3>
-                  <div className="space-y-3">
-                    {analytics?.topProducts?.map((product, index) => (
-                      <div key={index}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>{product.name}</span>
-                          <span>{product.sales} sold</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-500 h-2 rounded-full" 
-                            style={{ width: `${product.percentage}%` }}
-                          ></div>
-                        </div>
+        {activeTab === "products" && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-800">My Products</h2>
+              <button
+                onClick={() => setShowAddProduct(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                + Add New Product
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sellerProducts.map((product) => {
+                const status = getProductStatus(product);
+                return (
+                  <div key={product._id} className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="text-4xl text-center mb-3">{product.imageEmoji}</div>
+                    <h3 className="font-semibold text-gray-800 mb-1">{product.name}</h3>
+                    <p className="text-green-600 font-bold mb-1">
+                      {formatPrice(product.price)}/{product.unit}
+                    </p>
+                    <p className="text-sm text-gray-600 mb-2">Stock: {product.stockQuantity} {product.unit}</p>
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs mb-3 ${status.color}`}>
+                      {status.text}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingProduct(product)}
+                        className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button className="p-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        📊
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {sellerProducts.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg mb-4">You haven't added any products yet.</p>
+                <button
+                  onClick={() => setShowAddProduct(true)}
+                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Add Your First Product
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "orders" && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Orders</h2>
+            <div className="space-y-4">
+              {sellerOrders.map((order) => (
+                <div key={order._id} className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-4">
+                      <div className="text-3xl">{order.product?.imageEmoji}</div>
+                      <div>
+                        <h3 className="font-semibold text-gray-800">
+                          {order.product?.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Customer: {order.buyer.profile?.fullName}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Quantity: {order.quantity} {order.product?.unit}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Order Date: {formatDate(order.orderDate)}
+                        </p>
+                        {order.deliveryAddress && (
+                          <p className="text-sm text-gray-600">
+                            Delivery: {order.deliveryAddress}
+                          </p>
+                        )}
                       </div>
-                    )) || (
-                      <p className="text-gray-500 text-center py-4">No sales data yet.</p>
-                    )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-800 text-lg mb-2">
+                        {formatPrice(order.totalAmount)}
+                      </p>
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm mb-2 ${getStatusColor(order.status)}`}>
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </span>
+                      <div className="flex gap-2">
+                        {order.status === "pending" && (
+                          <button
+                            onClick={() => handleProcessOrder(order._id)}
+                            className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors"
+                          >
+                            Process Order
+                          </button>
+                        )}
+                        {order.status === "processing" && (
+                          <button
+                            onClick={() => handleCompleteOrder(order._id)}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
+                          >
+                            Mark Delivered
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
+              ))}
+              {sellerOrders.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 text-lg">No orders received yet.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Performance</h3>
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-green-600">
-                        {formatPrice(analytics?.monthlyRevenue || 0)}
-                      </p>
-                      <p className="text-sm text-gray-600">Total Revenue</p>
+        {activeTab === "analytics" && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Analytics</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Products</h3>
+                <div className="space-y-3">
+                  {analytics?.topProducts?.map((product, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{product.name}</span>
+                        <span>{product.sales} sold</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-green-500 h-2 rounded-full"
+                          style={{ width: `${product.percentage}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-blue-600">{analytics?.completedOrders || 0}</p>
-                      <p className="text-sm text-gray-600">Orders Completed</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-purple-600">{analytics?.activeProducts || 0}</p>
-                      <p className="text-sm text-gray-600">Active Products</p>
-                    </div>
+                  )) || (
+                      <p className="text-gray-500 text-center py-4">No sales data yet.</p>
+                    )}
+                </div>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Performance</h3>
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-green-600">
+                      {formatPrice(analytics?.monthlyRevenue || 0)}
+                    </p>
+                    <p className="text-sm text-gray-600">Total Revenue</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-blue-600">{analytics?.completedOrders || 0}</p>
+                    <p className="text-sm text-gray-600">Orders Completed</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-purple-600">{analytics?.activeProducts || 0}</p>
+                    <p className="text-sm text-gray-600">Active Products</p>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {activeTab === "prices" && (
-            <MarketPrices userRole="seller" />
-          )}
-        </div>
+        {activeTab === "prices" && (
+          <MarketPrices userRole="seller" />
+        )}
       </div>
 
       {/* Add/Edit Product Modal */}
@@ -490,7 +531,7 @@ function ProductModal({ product, onClose, onSave }: {
         <h3 className="text-lg font-semibold mb-4">
           {product ? "Edit Product" : "Add New Product"}
         </h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -567,22 +608,23 @@ function ProductModal({ product, onClose, onSave }: {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Image (Emoji)
             </label>
-            <div className="flex gap-2 mb-2">
-              {emojis.map(emoji => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, imageEmoji: emoji }))}
-                  className={`text-2xl p-2 rounded ${
-                    formData.imageEmoji === emoji ? "bg-green-100" : "hover:bg-gray-100"
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
+            <div className="bg-white border border-slate-200 rounded-lg p-3">
+              <div className="flex flex-wrap gap-2">
+                {emojis.map(emoji => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, imageEmoji: emoji }))}
+                    className={`text-2xl p-3 rounded-lg border-2 transition-all ${formData.imageEmoji === emoji ? "bg-primary/10 border-primary shadow-sm" : "border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+                      }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

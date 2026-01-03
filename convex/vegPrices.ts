@@ -369,7 +369,7 @@ CONFIDENCE: [High/Medium/Low]`;
           "X-Title": "AgroHorizon Price Predictor"
         },
         body: JSON.stringify({
-          model: "google/gemini-2.0-flash-exp:free",
+          model: "meta-llama/llama-3.2-3b-instruct:free",
           messages: [
             {
               role: "system",
