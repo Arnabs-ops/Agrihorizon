@@ -66,6 +66,17 @@ export const createOrder = mutation({
       isPaid: false,
     });
 
+    // Notify seller about new order
+    await ctx.db.insert("notifications", {
+      userId: product.sellerId,
+      type: "order_new",
+      title: "New Order Received!",
+      content: `You have a new order for ${args.quantity} ${product.unit} of ${product.name}.`,
+      isRead: false,
+      link: "orders",
+      timestamp: Date.now(),
+    });
+
     // Stock will be reduced when payment is confirmed
     return orderId;
   },
@@ -241,6 +252,17 @@ export const updateOrderStatus = mutation({
 
     await ctx.db.patch(args.orderId, {
       status: args.status,
+    });
+
+    // Notify buyer about status update
+    await ctx.db.insert("notifications", {
+      userId: order.buyerId,
+      type: "order_status",
+      title: "Order Status Updated",
+      content: `Your order for ${order.product?.name} is now ${args.status}.`,
+      isRead: false,
+      link: "orders",
+      timestamp: Date.now(),
     });
 
     return args.orderId;

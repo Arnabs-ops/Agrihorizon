@@ -9,10 +9,13 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as messages from "../messages.js";
+import type * as notifications from "../notifications.js";
 import type * as orders from "../orders.js";
 import type * as products from "../products.js";
+import type * as reviews from "../reviews.js";
 import type * as router from "../router.js";
 import type * as users from "../users.js";
 import type * as vegPrices from "../vegPrices.js";
@@ -25,10 +28,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  files: typeof files;
   http: typeof http;
   messages: typeof messages;
+  notifications: typeof notifications;
   orders: typeof orders;
   products: typeof products;
+  reviews: typeof reviews;
   router: typeof router;
   users: typeof users;
   vegPrices: typeof vegPrices;

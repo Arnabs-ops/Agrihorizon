@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { MessagingSystem } from "./MessagingSystem";
+import { NotificationCenter } from "./NotificationCenter";
 import { MarketPrices } from "./MarketPrices";
 import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
-import { useLanguage } from "./App";
+import { useLanguage } from "./useLanguage.tsx";
 import sellerBg from "./assets/seller_bg.png";
 
 interface UserProfile {
@@ -35,6 +36,8 @@ interface Product {
   category: string;
   stockQuantity: number;
   imageEmoji: string;
+  imageStorageId?: Id<"_storage">;
+  imageUrl?: string | null;
   isActive: boolean;
   priceTiers?: Array<{ minQuantity: number; price: number }>;
 }
@@ -128,26 +131,28 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const getProductStatus = (product: any) => {
     if (!product.isActive) return { text: t('cancelled'), color: "bg-red-100 text-red-800" };
     if (product.stockQuantity === 0) return { text: t('outOfStock'), color: "bg-red-100 text-red-800" };
-    if (product.stockQuantity < 10) return { text: "Low Stock", color: "bg-yellow-100 text-yellow-800" };
-    return { text: "Active", color: "bg-green-100 text-green-800" };
+    if (product.stockQuantity < 10) return { text: "lowStock", color: "bg-yellow-100 text-yellow-800" };
+    return { text: "active", color: "bg-green-100 text-green-800" };
   };
 
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Premium Welcome Header */}
-      <div className="rounded-2xl p-8 modern-shadow overflow-hidden relative min-h-[220px] flex items-center">
+      <div className="rounded-2xl p-8 modern-shadow relative min-h-[220px] flex items-center">
         {/* Dynamic Background Image with Overlay */}
-        <div
-          className="absolute inset-0 z-0 scale-105 animate-slow-zoom"
-          style={{
-            backgroundImage: `url(${sellerBg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'brightness(0.7)'
-          }}
-        >
-          <div className="absolute inset-0 bg-slate-900/30 mix-blend-multiply"></div>
-          <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
+        <div className="absolute inset-0 z-0 overflow-hidden rounded-2xl">
+          <div
+            className="absolute inset-0 z-0 scale-105 animate-slow-zoom"
+            style={{
+              backgroundImage: `url(${sellerBg})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'brightness(0.7)'
+            }}
+          >
+            <div className="absolute inset-0 bg-slate-900/30 mix-blend-multiply"></div>
+            <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
+          </div>
         </div>
 
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl animate-pulse z-10"></div>
@@ -182,6 +187,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             >
               <span className="text-xl">+</span> {t('addProduct')}
             </button>
+            <NotificationCenter onNavigate={(link) => setActiveTab(link)} />
             <button
               onClick={() => setShowMessaging(true)}
               className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
@@ -331,7 +337,18 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                 const status = getProductStatus(product);
                 return (
                   <div key={product._id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-xl transition-all group modern-shadow">
-                    <div className="text-5xl text-center mb-4 bg-slate-50 rounded-xl py-6 group-hover:scale-110 transition-transform duration-500">{product.imageEmoji}</div>
+                    <div className="relative h-48 mb-4 bg-slate-50 rounded-xl overflow-hidden group-hover:shadow-lg transition-all duration-500 flex items-center justify-center">
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      ) : (
+                        <span className="text-5xl group-hover:scale-120 transition-transform duration-500">{product.imageEmoji}</span>
+                      )}
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${status.color} shadow-sm backdrop-blur-md bg-white/80`}>
+                          {t(status.text.toLowerCase() as any) || status.text}
+                        </span>
+                      </div>
+                    </div>
                     <h3 className="font-black text-slate-900 text-lg mb-1">{product.name}</h3>
 
                     <div className="space-y-1 mb-3">
@@ -352,9 +369,6 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
 
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-sm font-bold text-slate-500">{t('stock')}: <span className="text-slate-900">{product.stockQuantity} {product.unit}</span></p>
-                      <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${status.color}`}>
-                        {t(status.text.toLowerCase() as any) || status.text}
-                      </span>
                     </div>
 
                     <div className="flex gap-2">
@@ -561,6 +575,7 @@ function ProductModal({ product, onClose, onSave }: {
   onClose: () => void;
   onSave: (data: any) => void;
 }) {
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: product?.name || "",
@@ -570,8 +585,37 @@ function ProductModal({ product, onClose, onSave }: {
     category: product?.category || "vegetables",
     stockQuantity: product?.stockQuantity || 0,
     imageEmoji: product?.imageEmoji || "🥬",
+    imageStorageId: product?.imageStorageId || undefined,
     priceTiers: product?.priceTiers || [],
   });
+
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(product?.imageUrl || null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const postUrl = await generateUploadUrl();
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { storageId } = await result.json();
+
+      setFormData(prev => ({ ...prev, imageStorageId: storageId }));
+      setPreviewUrl(URL.createObjectURL(file));
+      toast.success("Image uploaded!");
+    } catch (error) {
+      toast.error("Upload failed");
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -749,23 +793,72 @@ function ProductModal({ product, onClose, onSave }: {
 
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">
-              {t('productEmoji')}
+              {t('productImage')}
             </label>
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <div className="flex flex-wrap gap-2">
-                {emojis.map(emoji => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center hover:border-primary/50 transition-all group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="product-image-upload"
+                  />
+                  <label htmlFor="product-image-upload" className="cursor-pointer block">
+                    {uploading ? (
+                      <div className="flex flex-col items-center gap-2 py-4">
+                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-xs font-bold text-slate-500">Uploading...</p>
+                      </div>
+                    ) : (
+                      <div className="py-4">
+                        <span className="text-3xl mb-2 block group-hover:scale-110 transition-transform">📸</span>
+                        <p className="text-xs font-bold text-slate-500">{t('uploadPhoto') || "Upload Real Photo"}</p>
+                        <p className="text-[10px] text-slate-400 mt-1">Recommended: 800x600px</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase mb-3">Or choose an emoji icon</p>
+                  <div className="flex flex-wrap gap-2">
+                    {emojis.map(emoji => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, imageEmoji: emoji }))}
+                        className={`text-xl p-2 w-10 h-10 flex items-center justify-center rounded-lg border-2 transition-all active:scale-95 ${formData.imageEmoji === emoji && !formData.imageStorageId
+                          ? "bg-white border-primary shadow-md scale-105"
+                          : "border-transparent bg-white/50 hover:bg-white"
+                          }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative aspect-[4/3] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
+                {previewUrl ? (
+                  <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">
+                    {formData.imageEmoji}
+                  </div>
+                )}
+                <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] font-black px-2 py-1 rounded-full uppercase">Preview</div>
+                {previewUrl && (
                   <button
-                    key={emoji}
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, imageEmoji: emoji }))}
-                    className={`text-2xl p-3 w-14 h-14 flex items-center justify-center rounded-xl border-2 transition-all active:scale-95 ${formData.imageEmoji === emoji
-                      ? "bg-white border-primary shadow-lg shadow-primary/20 scale-110"
-                      : "border-transparent bg-white/50 hover:bg-white hover:border-slate-300"
-                      }`}
+                    onClick={() => { setPreviewUrl(null); setFormData(prev => ({ ...prev, imageStorageId: undefined })); }}
+                    className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-lg"
                   >
-                    {emoji}
+                    ✕
                   </button>
-                ))}
+                )}
               </div>
             </div>
           </div>

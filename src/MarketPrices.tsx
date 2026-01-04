@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { toast } from "sonner";
-import { useLanguage } from "./App";
+import { useLanguage } from "./useLanguage.tsx";
 
 interface MarketPricesProps {
   userRole: "seller" | "buyer";

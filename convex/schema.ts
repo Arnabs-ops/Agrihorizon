@@ -25,6 +25,7 @@ const applicationTables = {
     stockQuantity: v.number(),
     isActive: v.boolean(),
     imageEmoji: v.string(), // For now using emojis as images
+    imageStorageId: v.optional(v.id("_storage")),
     priceTiers: v.optional(v.array(v.object({ minQuantity: v.number(), price: v.number() }))),
   }).index("by_seller", ["sellerId"])
     .index("by_category", ["category"])
@@ -79,6 +80,26 @@ const applicationTables = {
     messageType: v.union(v.literal("text"), v.literal("image")),
     isRead: v.boolean(),
   }).index("by_conversation", ["conversationId"]),
+
+  reviews: defineTable({
+    productId: v.id("products"),
+    buyerId: v.id("users"),
+    sellerId: v.id("users"),
+    rating: v.number(), // 1 to 5
+    comment: v.string(),
+    createdAt: v.number(),
+  }).index("by_product", ["productId"])
+    .index("by_seller", ["sellerId"]),
+  notifications: defineTable({
+    userId: v.id("users"),
+    type: v.union(v.literal("order_new"), v.literal("order_status"), v.literal("review_new"), v.literal("message")),
+    title: v.string(),
+    content: v.string(),
+    isRead: v.boolean(),
+    link: v.optional(v.string()), // Optional internal link (e.g., tab name or order ID)
+    timestamp: v.number(),
+  }).index("by_user", ["userId"])
+    .index("by_read", ["isRead"]),
 };
 
 export default defineSchema({

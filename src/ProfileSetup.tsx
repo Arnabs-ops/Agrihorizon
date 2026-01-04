@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { toast } from "sonner";
+import { useLanguage } from "./useLanguage";
 
 export function ProfileSetup() {
   const [role, setRole] = useState<"seller" | "buyer" | "">("");
@@ -71,11 +72,10 @@ export function ProfileSetup() {
             <button
               type="button"
               onClick={() => setRole("seller")}
-              className={`p-4 border-2 rounded-lg text-center transition-all ${
-                role === "seller"
+              className={`p-4 border-2 rounded-lg text-center transition-all ${role === "seller"
                   ? "border-green-500 bg-green-50 text-green-700"
                   : "border-gray-200 hover:border-green-300"
-              }`}
+                }`}
             >
               <div className="text-2xl mb-2">🚜</div>
               <div className="font-semibold">Seller/Farmer</div>
@@ -84,11 +84,10 @@ export function ProfileSetup() {
             <button
               type="button"
               onClick={() => setRole("buyer")}
-              className={`p-4 border-2 rounded-lg text-center transition-all ${
-                role === "buyer"
+              className={`p-4 border-2 rounded-lg text-center transition-all ${role === "buyer"
                   ? "border-green-500 bg-green-50 text-green-700"
                   : "border-gray-200 hover:border-green-300"
-              }`}
+                }`}
             >
               <div className="text-2xl mb-2">🛒</div>
               <div className="font-semibold">Buyer</div>

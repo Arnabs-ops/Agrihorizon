@@ -25,8 +25,11 @@ export const getMarketplaceProducts = query({
           .withIndex("by_user_id", (q) => q.eq("userId", product.sellerId))
           .unique();
 
+        const imageUrl = product.imageStorageId ? await ctx.storage.getUrl(product.imageStorageId) : null;
+
         return {
           ...product,
+          imageUrl,
           seller: {
             user: seller,
             profile: sellerProfile,
@@ -53,7 +56,14 @@ export const getSellerProducts = query({
       .withIndex("by_seller", (q) => q.eq("sellerId", userId))
       .collect();
 
-    return products;
+    const productsWithUrls = await Promise.all(
+      products.map(async (product) => {
+        const imageUrl = product.imageStorageId ? await ctx.storage.getUrl(product.imageStorageId) : null;
+        return { ...product, imageUrl };
+      })
+    );
+
+    return productsWithUrls;
   },
 });
 
@@ -67,6 +77,8 @@ export const addProduct = mutation({
     category: v.string(),
     stockQuantity: v.number(),
     imageEmoji: v.string(),
+    imageStorageId: v.optional(v.id("_storage")),
+    priceTiers: v.optional(v.array(v.object({ minQuantity: v.number(), price: v.number() }))),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -94,6 +106,8 @@ export const addProduct = mutation({
       stockQuantity: args.stockQuantity,
       isActive: true,
       imageEmoji: args.imageEmoji,
+      imageStorageId: args.imageStorageId,
+      priceTiers: args.priceTiers,
     });
 
     return productId;
@@ -112,6 +126,8 @@ export const updateProduct = mutation({
     stockQuantity: v.optional(v.number()),
     isActive: v.optional(v.boolean()),
     imageEmoji: v.optional(v.string()),
+    imageStorageId: v.optional(v.id("_storage")),
+    priceTiers: v.optional(v.array(v.object({ minQuantity: v.number(), price: v.number() }))),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -133,6 +149,8 @@ export const updateProduct = mutation({
     if (args.stockQuantity !== undefined) updates.stockQuantity = args.stockQuantity;
     if (args.isActive !== undefined) updates.isActive = args.isActive;
     if (args.imageEmoji !== undefined) updates.imageEmoji = args.imageEmoji;
+    if (args.imageStorageId !== undefined) updates.imageStorageId = args.imageStorageId;
+    if (args.priceTiers !== undefined) updates.priceTiers = args.priceTiers;
 
     await ctx.db.patch(args.productId, updates);
     return args.productId;

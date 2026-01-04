@@ -9,68 +9,57 @@ import { SellerDashboard } from "./SellerDashboard";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { translations, Language } from "./translations";
 
-// Language Context
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-  t: (key: keyof typeof translations['en']) => string;
-}
-
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
-
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context) throw new Error("useLanguage must be used within a LanguageProvider");
-  return context;
-};
+import { LanguageProvider, useLanguage } from "./useLanguage.tsx";
 
 export default function App() {
-  const [language, setLanguage] = useState<Language>('en');
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}
 
-  const t = (key: keyof typeof translations['en']) => {
-    return translations[language][key] || translations['en'][key] || key;
-  };
+function AppContent() {
+  const { language, setLanguage, t } = useLanguage();
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-primary/20">
-        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md h-20 flex justify-between items-center border-b border-slate-200 px-8 modern-shadow">
-          <div className="flex items-center gap-4 group cursor-pointer">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110 duration-300">
-              <span className="text-white text-xl animate-float">🌾</span>
+    <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-primary/20">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md h-20 flex justify-between items-center border-b border-slate-200 px-8 modern-shadow">
+        <div className="flex items-center gap-4 group cursor-pointer">
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110 duration-300">
+            <span className="text-white text-xl animate-float">🌾</span>
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Agro<span className="text-primary">Horizon</span></h2>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${language === 'en' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => setLanguage('hi')}
+              className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${language === 'hi' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              हिन्दी
+            </button>
+          </div>
+          <Authenticated>
+            <div className="animate-fade-in">
+              <SignOutButton />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Agro<span className="text-primary">Horizon</span></h2>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${language === 'en' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLanguage('hi')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${language === 'hi' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                हिन्दी
-              </button>
-            </div>
-            <Authenticated>
-              <div className="animate-fade-in">
-                <SignOutButton />
-              </div>
-            </Authenticated>
-          </div>
-        </header>
-        <main className="flex-1 flex items-center justify-center p-8 overflow-hidden">
-          <div className="w-full max-w-6xl mx-auto animate-slide-up">
-            <Content />
-          </div>
-        </main>
-        <Toaster position="top-center" richColors />
-      </div>
-    </LanguageContext.Provider>
+          </Authenticated>
+        </div>
+      </header>
+      <main className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+        <div className="w-full max-w-6xl mx-auto animate-slide-up">
+          <Content />
+        </div>
+      </main>
+      <Toaster position="top-center" richColors />
+    </div>
   );
 }
 

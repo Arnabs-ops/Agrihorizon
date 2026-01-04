@@ -2,11 +2,12 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { MessagingSystem } from "./MessagingSystem";
+import { NotificationCenter } from "./NotificationCenter";
 import { MarketPrices } from "./MarketPrices";
 import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
 import paymentQr from "./assets/payment-qr.jpg";
-import { useLanguage } from "./App";
+import { useLanguage } from "./useLanguage.tsx";
 import buyerBg from "./assets/buyer_bg.png";
 
 interface UserProfile {
@@ -37,6 +38,8 @@ interface Product {
   category: string;
   stockQuantity: number;
   imageEmoji: string;
+  imageStorageId?: Id<"_storage">;
+  imageUrl?: string | null;
   isActive: boolean;
   priceTiers?: Array<{ minQuantity: number; price: number }>;
   seller: {
@@ -76,6 +79,17 @@ interface Order {
     } | null;
   };
 }
+interface Review {
+  _id: Id<"reviews">;
+  productId: Id<"products">;
+  buyerId: Id<"users">;
+  sellerId: Id<"users">;
+  rating: number;
+  comment: string;
+  createdAt: number;
+  buyerName: string;
+}
+
 
 
 export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
@@ -196,19 +210,21 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Premium Welcome Header */}
-      <div className="rounded-2xl p-8 modern-shadow overflow-hidden relative min-h-[220px] flex items-center">
+      <div className="rounded-2xl p-8 modern-shadow relative min-h-[220px] flex items-center">
         {/* Dynamic Background Image with Overlay */}
-        <div
-          className="absolute inset-0 z-0 scale-105 animate-slow-zoom"
-          style={{
-            backgroundImage: `url(${buyerBg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'brightness(0.7)'
-          }}
-        >
-          <div className="absolute inset-0 bg-slate-900/30 mix-blend-multiply"></div>
-          <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
+        <div className="absolute inset-0 z-0 overflow-hidden rounded-2xl">
+          <div
+            className="absolute inset-0 scale-105 animate-slow-zoom"
+            style={{
+              backgroundImage: `url(${buyerBg})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'brightness(0.7)'
+            }}
+          >
+            <div className="absolute inset-0 bg-slate-900/30 mix-blend-multiply"></div>
+            <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
+          </div>
         </div>
 
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl animate-pulse z-10"></div>
@@ -247,6 +263,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                 </span>
               )}
             </button>
+            <NotificationCenter onNavigate={(link) => setActiveTab(link)} />
             <button
               onClick={() => setShowMessaging(true)}
               className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
@@ -386,9 +403,15 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <div key={product._id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
-                  <div className="text-4xl text-center mb-3">{product.imageEmoji}</div>
-                  <h3 className="font-semibold text-gray-800 mb-1">{product.name}</h3>
+                <div key={product._id} className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-xl transition-all group modern-shadow">
+                  <div className="relative h-40 mb-3 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center">
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    ) : (
+                      <span className="text-4xl group-hover:scale-110 transition-transform duration-500">{product.imageEmoji}</span>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-gray-800 mb-1">{product.name}</h3>
                   <div className="space-y-1 mb-2">
                     <p className="text-blue-600 font-bold">
                       {formatPrice(product.price)}/{product.unit}
@@ -441,6 +464,10 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                     >
                       💬
                     </button>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <ProductReviews productId={product._id} />
                   </div>
                 </div>
               ))}
@@ -622,5 +649,95 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
         )
       }
     </div >
+  );
+}
+
+function ProductReviews({ productId }: { productId: Id<"products"> }) {
+  const reviews = useQuery(api.reviews.getProductReviews, { productId }) as Review[] | undefined;
+  const postReview = useMutation(api.reviews.postReview);
+  const [showForm, setShowForm] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const { t } = useLanguage();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await postReview({ productId, rating, comment });
+      toast.success("Review posted!");
+      setShowForm(false);
+      setComment("");
+    } catch (error) {
+      toast.error("Failed to post review");
+    }
+  };
+
+  if (!reviews) return null;
+
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : "0.0";
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <span className="text-amber-400 font-bold">★</span>
+          <span className="text-sm font-bold text-slate-700">{avgRating || "No reviews"}</span>
+          <span className="text-xs text-slate-400">({reviews.length})</span>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="text-[10px] font-black uppercase text-primary hover:underline"
+        >
+          {showForm ? "Cancel" : "Write Review"}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-slate-50 p-3 rounded-xl space-y-3 animate-slide-up">
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                className={`text-xl transition-all ${rating >= star ? "text-amber-400 scale-110" : "text-slate-300"}`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Share your experience..."
+            className="w-full p-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-primary"
+            rows={2}
+            required
+          />
+          <button type="submit" className="w-full py-2 bg-primary text-white text-[10px] font-black uppercase rounded-lg shadow-md active:scale-95 transition-all">
+            Post Review
+          </button>
+        </form>
+      )}
+
+      {reviews.length > 0 && !showForm && (
+        <div className="space-y-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+          {reviews.slice(0, 2).map((review) => (
+            <div key={review._id} className="text-[10px] bg-slate-50/50 p-2 rounded-lg border border-slate-100">
+              <div className="flex justify-between mb-1">
+                <span className="font-bold text-slate-700">{review.buyerName}</span>
+                <span className="text-amber-400">{"★".repeat(review.rating)}</span>
+              </div>
+              <p className="text-slate-500 italic">"{review.comment}"</p>
+            </div>
+          ))}
+          {reviews.length > 2 && (
+            <p className="text-[9px] text-center text-slate-400 font-medium">+ {reviews.length - 2} more reviews</p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
