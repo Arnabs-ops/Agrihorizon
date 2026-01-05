@@ -441,6 +441,12 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                           {t(order.status as any)}
                         </span>
 
+                        {(order as any).deliveryStep && (order as any).deliveryStep !== "delivered" && (
+                          <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 animate-pulse">
+                            🚚 {t((order as any).deliveryStep as any)}
+                          </span>
+                        )}
+
                         <div className="flex gap-2">
                           {order.status === "pending" && (
                             <button

@@ -102,6 +102,16 @@ export const translations = {
         addedToCart: "Added to cart successfully!",
         addToCartFailed: "Failed to add to cart.",
         noOrders: "No orders yet. Start exploring the marketplace!",
+        driver: "Driver",
+        driverPhone: "Driver Phone",
+        assigning: "Assigning Driver",
+        picking_up: "Picking Up Order",
+        delivering: "Out for Delivery",
+        deliveredStatus: "Delivered",
+        addAddress: "Update Delivery Address",
+        deliveryAddressRequired: "Please provide a delivery address to complete your order.",
+        updateAddress: "Update Address",
+        addressPlaceholder: "Enter your full delivery address",
     },
     hi: {
         // Navigation & Common
@@ -204,5 +214,15 @@ export const translations = {
         addedToCart: "कार्ट में सफलतापूर्वक जोड़ा गया!",
         addToCartFailed: "कार्ट में जोड़ने में विफल।",
         noOrders: "अभी तक कोई आदेश नहीं। बाज़ार की खोज शुरू करें!",
+        driver: "ड्राइवर",
+        driverPhone: "ड्राइवर फोन",
+        assigning: "ड्राइवर असाइन किया जा रहा है",
+        picking_up: "ऑर्डर उठाया जा रहा है",
+        delivering: "डिलीवरी के लिए निकला है",
+        deliveredStatus: "पहुंचा दिया गया",
+        addAddress: "डिलीवरी का पता अपडेट करें",
+        deliveryAddressRequired: "अपना ऑर्डर पूरा करने के लिए कृपया डिलीवरी का पता दें।",
+        updateAddress: "पता अपडेट करें",
+        addressPlaceholder: "अपना पूरा डिलीवरी पता दर्ज करें",
     }
 };

@@ -1,7 +1,16 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
+
+const FAKE_DRIVERS = [
+  { name: "Rajesh Kumar", phone: "+91 98765-43210" },
+  { name: "Suresh Singh", phone: "+91 91234-56789" },
+  { name: "Amit Patel", phone: "+91 99887-76655" },
+  { name: "Vikram Sharma", phone: "+91 95555-44444" },
+  { name: "Deepak Yadav", phone: "+91 93333-22222" },
+];
 
 // Create new order (buyer)
 export const createOrder = mutation({
@@ -51,6 +60,9 @@ export const createOrder = mutation({
 
     const totalAmount = unitPrice * args.quantity;
 
+    // Assign a random fake driver
+    const randomDriver = FAKE_DRIVERS[Math.floor(Math.random() * FAKE_DRIVERS.length)];
+
     // Create order (unpaid initially)
     const orderId = await ctx.db.insert("orders", {
       buyerId: userId,
@@ -64,6 +76,9 @@ export const createOrder = mutation({
       deliveryAddress: args.deliveryAddress,
       notes: args.notes,
       isPaid: false,
+      driverName: randomDriver.name,
+      driverPhone: randomDriver.phone,
+      deliveryStep: "assigning",
     });
 
     // Notify seller about new order
@@ -138,9 +153,48 @@ export const markOrdersAsPaid = mutation({
       await ctx.db.patch(order.productId, {
         stockQuantity: product.stockQuantity - order.quantity,
       });
+
+      // Trigger delivery simulation
+      await ctx.scheduler.runAfter(10000, internal.orders.advanceDeliverySimulation, {
+        orderId,
+        nextStep: "picking_up",
+      });
     }
 
     return { success: true, paidCount: args.orderIds.length };
+  },
+});
+
+// Internal mutation to advance delivery simulation steps
+export const advanceDeliverySimulation = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+    nextStep: v.union(v.literal("picking_up"), v.literal("delivering"), v.literal("delivered")),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId);
+    if (!order) return;
+
+    await ctx.db.patch(args.orderId, {
+      deliveryStep: args.nextStep,
+      // If delivered, also update the main status
+      ...(args.nextStep === "delivered" ? { status: "delivered" } : {}),
+      // If picking up, maybe set status to processing
+      ...(args.nextStep === "picking_up" ? { status: "shipped" } : {}),
+    });
+
+    // Schedule next step if not already delivered
+    if (args.nextStep === "picking_up") {
+      await ctx.scheduler.runAfter(20000, internal.orders.advanceDeliverySimulation, {
+        orderId: args.orderId,
+        nextStep: "delivering",
+      });
+    } else if (args.nextStep === "delivering") {
+      await ctx.scheduler.runAfter(20000, internal.orders.advanceDeliverySimulation, {
+        orderId: args.orderId,
+        nextStep: "delivered",
+      });
+    }
   },
 });
 

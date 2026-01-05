@@ -50,6 +50,14 @@ const applicationTables = {
     notes: v.optional(v.string()),
     isPaid: v.optional(v.boolean()),
     paymentDate: v.optional(v.number()),
+    driverName: v.optional(v.string()),
+    driverPhone: v.optional(v.string()),
+    deliveryStep: v.optional(v.union(
+      v.literal("assigning"),
+      v.literal("picking_up"),
+      v.literal("delivering"),
+      v.literal("delivered")
+    )),
   }).index("by_buyer", ["buyerId"])
     .index("by_seller", ["sellerId"])
     .index("by_status", ["status"])

@@ -64,6 +64,9 @@ interface Order {
   deliveryAddress?: string;
   isPaid?: boolean;
   paymentDate?: number;
+  driverName?: string;
+  driverPhone?: string;
+  deliveryStep?: "assigning" | "picking_up" | "delivering" | "delivered";
   product: {
     name: string;
     unit: string;
@@ -101,6 +104,10 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
 
   const [showCart, setShowCart] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [newAddress, setNewAddress] = useState("");
+  const [pendingOrder, setPendingOrder] = useState<{ productId: Id<"products">, sellerId: Id<"users"> } | null>(null);
+
   const { t } = useLanguage();
 
   const { user, profile } = userProfile;
@@ -108,6 +115,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const allOrders: Order[] = (useQuery(api.orders.getBuyerOrders) as any) || [];
   const createOrder = useMutation(api.orders.createOrder);
   const markOrdersAsPaid = useMutation(api.orders.markOrdersAsPaid);
+  const updateProfile = useMutation(api.users.createUserProfile);
 
   const cartItems = useMemo(() => allOrders.filter((o: any) => o.isPaid === false), [allOrders]);
   const buyerOrders = useMemo(() => allOrders.filter((o: any) => o.isPaid === true || o.isPaid === undefined), [allOrders]);
@@ -147,6 +155,13 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   ).length;
 
   const handleCreateOrder = async (productId: Id<"products">, sellerId: Id<"users">) => {
+    // Check if user has an address
+    if (!profile.location) {
+      setPendingOrder({ productId, sellerId });
+      setShowAddressModal(true);
+      return;
+    }
+
     const quantity = orderQuantities[productId] || 1;
 
     try {
@@ -161,6 +176,42 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
     } catch (error) {
       toast.error(t('addToCartFailed'));
       console.error(error);
+    }
+  };
+
+  const handleUpdateAddress = async () => {
+    if (!newAddress.trim()) {
+      toast.error("Please enter a valid address");
+      return;
+    }
+
+    try {
+      // Re-using createUserProfile as it acts as an "upsert" for profile details
+      await updateProfile({
+        role: "buyer",
+        fullName: profile.fullName,
+        location: newAddress,
+      });
+      toast.success("Address updated!");
+
+      const addr = newAddress;
+      setShowAddressModal(false);
+      setNewAddress("");
+
+      // If there was a pending order, proceed with it
+      if (pendingOrder) {
+        const quantity = orderQuantities[pendingOrder.productId] || 1;
+        await createOrder({
+          productId: pendingOrder.productId,
+          quantity,
+          deliveryAddress: addr,
+        });
+        toast.success(t('addedToCart'));
+        setOrderQuantities(prev => ({ ...prev, [pendingOrder.productId]: 1 }));
+        setPendingOrder(null);
+      }
+    } catch (error) {
+      toast.error("Failed to update address");
     }
   };
 
@@ -486,32 +537,96 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             <h2 className="text-2xl font-bold text-gray-800">{t('myOrders')}</h2>
             <div className="space-y-4">
               {buyerOrders.map((order) => (
-                <div key={order._id} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div key={order._id} className="bg-white border border-gray-200 rounded-2xl p-6 modern-shadow space-y-6">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-4">
-                      <div className="text-3xl">{order.product?.imageEmoji}</div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-4xl w-16 h-16 bg-slate-50 flex items-center justify-center rounded-xl shadow-inner">
+                        {order.product?.imageEmoji}
+                      </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800">{order.product?.name}</h3>
-                        <p className="text-sm text-gray-600">
+                        <h3 className="font-black text-slate-900 text-xl leading-tight">{order.product?.name}</h3>
+                        <p className="text-sm font-bold text-slate-500 mt-1">
                           {t('seller')}: {order.seller.profile?.businessName || order.seller.profile?.fullName}
                         </p>
-                        <p className="text-sm text-gray-600">
-                          {t('quantity')}: {order.quantity} {order.product?.unit}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {t('orderDate')}: {formatDate(order.orderDate)}
-                        </p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            📦 {order.quantity} {order.product?.unit}
+                          </p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            📅 {formatDate(order.orderDate)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-800 text-lg">
+                      <p className="font-black text-slate-900 text-2xl mb-2">
                         {formatPrice(order.totalAmount)}
                       </p>
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${getStatusColor(order.status)}`}>
+                      <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
                         {t(order.status as any)}
                       </span>
                     </div>
                   </div>
+
+                  {/* Delivery Simulation Tracker */}
+                  {order.isPaid && order.deliveryStep && (
+                    <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 animate-fade-in">
+                      <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-xl">🚚</div>
+                          <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('driver')}</p>
+                            <p className="font-bold text-slate-900">{order.driverName}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('driverPhone')}</p>
+                          <p className="font-bold text-primary">{order.driverPhone}</p>
+                        </div>
+                      </div>
+
+                      <div className="relative pt-2 pb-12 mt-4">
+                        {/* Progress Line Background */}
+                        <div className="absolute top-4 left-0 w-full h-1 bg-slate-200 rounded-full"></div>
+                        {/* Progress Line Active */}
+                        <div
+                          className="absolute top-4 left-0 h-1 bg-primary rounded-full transition-all duration-1000"
+                          style={{
+                            width: order.deliveryStep === "assigning" ? "12%" :
+                              order.deliveryStep === "picking_up" ? "37%" :
+                                order.deliveryStep === "delivering" ? "62%" : "100%"
+                          }}
+                        ></div>
+
+                        {/* Steps */}
+                        <div className="relative flex justify-between">
+                          {[
+                            { step: "assigning", icon: "📋", label: t('assigning') },
+                            { step: "picking_up", icon: "📦", label: t('picking_up') },
+                            { step: "delivering", icon: "🚚", label: t('delivering') },
+                            { step: "delivered", icon: "🏠", label: t('deliveredStatus') },
+                          ].map((s, idx) => {
+                            const isCompleted = ["assigning", "picking_up", "delivering", "delivered"].indexOf(order.deliveryStep!) >= idx;
+                            const isActive = order.deliveryStep === s.step;
+
+                            return (
+                              <div key={idx} className="flex flex-col items-center relative z-10 w-24">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-md transition-all duration-500 ${isCompleted ? "bg-primary text-white scale-110" : "bg-white text-slate-300 border border-slate-200"
+                                  } ${isActive ? "ring-4 ring-primary/20 animate-pulse" : ""}`}>
+                                  {isCompleted ? "✓" : s.icon}
+                                </div>
+                                <div className="absolute top-10 w-full text-center">
+                                  <span className={`text-[9px] font-black uppercase tracking-tight leading-tight block ${isCompleted ? "text-slate-900" : "text-slate-400"}`}>
+                                    {s.label}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {buyerOrders.length === 0 && (
@@ -641,6 +756,52 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
           </div>
         )
       }
+
+      {/* Address Requirement Modal */}
+      {showAddressModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl p-8 animate-scale-up border border-slate-100">
+            <div className="w-20 h-20 bg-amber-50 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-inner mx-auto">📍</div>
+            <h3 className="text-2xl font-black text-slate-900 text-center mb-2">{t('addAddress')}</h3>
+            <p className="text-slate-500 text-center font-medium mb-8 leading-relaxed">
+              {t('deliveryAddressRequired')}
+            </p>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                  Full Delivery Address
+                </label>
+                <textarea
+                  value={newAddress}
+                  onChange={(e) => setNewAddress(e.target.value)}
+                  placeholder={t('addressPlaceholder')}
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-bold text-slate-700 min-h-[120px] resize-none shadow-inner"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setShowAddressModal(false);
+                    setPendingOrder(null);
+                  }}
+                  className="flex-1 py-4 text-slate-500 font-black uppercase tracking-widest text-xs hover:bg-slate-50 rounded-2xl transition-all"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  onClick={handleUpdateAddress}
+                  className="flex-[2] bg-primary text-white py-4 rounded-2xl font-black text-sm hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/25 active:scale-95"
+                >
+                  {t('updateAddress')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Messaging System */}
       {
