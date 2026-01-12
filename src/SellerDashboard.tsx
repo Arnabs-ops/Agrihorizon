@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
+import { CommunityHub } from "./CommunityHub";
 import { MessagingSystem } from "./MessagingSystem";
 import { NotificationCenter } from "./NotificationCenter";
 import { MarketPrices } from "./MarketPrices";
@@ -80,6 +81,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
 
   const addProduct = useMutation(api.products.addProduct);
   const updateProduct = useMutation(api.products.updateProduct);
+  const deleteProduct = useMutation(api.products.deleteProduct);
   const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
 
   if (!profile) {
@@ -103,6 +105,18 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
     } catch (error) {
       toast.error("Failed to update order status");
       console.error(error);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: Id<"products">) => {
+    if (window.confirm(t('confirmDelete'))) {
+      try {
+        await deleteProduct({ productId });
+        toast.success(t('productDeleted'));
+      } catch (error) {
+        toast.error("Failed to delete product");
+        console.error(error);
+      }
     }
   };
 
@@ -136,7 +150,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-entry">
       {/* Premium Welcome Header */}
       <div className="rounded-2xl p-8 modern-shadow relative min-h-[220px] flex items-center">
         {/* Dynamic Background Image with Overlay */}
@@ -156,24 +170,24 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
         </div>
 
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl animate-pulse z-10"></div>
-        <div className="flex items-center justify-between relative z-20 w-full">
+        <div className="flex items-center justify-between relative z-50 w-full">
           <div className="flex items-center gap-6">
             <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner animate-float">
               <span className="text-4xl">🚜</span>
             </div>
             <div>
-              <p className="text-primary font-bold tracking-widest uppercase text-xs mb-1">{t('sellerTerminal')}</p>
-              <h1 className="text-4xl font-black text-slate-900 leading-tight">
+              <p className="text-white font-bold tracking-widest uppercase text-xs mb-1 drop-shadow-md">{t('sellerTerminal')}</p>
+              <h1 className="text-4xl font-black text-white leading-tight drop-shadow-lg">
                 {t('welcome')}, <span className="text-primary">{profile.fullName}!</span>
               </h1>
               <div className="flex items-center gap-4 mt-2">
                 {profile.businessName && (
-                  <span className="flex items-center text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                  <span className="flex items-center text-sm font-semibold text-slate-200 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                     🏪 {profile.businessName}
                   </span>
                 )}
                 {profile.location && (
-                  <span className="flex items-center text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                  <span className="flex items-center text-sm font-semibold text-slate-200 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                     📍 {profile.location}
                   </span>
                 )}
@@ -200,345 +214,390 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
       </div>
 
       {/* Modern Navigation Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 modern-shadow">
+      <div className="glass-morphism rounded-3xl p-2 modern-shadow sticky top-24 z-40 backdrop-blur-xl">
         <nav className="flex items-center gap-1">
           {[
             { id: "overview", label: t('overview'), icon: "📊" },
             { id: "products", label: t('inventory'), icon: "🌾" },
             { id: "orders", label: t('myOrders'), icon: "📦" },
-            { id: "analytics", label: t('analytics'), icon: "📈" },
-            { id: "prices", label: t('marketIntelligence'), icon: "💹" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 py-3 px-6 rounded-xl font-bold text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
-                ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              className={`flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
+                ? "bg-primary text-white shadow-xl shadow-primary/25 scale-[1.02]"
+                : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
                 }`}
             >
-              <span className={`text-xl ${activeTab === tab.id ? "animate-subtle-bounce" : ""}`}>{tab.icon}</span>
-              {tab.label}
+              <span className={`text-xl ${activeTab === tab.id ? "animate-float" : ""}`}>{tab.icon}</span>
+              <span className="hidden md:inline">{tab.label}</span>
             </button>
           ))}
+
+          {/* More Features Dropdown */}
+          <div className="relative group/more flex-1">
+            <button
+              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["analytics", "prices", "community"].includes(activeTab)
+                ? "bg-slate-900 text-white shadow-xl"
+                : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+                }`}
+            >
+              <span className="text-xl">✨</span>
+              <span className="hidden md:inline">More</span>
+              <span className="text-[10px] opacity-50 ml-1">▼</span>
+            </button>
+
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 p-2 opacity-0 translate-y-2 pointer-events-none group-hover/more:opacity-100 group-hover/more:translate-y-0 group-hover/more:pointer-events-auto transition-all duration-300 z-50">
+              {[
+                { id: "analytics", label: t('analytics'), icon: "📈" },
+                { id: "prices", label: t('marketIntelligence'), icon: "💹" },
+                { id: "community", label: t('communityHub'), icon: "🌱" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
+                    ? "bg-primary/10 text-primary"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                >
+                  <span className="text-xl">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </nav>
       </div>
 
-      <div className="p-6">
-        {activeTab === "overview" && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 shadow-sm">
-                <h3 className="text-sm font-black text-emerald-800 mb-2 uppercase tracking-widest opacity-70">
-                  {t('marketplace')}
-                </h3>
-                <p className="text-4xl font-black text-emerald-600">{analytics?.totalProducts || 0}</p>
-                <p className="text-xs font-bold text-emerald-600/60 mt-1">Active listings</p>
-              </div>
-              <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100 shadow-sm">
-                <h3 className="text-sm font-black text-amber-800 mb-2 uppercase tracking-widest opacity-70">
-                  {t('pending')}
-                </h3>
-                <p className="text-4xl font-black text-amber-600">{analytics?.pendingOrders || 0}</p>
-                <p className="text-xs font-bold text-amber-600/60 mt-1">Awaiting fulfillment</p>
-              </div>
-              <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 shadow-sm">
-                <h3 className="text-sm font-black text-blue-800 mb-2 uppercase tracking-widest opacity-70">
-                  {t('monthlyRevenue')}
-                </h3>
-                <p className="text-3xl font-black text-blue-600">
-                  {formatPrice(analytics?.monthlyRevenue || 0)}
-                </p>
-                <p className="text-xs font-bold text-blue-600/60 mt-1">This month</p>
-              </div>
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <h3 className="text-sm font-black text-slate-800 mb-2 uppercase tracking-widest opacity-70">
-                  {t('delivered')}
-                </h3>
-                <p className="text-4xl font-black text-slate-600">{analytics?.completedOrders || 0}</p>
-                <p className="text-xs font-bold text-slate-600/60 mt-1">All time</p>
-              </div>
+      {activeTab === "overview" && (
+        <div className="space-y-8 animate-entry">
+          <div className="dashboard-grid">
+            <div className="bg-gradient-to-br from-indigo-950 to-indigo-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">
+                {t('marketplace')}
+              </h3>
+              <p className="text-6xl font-black mb-2">{analytics?.totalProducts || 0}</p>
+              <p className="text-sm font-bold opacity-70">Active listings</p>
             </div>
 
-            {profile.farmSize && (
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 modern-shadow">
-                <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
-                  <span className="w-1 h-6 bg-primary rounded-full"></span>
-                  Farm Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Farm Size</p>
-                    <p className="font-bold text-slate-900 capitalize text-lg">{profile.farmSize}</p>
-                  </div>
-                  {profile.cropTypes && profile.cropTypes.length > 0 && (
-                    <div>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Crop Types</p>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.cropTypes.map((crop, index) => (
-                          <span
-                            key={index}
-                            className="bg-primary/5 text-primary px-3 py-1.5 rounded-xl text-sm font-bold border border-primary/10"
-                          >
-                            {crop}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Recent Orders
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-slate-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">
+                {t('pending')}
               </h3>
-              <div className="space-y-3">
-                {sellerOrders.slice(0, 3).map((order) => (
-                  <div key={order._id} className="flex items-center gap-3 p-3 bg-white rounded">
-                    <span className="text-2xl">{order.product?.imageEmoji}</span>
-                    <div className="flex-1">
-                      <span className="font-medium">
-                        Order from {order.buyer.profile?.fullName}
-                      </span>
-                      <span className="text-sm text-gray-500 ml-2">
-                        {order.product?.name} - {order.quantity} {order.product?.unit}
-                      </span>
+              <p className="text-6xl font-black mb-2">{analytics?.pendingOrders || 0}</p>
+              <p className="text-sm font-bold opacity-70">Awaiting fulfillment</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-slate-950 to-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-black/40 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">
+                {t('monthlyRevenue')}
+              </h3>
+              <p className="text-4xl font-black mb-2">
+                {formatPrice(analytics?.monthlyRevenue || 0)}
+              </p>
+              <p className="text-sm font-bold opacity-70">This month</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-indigo-900 to-indigo-800 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-900/40 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">
+                {t('delivered')}
+              </h3>
+              <p className="text-6xl font-black mb-2">{analytics?.completedOrders || 0}</p>
+              <p className="text-sm font-bold opacity-70">All time completion</p>
+            </div>
+          </div>
+
+          {profile.farmSize && (
+            <div className="bg-white p-6 rounded-2xl border border-slate-100 modern-shadow">
+              <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+                <span className="w-1 h-6 bg-primary rounded-full"></span>
+                Farm Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Farm Size</p>
+                  <p className="font-bold text-slate-900 capitalize text-lg">{profile.farmSize}</p>
+                </div>
+                {profile.cropTypes && profile.cropTypes.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Crop Types</p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.cropTypes.map((crop, index) => (
+                        <span
+                          key={index}
+                          className="bg-primary/5 text-primary px-3 py-1.5 rounded-xl text-sm font-bold border border-primary/10"
+                        >
+                          {crop}
+                        </span>
+                      ))}
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
-                    <span className="text-sm text-gray-500">{formatDate(order.orderDate)}</span>
                   </div>
-                ))}
-                {sellerOrders.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">No orders yet.</p>
                 )}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {activeTab === "products" && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-black text-slate-900">{t('inventory')}</h2>
-              <button
-                onClick={() => setShowAddProduct(true)}
-                className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg active:scale-95"
-              >
-                + {t('addProduct')}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sellerProducts.map((product) => {
-                const status = getProductStatus(product);
-                return (
-                  <div key={product._id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-xl transition-all group modern-shadow">
-                    <div className="relative h-48 mb-4 bg-slate-50 rounded-xl overflow-hidden group-hover:shadow-lg transition-all duration-500 flex items-center justify-center">
-                      {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                      ) : (
-                        <span className="text-5xl group-hover:scale-120 transition-transform duration-500">{product.imageEmoji}</span>
-                      )}
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${status.color} shadow-sm backdrop-blur-md bg-white/80`}>
-                          {t(status.text.toLowerCase() as any) || status.text}
-                        </span>
-                      </div>
-                    </div>
-                    <h3 className="font-black text-slate-900 text-lg mb-1">{product.name}</h3>
-
-                    <div className="space-y-1 mb-3">
-                      <p className="text-primary font-black text-xl">
-                        {formatPrice(product.price)}<span className="text-sm font-bold text-slate-400">/{product.unit}</span>
-                      </p>
-                      {product.priceTiers && product.priceTiers.length > 0 && (
-                        <div className="bg-amber-50 p-2 rounded-lg border border-amber-100">
-                          <p className="text-[10px] font-black uppercase text-amber-700 mb-1">{t('tieredPricing')}</p>
-                          {product.priceTiers.map((tier, idx) => (
-                            <p key={idx} className="text-xs text-amber-800 font-bold">
-                              {tier.minQuantity}+ {product.unit}: <span className="text-amber-600">{formatPrice(tier.price)}</span>
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-sm font-bold text-slate-500">{t('stock')}: <span className="text-slate-900">{product.stockQuantity} {product.unit}</span></p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditingProduct(product)}
-                        className="flex-1 bg-slate-900 text-white py-3 px-4 rounded-xl font-bold hover:bg-slate-800 transition-all text-sm active:scale-95"
-                      >
-                        {t('update')}
-                      </button>
-                      <button className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all active:scale-95">
-                        📊
-                      </button>
-                    </div>
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Recent Orders
+            </h3>
+            <div className="space-y-3">
+              {sellerOrders.slice(0, 3).map((order) => (
+                <div key={order._id} className="flex items-center gap-3 p-3 bg-white rounded">
+                  <span className="text-2xl">{order.product?.imageEmoji}</span>
+                  <div className="flex-1">
+                    <span className="font-medium">
+                      Order from {order.buyer.profile?.fullName}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      {order.product?.name} - {order.quantity} {order.product?.unit}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-
-            {sellerProducts.length === 0 && (
-              <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-                <p className="text-slate-400 text-xl font-bold mb-6">{t('cartEmpty')}</p>
-                <button
-                  onClick={() => setShowAddProduct(true)}
-                  className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all active:scale-95"
-                >
-                  {t('addProduct')}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "orders" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-black text-slate-900">{t('myOrders')}</h2>
-            <div className="space-y-4">
-              {sellerOrders.map((order) => (
-                <div key={order._id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-primary/30 transition-all modern-shadow">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-6">
-                      <div className="text-4xl w-16 h-16 bg-slate-50 flex items-center justify-center rounded-xl">{order.product?.imageEmoji}</div>
-                      <div>
-                        <h3 className="font-black text-slate-900 text-xl mb-1">
-                          {order.product?.name}
-                        </h3>
-                        <p className="text-sm font-bold text-slate-500 flex items-center gap-2">
-                          👤 {order.buyer.profile?.fullName}
-                        </p>
-                        <p className="text-sm font-bold text-slate-500 mt-1">
-                          📦 {order.quantity} {order.product?.unit}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <p className="text-xs font-bold text-slate-400">
-                            📅 {formatDate(order.orderDate)}
-                          </p>
-                          {order.deliveryAddress && (
-                            <p className="text-xs font-bold text-primary">
-                              📍 {order.deliveryAddress}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-black text-slate-900 text-2xl mb-2">
-                        {formatPrice(order.totalAmount)}
-                      </p>
-                      <div className="flex flex-col items-end gap-3">
-                        <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
-                          {t(order.status as any)}
-                        </span>
-
-                        {(order as any).deliveryStep && (order as any).deliveryStep !== "delivered" && (
-                          <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 animate-pulse">
-                            🚚 {t((order as any).deliveryStep as any)}
-                          </span>
-                        )}
-
-                        <div className="flex gap-2">
-                          {order.status === "pending" && (
-                            <button
-                              onClick={() => handleProcessOrder(order._id)}
-                              className="bg-amber-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-amber-600 transition-all shadow-lg active:scale-95"
-                            >
-                              {t('processOrder')}
-                            </button>
-                          )}
-                          {order.status === "processing" && (
-                            <button
-                              onClick={() => handleCompleteOrder(order._id)}
-                              className="bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
-                            >
-                              {t('markDelivered')}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.status)}`}>
+                    {order.status}
+                  </span>
+                  <span className="text-sm text-gray-500">{formatDate(order.orderDate)}</span>
                 </div>
               ))}
               {sellerOrders.length === 0 && (
-                <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-                  <p className="text-slate-400 text-xl font-bold">{t('cartEmpty')}</p>
-                </div>
+                <p className="text-gray-500 text-center py-4">No orders yet.</p>
               )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === "analytics" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-black text-slate-900">{t('analytics')}</h2>
+      {activeTab === "products" && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-black text-slate-900">{t('inventory')}</h2>
+            <button
+              onClick={() => setShowAddProduct(true)}
+              className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg active:scale-95"
+            >
+              + {t('addProduct')}
+            </button>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white border border-slate-200 rounded-3xl p-8 modern-shadow">
-                <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
-                  <span className="w-1.5 h-6 bg-primary rounded-full"></span>
-                  Top Products
-                </h3>
-                <div className="space-y-6">
-                  {analytics?.topProducts?.map((product, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between text-sm font-bold">
-                        <span className="text-slate-700">{product.name}</span>
-                        <span className="text-primary">{product.sales} {t('delivered')}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sellerProducts.map((product) => {
+              const status = getProductStatus(product);
+              return (
+                <div key={product._id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-xl transition-all group modern-shadow">
+                  <div className="relative h-48 mb-4 bg-slate-50 rounded-xl overflow-hidden group-hover:shadow-lg transition-all duration-500 flex items-center justify-center">
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    ) : (
+                      <span className="text-5xl group-hover:scale-120 transition-transform duration-500">{product.imageEmoji}</span>
+                    )}
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${status.color} shadow-sm backdrop-blur-md bg-white/80`}>
+                        {t(status.text.toLowerCase() as any) || status.text}
+                      </span>
+                    </div>
+                  </div>
+                  <h3 className="font-black text-slate-900 text-lg mb-1">{product.name}</h3>
+
+                  <div className="space-y-1 mb-3">
+                    <p className="text-primary font-black text-xl">
+                      {formatPrice(product.price)}<span className="text-sm font-bold text-slate-400">/{product.unit}</span>
+                    </p>
+                    {product.priceTiers && product.priceTiers.length > 0 && (
+                      <div className="bg-amber-50 p-2 rounded-lg border border-amber-100">
+                        <p className="text-[10px] font-black uppercase text-amber-700 mb-1">{t('tieredPricing')}</p>
+                        {product.priceTiers.map((tier, idx) => (
+                          <p key={idx} className="text-xs text-amber-800 font-bold">
+                            {tier.minQuantity}+ {product.unit}: <span className="text-amber-600">{formatPrice(tier.price)}</span>
+                          </p>
+                        ))}
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
-                        <div
-                          className="bg-gradient-to-r from-primary to-emerald-400 h-full rounded-full transition-all duration-1000"
-                          style={{ width: `${product.percentage}%` }}
-                        ></div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-bold text-slate-500">{t('stock')}: <span className="text-slate-900">{product.stockQuantity} {product.unit}</span></p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => editingProduct ? null : setEditingProduct(product)}
+                      className="flex-1 bg-slate-900 text-white py-3 px-4 rounded-xl font-bold hover:bg-slate-800 transition-all text-sm active:scale-95"
+                    >
+                      {t('update')}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(product._id)}
+                      className="p-3 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 transition-all active:scale-95"
+                      title={t('deleteProduct')}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {sellerProducts.length === 0 && (
+            <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+              <p className="text-slate-400 text-xl font-bold mb-6">{t('cartEmpty')}</p>
+              <button
+                onClick={() => setShowAddProduct(true)}
+                className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all active:scale-95"
+              >
+                {t('addProduct')}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "orders" && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-black text-slate-900">{t('myOrders')}</h2>
+          <div className="space-y-4">
+            {sellerOrders.map((order) => (
+              <div key={order._id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-primary/30 transition-all modern-shadow">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-6">
+                    <div className="text-4xl w-16 h-16 bg-slate-50 flex items-center justify-center rounded-xl">{order.product?.imageEmoji}</div>
+                    <div>
+                      <h3 className="font-black text-slate-900 text-xl mb-1">
+                        {order.product?.name}
+                      </h3>
+                      <p className="text-sm font-bold text-slate-500 flex items-center gap-2">
+                        👤 {order.buyer.profile?.fullName}
+                      </p>
+                      <p className="text-sm font-bold text-slate-500 mt-1">
+                        📦 {order.quantity} {order.product?.unit}
+                      </p>
+                      <div className="flex items-center gap-4 mt-2">
+                        <p className="text-xs font-bold text-slate-400">
+                          📅 {formatDate(order.orderDate)}
+                        </p>
+                        {order.deliveryAddress && (
+                          <p className="text-xs font-bold text-primary">
+                            📍 {order.deliveryAddress}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  )) || (
-                      <p className="text-slate-400 text-center py-8 font-medium italic">No sales data yet.</p>
-                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="font-black text-slate-900 text-2xl mb-2">
+                      {formatPrice(order.totalAmount)}
+                    </p>
+                    <div className="flex flex-col items-end gap-3">
+                      <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
+                        {t(order.status as any)}
+                      </span>
+
+                      {(order as any).deliveryStep && (order as any).deliveryStep !== "delivered" && (
+                        <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 animate-pulse">
+                          🚚 {t((order as any).deliveryStep as any)}
+                        </span>
+                      )}
+
+                      <div className="flex gap-2">
+                        {order.status === "pending" && (
+                          <button
+                            onClick={() => handleProcessOrder(order._id)}
+                            className="bg-amber-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-amber-600 transition-all shadow-lg active:scale-95"
+                          >
+                            {t('processOrder')}
+                          </button>
+                        )}
+                        {order.status === "processing" && (
+                          <button
+                            onClick={() => handleCompleteOrder(order._id)}
+                            className="bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
+                          >
+                            {t('markDelivered')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            ))}
+            {sellerOrders.length === 0 && (
+              <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                <p className="text-slate-400 text-xl font-bold">{t('cartEmpty')}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-              <div className="bg-slate-900 text-white rounded-3xl p-8 modern-shadow relative overflow-hidden group">
-                <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-                <h3 className="text-lg font-black mb-8 relative z-10">{t('monthlyRevenue')}</h3>
-                <div className="space-y-8 relative z-10">
-                  <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                    <p className="text-4xl font-black text-primary mb-1">
-                      {formatPrice(analytics?.monthlyRevenue || 0)}
-                    </p>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('monthlyRevenue')}</p>
+      {activeTab === "analytics" && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-black text-slate-900">{t('analytics')}</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white border border-slate-200 rounded-3xl p-8 modern-shadow">
+              <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-primary rounded-full"></span>
+                Top Products
+              </h3>
+              <div className="space-y-6">
+                {analytics?.topProducts?.map((product, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm font-bold">
+                      <span className="text-slate-700">{product.name}</span>
+                      <span className="text-primary">{product.sales} {t('delivered')}</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
+                      <div
+                        className="bg-gradient-to-r from-primary to-emerald-400 h-full rounded-full transition-all duration-1000"
+                        style={{ width: `${product.percentage}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                      <p className="text-2xl font-black text-blue-400">{analytics?.completedOrders || 0}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('delivered')}</p>
-                    </div>
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                      <p className="text-2xl font-black text-emerald-400">{analytics?.activeProducts || 0}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('inventory')}</p>
-                    </div>
+                )) || (
+                    <p className="text-slate-400 text-center py-8 font-medium italic">No sales data yet.</p>
+                  )}
+              </div>
+            </div>
+
+            <div className="bg-slate-900 text-white rounded-3xl p-8 modern-shadow relative overflow-hidden group">
+              <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+              <h3 className="text-lg font-black mb-8 relative z-10">{t('monthlyRevenue')}</h3>
+              <div className="space-y-8 relative z-10">
+                <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+                  <p className="text-4xl font-black text-primary mb-1">
+                    {formatPrice(analytics?.monthlyRevenue || 0)}
+                  </p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('monthlyRevenue')}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                    <p className="text-2xl font-black text-blue-400">{analytics?.completedOrders || 0}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('delivered')}</p>
+                  </div>
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                    <p className="text-2xl font-black text-emerald-400">{analytics?.activeProducts || 0}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('inventory')}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === "prices" && (
-          <MarketPrices userRole="seller" />
-        )}
-      </div>
+      {activeTab === "prices" && (
+        <MarketPrices userRole="seller" />
+      )}
+
+      {activeTab === "community" && (
+        <CommunityHub />
+      )}
 
       {/* Add/Edit Product Modal */}
       {(showAddProduct || editingProduct) && (

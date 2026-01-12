@@ -108,6 +108,21 @@ const applicationTables = {
     timestamp: v.number(),
   }).index("by_user", ["userId"])
     .index("by_read", ["isRead"]),
+  posts: defineTable({
+    authorId: v.id("users"),
+    content: v.string(),
+    imageStorageId: v.optional(v.id("_storage")),
+    likes: v.number(),
+    createdAt: v.number(),
+  }).index("by_author", ["authorId"])
+    .index("by_created", ["createdAt"]),
+
+  comments: defineTable({
+    postId: v.id("posts"),
+    authorId: v.id("users"),
+    content: v.string(),
+    createdAt: v.number(),
+  }).index("by_post", ["postId"]),
 };
 
 export default defineSchema({

@@ -29,7 +29,7 @@ function AppContent() {
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110 duration-300">
             <span className="text-white text-xl animate-float">🌾</span>
           </div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Agro<span className="text-primary">Horizon</span></h2>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Agri<span className="text-primary">Horizon</span></h2>
         </div>
         <div className="flex items-center gap-6">
           <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">

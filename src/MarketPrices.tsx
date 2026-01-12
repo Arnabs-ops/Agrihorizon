@@ -33,9 +33,22 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
   const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(false);
   const [priceData, setPriceData] = useState<PriceData | null>(null);
+  const [quantity, setQuantity] = useState<number>(0);
+  const [investment, setInvestment] = useState<number>(0);
 
   const { t } = useLanguage();
   const getComprehensivePriceData = useAction(api.vegPrices.getComprehensivePriceData);
+
+  const calculateProfit = (price: number) => {
+    if (!quantity) return 0;
+    return (price * quantity) - investment;
+  };
+
+  const calculateROI = (price: number) => {
+    if (!investment || !quantity) return 0;
+    const profit = calculateProfit(price);
+    return Math.round((profit / investment) * 100);
+  };
 
   const handleSearch = async () => {
     if (!vegetable.trim() || !location.trim()) {
@@ -157,6 +170,114 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
               </div>
             </div>
 
+            {/* Profit Calculator Section (Sellers only) */}
+            {userRole === "seller" && (
+              <div className="bg-gradient-to-br from-slate-50 to-white border-2 border-primary/10 rounded-3xl p-8 modern-shadow">
+                <h4 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                  <span className="text-2xl">🧮</span>
+                  {t('harvestAnalytics')}
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                  <div className="space-y-4">
+                    <label className="block text-sm font-black text-slate-500 uppercase tracking-widest">
+                      {t('estimatedYield')}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">⚖️</span>
+                      <input
+                        type="number"
+                        placeholder="e.g. 500"
+                        value={quantity || ""}
+                        onChange={(e) => setQuantity(Number(e.target.value))}
+                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <label className="block text-sm font-black text-slate-500 uppercase tracking-widest">
+                      {t('productionCost')}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">💰</span>
+                      <input
+                        type="number"
+                        placeholder="e.g. 5000"
+                        value={investment || ""}
+                        onChange={(e) => setInvestment(Number(e.target.value))}
+                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {quantity > 0 && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-up">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('profitToday')}</p>
+                          <p className={`text-2xl font-black ${calculateProfit(priceData.currentPrice || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                            ₹{calculateProfit(priceData.currentPrice || 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="bg-emerald-50 px-3 py-1 rounded-full">
+                          <p className="text-[10px] font-black text-emerald-700">ROI: {calculateROI(priceData.currentPrice || 0)}%</p>
+                        </div>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-emerald-500 transition-all duration-1000"
+                          style={{ width: `${Math.min(Math.max(calculateROI(priceData.currentPrice || 0), 0), 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('profitTomorrow')}</p>
+                          <p className={`text-2xl font-black ${calculateProfit((priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2) >= 0 ? 'text-primary' : 'text-red-600'}`}>
+                            ₹{calculateProfit((priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="bg-primary/10 px-3 py-1 rounded-full">
+                          <p className="text-[10px] font-black text-primary">ROI: {calculateROI((priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2)}%</p>
+                        </div>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-1000"
+                          style={{ width: `${Math.min(Math.max(calculateROI((priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2), 0), 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* AI Strategy Recommendation */}
+                    <div className={`lg:col-span-2 p-6 rounded-2xl border-2 flex items-center gap-6 ${(priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2 > (priceData.currentPrice || 0) * 1.05
+                      ? "bg-amber-50 border-amber-200"
+                      : "bg-emerald-50 border-emerald-200"
+                      }`}>
+                      <div className="text-4xl">
+                        {(priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2 > (priceData.currentPrice || 0) * 1.05 ? "⏳" : "✅"}
+                      </div>
+                      <div>
+                        <h5 className="font-black text-slate-900 uppercase tracking-tight text-sm mb-1">{t('strategyRecommendation')}</h5>
+                        <p className={`font-bold text-lg ${(priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2 > (priceData.currentPrice || 0) * 1.05
+                          ? "text-amber-700"
+                          : "text-emerald-700"
+                          }`}>
+                          {(priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2 > (priceData.currentPrice || 0) * 1.05
+                            ? t('waitLater')
+                            : t('sellNow')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Analysis */}
             <div className="bg-slate-900 text-white p-8 rounded-3xl relative overflow-hidden">
               <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
@@ -221,29 +342,48 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
 
                   {/* Simple Visual Chart */}
                   <div className="lg:col-span-2">
-                    <div className="flex items-end justify-between h-48 bg-slate-50 rounded-2xl p-6 shadow-inner relative">
+                    <div className="flex items-end justify-center gap-6 h-56 bg-white border border-slate-100 rounded-3xl p-8 relative overflow-hidden group/chart">
                       {/* Grid lines */}
-                      <div className="absolute inset-0 flex flex-col justify-between py-6 px-4">
-                        {[1, 2, 3].map(i => <div key={i} className="w-full border-t border-slate-200/50 border-dashed"></div>)}
+                      <div className="absolute inset-0 flex flex-col justify-between py-8 px-6">
+                        {[1, 2, 3, 4].map(i => <div key={i} className="w-full border-t border-slate-100 border-dashed transition-colors group-hover/chart:border-slate-200"></div>)}
                       </div>
-                      {priceData.history.map((entry, index) => {
-                        const maxPrice = Math.max(...priceData.history.map(h => h.price));
-                        const height = (entry.price / maxPrice) * 100;
-                        return (
-                          <div key={index} className="flex flex-col items-center relative z-10 group/bar h-full justify-end">
-                            <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-10 bg-slate-900 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg transition-all mb-2">
-                              {formatPrice(entry.price)}
+
+                      <div className="flex items-end gap-6 relative z-10 h-full w-full justify-center">
+                        {priceData.history.map((entry, index) => {
+                          const maxPrice = Math.max(...priceData.history.map(h => h.price), priceData.prediction?.predictedPrice || 0);
+                          const height = (entry.price / maxPrice) * 100;
+                          return (
+                            <div key={index} className="flex flex-col items-center relative group/bar h-full justify-end animate-entry" style={{ animationDelay: `${index * 100}ms` }}>
+                              <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-12 bg-slate-900 text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-2xl transition-all mb-2 z-20 whitespace-nowrap pointer-events-none">
+                                {formatPrice(entry.price)}
+                              </div>
+                              <div
+                                className="bg-gradient-to-t from-primary to-emerald-400 rounded-t-xl w-14 transition-all duration-700 hover:brightness-110 shadow-lg shadow-primary/10 hover:shadow-primary/30"
+                                style={{ height: `${height}%` }}
+                              ></div>
+                              <span className="text-[10px] font-black text-slate-400 mt-4 uppercase tracking-[0.2em]">
+                                {entry.date.split('-')[2]}
+                              </span>
+                            </div>
+                          );
+                        })}
+
+                        {/* Prediction Ghost Bar */}
+                        {priceData.prediction && (
+                          <div className="flex flex-col items-center relative group/bar h-full justify-end animate-entry" style={{ animationDelay: `${priceData.history.length * 100}ms` }}>
+                            <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-12 bg-primary text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-2xl transition-all mb-2 z-20 whitespace-nowrap pointer-events-none">
+                              {t('tomorrow')}: {formatPrice(priceData.prediction.predictedPrice)}
                             </div>
                             <div
-                              className="bg-gradient-to-t from-primary to-emerald-400 rounded-t-lg w-10 transition-all duration-700 hover:brightness-110 shadow-lg shadow-primary/20"
-                              style={{ height: `${height}%` }}
+                              className="bg-primary/10 border-2 border-dashed border-primary/30 rounded-t-xl w-14 transition-all duration-700 hover:bg-primary/20 hover:border-primary/50"
+                              style={{ height: `${(priceData.prediction.predictedPrice / Math.max(...priceData.history.map(h => h.price), priceData.prediction.predictedPrice)) * 100}%` }}
                             ></div>
-                            <span className="text-[10px] font-black text-slate-400 mt-3 uppercase tracking-tighter">
-                              {entry.date.split('-')[2]}
+                            <span className="text-[10px] font-black text-primary/40 mt-4 uppercase tracking-[0.2em]">
+                              Next
                             </span>
                           </div>
-                        );
-                      })}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

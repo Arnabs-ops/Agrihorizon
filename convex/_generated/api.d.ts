@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as community from "../community.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as messages from "../messages.js";
@@ -28,6 +29,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  community: typeof community;
   files: typeof files;
   http: typeof http;
   messages: typeof messages;

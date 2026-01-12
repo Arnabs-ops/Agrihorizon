@@ -370,7 +370,7 @@ CONFIDENCE: [High/Medium/Low]`;
           "Authorization": `Bearer ${aiApiKey}`,
           "Content-Type": "application/json",
           "HTTP-Referer": "https://convex.dev",
-          "X-Title": "AgroHorizon Price Predictor"
+          "X-Title": "AgriHorizon Price Predictor"
         },
         body: JSON.stringify({
           model: "meta-llama/llama-3.2-3b-instruct:free",
@@ -401,9 +401,9 @@ CONFIDENCE: [High/Medium/Low]`;
       console.log("AI Response:", aiText);
 
       // Parse AI response with robust extraction
-      const currentPriceMatch = aiText.match(/CURRENT_PRICE:\s*(\d+)/i);
-      const tomorrowMinMatch = aiText.match(/TOMORROW_MIN:\s*(\d+)/i);
-      const tomorrowMaxMatch = aiText.match(/TOMORROW_MAX:\s*(\d+)/i);
+      const currentPriceMatch = aiText.match(/CURRENT_PRICE:\s*[^\d]*(\d+)/i);
+      const tomorrowMinMatch = aiText.match(/TOMORROW_MIN:\s*[^\d]*(\d+)/i);
+      const tomorrowMaxMatch = aiText.match(/TOMORROW_MAX:\s*[^\d]*(\d+)/i);
       const analysisMatch = aiText.match(/ANALYSIS:\s*(.+?)(?=CONFIDENCE:|$)/is);
       const confidenceMatch = aiText.match(/CONFIDENCE:\s*(High|Medium|Low)/i);
 

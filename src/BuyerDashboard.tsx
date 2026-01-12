@@ -7,6 +7,7 @@ import { MarketPrices } from "./MarketPrices";
 import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
 import paymentQr from "./assets/payment-qr.jpg";
+import { CommunityHub } from "./CommunityHub";
 import { useLanguage } from "./useLanguage.tsx";
 import buyerBg from "./assets/buyer_bg.png";
 
@@ -259,7 +260,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-entry">
       {/* Premium Welcome Header */}
       <div className="rounded-2xl p-8 modern-shadow relative min-h-[220px] flex items-center">
         {/* Dynamic Background Image with Overlay */}
@@ -279,23 +280,23 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
         </div>
 
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl animate-pulse z-10"></div>
-        <div className="flex items-center justify-between relative z-20 w-full">
+        <div className="flex items-center justify-between relative z-50 w-full">
           <div className="flex items-center gap-6">
             <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner animate-float">
               <span className="text-4xl">🛒</span>
             </div>
             <div>
-              <p className="text-primary font-bold tracking-widest uppercase text-xs mb-1">{t('buyerTerminal')}</p>
-              <h1 className="text-4xl font-black text-slate-900 leading-tight">
+              <p className="text-white font-bold tracking-widest uppercase text-xs mb-1 drop-shadow-md">{t('buyerTerminal')}</p>
+              <h1 className="text-4xl font-black text-white leading-tight drop-shadow-lg">
                 {t('welcome')}, <span className="text-primary">{profile.fullName}!</span>
               </h1>
               <div className="flex items-center gap-4 mt-2">
                 {profile.location && (
-                  <span className="flex items-center text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                  <span className="flex items-center text-sm font-semibold text-slate-200 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                     📍 {profile.location}
                   </span>
                 )}
-                <span className="flex items-center text-sm font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                <span className="flex items-center text-sm font-semibold text-primary bg-primary/10 backdrop-blur-md px-3 py-1 rounded-full border border-primary/20">
                   ● Live Market Access
                 </span>
               </div>
@@ -327,327 +328,369 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
       </div>
 
       {/* Modern Navigation Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 modern-shadow">
+      <div className="glass-morphism rounded-3xl p-2 modern-shadow sticky top-24 z-40 backdrop-blur-xl">
         <nav className="flex items-center gap-1">
           {[
             { id: "overview", label: t('overview'), icon: "📊" },
             { id: "marketplace", label: t('marketplace'), icon: "🏪" },
             { id: "orders", label: t('myOrders'), icon: "📦" },
-            { id: "prices", label: t('marketIntelligence'), icon: "💰" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 py-3 px-6 rounded-xl font-bold text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
-                ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              className={`flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
+                ? "bg-primary text-white shadow-xl shadow-primary/25 scale-[1.02]"
+                : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
                 }`}
             >
-              <span className={`text-xl ${activeTab === tab.id ? "animate-subtle-bounce" : ""}`}>{tab.icon}</span>
-              {tab.label}
+              <span className={`text-xl ${activeTab === tab.id ? "animate-float" : ""}`}>{tab.icon}</span>
+              <span className="hidden md:inline">{tab.label}</span>
             </button>
           ))}
+
+          {/* More Features Dropdown */}
+          <div className="relative group/more flex-1">
+            <button
+              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["prices", "community"].includes(activeTab)
+                ? "bg-slate-900 text-white shadow-xl"
+                : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+                }`}
+            >
+              <span className="text-xl">✨</span>
+              <span className="hidden md:inline">More</span>
+              <span className="text-[10px] opacity-50 ml-1">▼</span>
+            </button>
+
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 p-2 opacity-0 translate-y-2 pointer-events-none group-hover/more:opacity-100 group-hover/more:translate-y-0 group-hover/more:pointer-events-auto transition-all duration-300 z-50">
+              {[
+                { id: "prices", label: t('marketIntelligence'), icon: "💰" },
+                { id: "community", label: t('communityHub'), icon: "🌱" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
+                    ? "bg-primary/10 text-primary"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                >
+                  <span className="text-xl">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </nav>
       </div>
 
-      <div className="p-6">
-        {activeTab === "overview" && (
-          <div className="space-y-8 animate-slide-up">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { label: t('marketplace'), value: marketplaceProducts.length, sub: "Verified products", color: "from-emerald-500 to-emerald-600", bg: "bg-emerald-50", text: "text-emerald-900" },
-                { label: t('myOrders'), value: activeOrders, sub: "Currently processing", color: "from-amber-500 to-amber-600", bg: "bg-amber-50", text: "text-amber-900" },
-                { label: "Lifetime Records", value: buyerOrders.length, sub: "All time records", color: "from-slate-700 to-slate-800", bg: "bg-slate-50", text: "text-slate-900" },
-              ].map((stat, i) => (
-                <div key={i} className={`p-8 rounded-2xl ${stat.bg} border border-white relative overflow-hidden group hover:scale-[1.02] transition-all duration-300 modern-shadow`}>
-                  <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.color} opacity-5 -mr-8 -mt-8 rounded-full group-hover:scale-150 transition-transform duration-500`}></div>
-                  <p className={`text-sm font-bold uppercase tracking-widest ${stat.text} opacity-60 mb-2`}>{stat.label}</p>
-                  <p className={`text-4xl font-black ${stat.text} mb-1`}>{stat.value}</p>
-                  <p className={`text-xs font-bold ${stat.text} opacity-50`}>{stat.sub}</p>
-                </div>
-              ))}
+      {activeTab === "overview" && (
+        <div className="space-y-8 animate-entry">
+          <div className="dashboard-grid">
+            <div className="bg-gradient-to-br from-indigo-950 to-indigo-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">{t('marketplace')}</h3>
+              <p className="text-6xl font-black mb-2">{marketplaceProducts.length}</p>
+              <p className="text-sm font-bold opacity-70">Verified products</p>
             </div>
 
-            {profile.preferredProducts && profile.preferredProducts.length > 0 && (
-              <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
-                <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
-                  <span className="w-2 h-8 bg-primary rounded-full"></span>
-                  Your Catalog Interests
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {profile.preferredProducts.map((product, index) => (
-                    <span
-                      key={index}
-                      className="bg-primary/5 text-primary border border-primary/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-colors cursor-default"
-                    >
-                      {product}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-slate-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">{t('myOrders')}</h3>
+              <p className="text-6xl font-black mb-2">{activeOrders}</p>
+              <p className="text-sm font-bold opacity-70">Currently processing</p>
+            </div>
 
+            <div className="bg-gradient-to-br from-slate-950 to-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-black/40 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
+              <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">Lifetime Records</h3>
+              <p className="text-6xl font-black mb-2">{buyerOrders.length}</p>
+              <p className="text-sm font-bold opacity-70">All time records</p>
+            </div>
+          </div>
+
+          {profile.preferredProducts && profile.preferredProducts.length > 0 && (
             <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
-                  <span className="w-2 h-8 bg-slate-900 rounded-full"></span>
-                  Recent Activity
-                </h3>
-                <button onClick={() => setActiveTab("orders")} className="text-sm font-bold text-primary hover:underline">View All Orders →</button>
-              </div>
-              <div className="space-y-4">
-                {buyerOrders.slice(0, 3).map((order) => (
-                  <div key={order._id} className="flex items-center gap-6 p-5 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200">
-                    <div className="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-3xl">
-                      {order.product?.imageEmoji}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-black text-slate-900 text-lg leading-tight">{order.product?.name}</p>
-                      <p className="text-sm font-bold text-slate-500 mt-1">
-                        {order.quantity} {order.product?.unit} • <span className="text-emerald-600">{formatPrice(order.totalAmount)}</span>
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
-                        {order.status}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{formatDate(order.orderDate)}</span>
-                    </div>
-                  </div>
+              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <span className="w-2 h-8 bg-primary rounded-full"></span>
+                Your Catalog Interests
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {profile.preferredProducts.map((product, index) => (
+                  <span
+                    key={index}
+                    className="bg-primary/5 text-primary border border-primary/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-colors cursor-default"
+                  >
+                    {product}
+                  </span>
                 ))}
-                {buyerOrders.length === 0 && (
-                  <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                    <p className="text-slate-400 font-bold">{t('noOrders')}</p>
-                  </div>
-                )}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {activeTab === "marketplace" && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">{t('marketplace')}</h2>
-              <div className="flex gap-4">
-                <input
-                  type="text"
-                  placeholder={t('searchProducts')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">{t('allCategories')}</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
+                <span className="w-2 h-8 bg-slate-900 rounded-full"></span>
+                Recent Activity
+              </h3>
+              <button onClick={() => setActiveTab("orders")} className="text-sm font-bold text-primary hover:underline">View All Orders →</button>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                <div key={product._id} className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-xl transition-all group modern-shadow">
-                  <div className="relative h-40 mb-3 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center">
-                    {product.imageUrl ? (
-                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    ) : (
-                      <span className="text-4xl group-hover:scale-110 transition-transform duration-500">{product.imageEmoji}</span>
-                    )}
-                  </div>
-                  <h3 className="font-bold text-gray-800 mb-1">{product.name}</h3>
-                  <div className="space-y-1 mb-2">
-                    <p className="text-blue-600 font-bold">
-                      {formatPrice(product.price)}/{product.unit}
-                    </p>
-                    {product.priceTiers && product.priceTiers.length > 0 && (
-                      <div className="bg-amber-50 p-2 rounded border border-amber-100">
-                        <p className="text-[10px] font-black uppercase text-amber-700 mb-1">{t('tieredPricing')}</p>
-                        {product.priceTiers.map((tier, idx) => (
-                          <p key={idx} className="text-xs text-amber-800">
-                            {tier.minQuantity}+ {product.unit}: <span className="font-bold">{formatPrice(tier.price)}</span>
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 mb-1">
-                    {t('by')} {product.seller.profile?.businessName || product.seller.profile?.fullName}
-                  </p>
-                  <p className="text-sm text-gray-500 mb-3">
-                    {t('stock')}: {product.stockQuantity} {product.unit}
-                  </p>
-
-                  <div className="flex items-center gap-2 mb-3">
-                    <input
-                      type="number"
-                      min="1"
-                      max={product.stockQuantity}
-                      value={orderQuantities[product._id] || 1}
-                      onChange={(e) => setOrderQuantities(prev => ({
-                        ...prev,
-                        [product._id]: parseInt(e.target.value) || 1
-                      }))}
-                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                    />
-                    <span className="text-sm text-gray-600">{product.unit}</span>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleCreateOrder(product._id, product.sellerId)}
-                      disabled={product.stockQuantity === 0}
-                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
-                    >
-                      {product.stockQuantity === 0 ? t('outOfStock') : t('addToCart')}
-                    </button>
-                    <button
-                      onClick={() => setShowMessaging(true)}
-                      className="p-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-                      title="Contact seller"
-                    >
-                      💬
-                    </button>
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t border-slate-100">
-                    <ProductReviews productId={product._id} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {filteredProducts.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "orders" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">{t('myOrders')}</h2>
             <div className="space-y-4">
-              {buyerOrders.map((order) => (
-                <div key={order._id} className="bg-white border border-gray-200 rounded-2xl p-6 modern-shadow space-y-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-6">
-                      <div className="text-4xl w-16 h-16 bg-slate-50 flex items-center justify-center rounded-xl shadow-inner">
-                        {order.product?.imageEmoji}
-                      </div>
-                      <div>
-                        <h3 className="font-black text-slate-900 text-xl leading-tight">{order.product?.name}</h3>
-                        <p className="text-sm font-bold text-slate-500 mt-1">
-                          {t('seller')}: {order.seller.profile?.businessName || order.seller.profile?.fullName}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                            📦 {order.quantity} {order.product?.unit}
-                          </p>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                            📅 {formatDate(order.orderDate)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-black text-slate-900 text-2xl mb-2">
-                        {formatPrice(order.totalAmount)}
-                      </p>
-                      <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
-                        {t(order.status as any)}
-                      </span>
-                    </div>
+              {buyerOrders.slice(0, 3).map((order) => (
+                <div key={order._id} className="flex items-center gap-6 p-5 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200">
+                  <div className="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-3xl">
+                    {order.product?.imageEmoji}
                   </div>
-
-                  {/* Delivery Simulation Tracker */}
-                  {order.isPaid && order.deliveryStep && (
-                    <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 animate-fade-in">
-                      <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-xl">🚚</div>
-                          <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('driver')}</p>
-                            <p className="font-bold text-slate-900">{order.driverName}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('driverPhone')}</p>
-                          <p className="font-bold text-primary">{order.driverPhone}</p>
-                        </div>
-                      </div>
-
-                      <div className="relative pt-2 pb-12 mt-4">
-                        {/* Progress Line Background */}
-                        <div className="absolute top-4 left-0 w-full h-1 bg-slate-200 rounded-full"></div>
-                        {/* Progress Line Active */}
-                        <div
-                          className="absolute top-4 left-0 h-1 bg-primary rounded-full transition-all duration-1000"
-                          style={{
-                            width: order.deliveryStep === "assigning" ? "12%" :
-                              order.deliveryStep === "picking_up" ? "37%" :
-                                order.deliveryStep === "delivering" ? "62%" : "100%"
-                          }}
-                        ></div>
-
-                        {/* Steps */}
-                        <div className="relative flex justify-between">
-                          {[
-                            { step: "assigning", icon: "📋", label: t('assigning') },
-                            { step: "picking_up", icon: "📦", label: t('picking_up') },
-                            { step: "delivering", icon: "🚚", label: t('delivering') },
-                            { step: "delivered", icon: "🏠", label: t('deliveredStatus') },
-                          ].map((s, idx) => {
-                            const isCompleted = ["assigning", "picking_up", "delivering", "delivered"].indexOf(order.deliveryStep!) >= idx;
-                            const isActive = order.deliveryStep === s.step;
-
-                            return (
-                              <div key={idx} className="flex flex-col items-center relative z-10 w-24">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-md transition-all duration-500 ${isCompleted ? "bg-primary text-white scale-110" : "bg-white text-slate-300 border border-slate-200"
-                                  } ${isActive ? "ring-4 ring-primary/20 animate-pulse" : ""}`}>
-                                  {isCompleted ? "✓" : s.icon}
-                                </div>
-                                <div className="absolute top-10 w-full text-center">
-                                  <span className={`text-[9px] font-black uppercase tracking-tight leading-tight block ${isCompleted ? "text-slate-900" : "text-slate-400"}`}>
-                                    {s.label}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <div className="flex-1">
+                    <p className="font-black text-slate-900 text-lg leading-tight">{order.product?.name}</p>
+                    <p className="text-sm font-bold text-slate-500 mt-1">
+                      {order.quantity} {order.product?.unit} • <span className="text-emerald-600">{formatPrice(order.totalAmount)}</span>
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
+                      {order.status}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{formatDate(order.orderDate)}</span>
+                  </div>
                 </div>
               ))}
               {buyerOrders.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">{t('noOrders')}</p>
-                  <button
-                    onClick={() => setActiveTab("marketplace")}
-                    className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    {t('marketplace')}
-                  </button>
+                <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-slate-400 font-bold">{t('noOrders')}</p>
                 </div>
               )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === "prices" && (
-          <MarketPrices userRole="buyer" />
-        )}
-      </div>
+      {activeTab === "marketplace" && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-800">{t('marketplace')}</h2>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                placeholder={t('searchProducts')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">{t('allCategories')}</option>
+                {categories.map(category => (
+                  <option key={category} value={category}>
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map((product) => (
+              <div key={product._id} className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-xl transition-all group modern-shadow">
+                <div className="relative h-40 mb-3 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center">
+                  {product.imageUrl ? (
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  ) : (
+                    <span className="text-4xl group-hover:scale-110 transition-transform duration-500">{product.imageEmoji}</span>
+                  )}
+                </div>
+                <h3 className="font-bold text-gray-800 mb-1">{product.name}</h3>
+                <div className="space-y-1 mb-2">
+                  <p className="text-blue-600 font-bold">
+                    {formatPrice(product.price)}/{product.unit}
+                  </p>
+                  {product.priceTiers && product.priceTiers.length > 0 && (
+                    <div className="bg-amber-50 p-2 rounded border border-amber-100">
+                      <p className="text-[10px] font-black uppercase text-amber-700 mb-1">{t('tieredPricing')}</p>
+                      {product.priceTiers.map((tier, idx) => (
+                        <p key={idx} className="text-xs text-amber-800">
+                          {tier.minQuantity}+ {product.unit}: <span className="font-bold">{formatPrice(tier.price)}</span>
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 mb-1">
+                  {t('by')} {product.seller.profile?.businessName || product.seller.profile?.fullName}
+                </p>
+                <p className="text-sm text-gray-500 mb-3">
+                  {t('stock')}: {product.stockQuantity} {product.unit}
+                </p>
+
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    type="number"
+                    min="1"
+                    max={product.stockQuantity}
+                    value={orderQuantities[product._id] || 1}
+                    onChange={(e) => setOrderQuantities(prev => ({
+                      ...prev,
+                      [product._id]: parseInt(e.target.value) || 1
+                    }))}
+                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                  />
+                  <span className="text-sm text-gray-600">{product.unit}</span>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleCreateOrder(product._id, product.sellerId)}
+                    disabled={product.stockQuantity === 0}
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                  >
+                    {product.stockQuantity === 0 ? t('outOfStock') : t('addToCart')}
+                  </button>
+                  <button
+                    onClick={() => setShowMessaging(true)}
+                    className="p-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                    title="Contact seller"
+                  >
+                    💬
+                  </button>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <ProductReviews productId={product._id} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "orders" && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800">{t('myOrders')}</h2>
+          <div className="space-y-4">
+            {buyerOrders.map((order) => (
+              <div key={order._id} className="bg-white border border-gray-200 rounded-2xl p-6 modern-shadow space-y-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-6">
+                    <div className="text-4xl w-16 h-16 bg-slate-50 flex items-center justify-center rounded-xl shadow-inner">
+                      {order.product?.imageEmoji}
+                    </div>
+                    <div>
+                      <h3 className="font-black text-slate-900 text-xl leading-tight">{order.product?.name}</h3>
+                      <p className="text-sm font-bold text-slate-500 mt-1">
+                        {t('seller')}: {order.seller.profile?.businessName || order.seller.profile?.fullName}
+                      </p>
+                      <div className="flex items-center gap-4 mt-2">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          📦 {order.quantity} {order.product?.unit}
+                        </p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          📅 {formatDate(order.orderDate)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-black text-slate-900 text-2xl mb-2">
+                      {formatPrice(order.totalAmount)}
+                    </p>
+                    <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
+                      {t(order.status as any)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Delivery Simulation Tracker */}
+                {order.isPaid && order.deliveryStep && (
+                  <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 animate-fade-in">
+                    <div className="flex justify-between items-center mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-xl">🚚</div>
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('driver')}</p>
+                          <p className="font-bold text-slate-900">{order.driverName}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('driverPhone')}</p>
+                        <p className="font-bold text-primary">{order.driverPhone}</p>
+                      </div>
+                    </div>
+
+                    <div className="relative pt-2 pb-12 mt-4">
+                      {/* Progress Line Background */}
+                      <div className="absolute top-4 left-0 w-full h-1 bg-slate-200 rounded-full"></div>
+                      {/* Progress Line Active */}
+                      <div
+                        className="absolute top-4 left-0 h-1 bg-primary rounded-full transition-all duration-1000"
+                        style={{
+                          width: order.deliveryStep === "assigning" ? "12%" :
+                            order.deliveryStep === "picking_up" ? "37%" :
+                              order.deliveryStep === "delivering" ? "62%" : "100%"
+                        }}
+                      ></div>
+
+                      {/* Steps */}
+                      <div className="relative flex justify-between">
+                        {[
+                          { step: "assigning", icon: "📋", label: t('assigning') },
+                          { step: "picking_up", icon: "📦", label: t('picking_up') },
+                          { step: "delivering", icon: "🚚", label: t('delivering') },
+                          { step: "delivered", icon: "🏠", label: t('deliveredStatus') },
+                        ].map((s, idx) => {
+                          const isCompleted = ["assigning", "picking_up", "delivering", "delivered"].indexOf(order.deliveryStep!) >= idx;
+                          const isActive = order.deliveryStep === s.step;
+
+                          return (
+                            <div key={idx} className="flex flex-col items-center relative z-10 w-24">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-md transition-all duration-500 ${isCompleted ? "bg-primary text-white scale-110" : "bg-white text-slate-300 border border-slate-200"
+                                } ${isActive ? "ring-4 ring-primary/20 animate-pulse" : ""}`}>
+                                {isCompleted ? "✓" : s.icon}
+                              </div>
+                              <div className="absolute top-10 w-full text-center">
+                                <span className={`text-[9px] font-black uppercase tracking-tight leading-tight block ${isCompleted ? "text-slate-900" : "text-slate-400"}`}>
+                                  {s.label}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            {buyerOrders.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">{t('noOrders')}</p>
+                <button
+                  onClick={() => setActiveTab("marketplace")}
+                  className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {t('marketplace')}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "prices" && (
+        <MarketPrices userRole="buyer" />
+      )}
+
+      {activeTab === "community" && (
+        <CommunityHub />
+      )}
 
       {/* Cart Modal */}
       {
