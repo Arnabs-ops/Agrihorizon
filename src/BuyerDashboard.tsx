@@ -10,6 +10,10 @@ import paymentQr from "./assets/payment-qr.jpg";
 import { CommunityHub } from "./CommunityHub";
 import { useLanguage } from "./useLanguage.tsx";
 import buyerBg from "./assets/buyer_bg.png";
+import { WelcomeModal } from "./WelcomeModal";
+import { OnboardingChecklist } from "./OnboardingChecklist";
+import { HelpButton } from "./HelpButton";
+import { useTutorial } from "./TutorialProvider";
 
 interface UserProfile {
   user: any;
@@ -108,6 +112,9 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [newAddress, setNewAddress] = useState("");
   const [pendingOrder, setPendingOrder] = useState<{ productId: Id<"products">, sellerId: Id<"users"> } | null>(null);
+
+  // Tutorial state
+  const { tutorialProgress } = useTutorial();
 
   const { t } = useLanguage();
 
@@ -286,25 +293,24 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               <span className="text-4xl">🛒</span>
             </div>
             <div>
-              <p className="text-white font-bold tracking-widest uppercase text-xs mb-1 drop-shadow-md">{t('buyerTerminal')}</p>
-              <h1 className="text-4xl font-black text-white leading-tight drop-shadow-lg">
-                {t('welcome')}, <span className="text-primary">{profile.fullName}!</span>
+              <p className="text-slate-300 font-bold tracking-widest uppercase text-xs mb-2 drop-shadow-md">{t('buyerTerminal')}</p>
+              <h1 className="text-4xl font-black leading-tight drop-shadow-lg mb-3">
+                <span className="text-white">{t('welcome')},</span><br />
+                <span className="text-primary">{profile.fullName}!</span>
               </h1>
-              <div className="flex items-center gap-4 mt-2">
-                {profile.location && (
-                  <span className="flex items-center text-sm font-semibold text-slate-200 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+              {profile.location && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="flex items-center text-sm font-semibold text-white bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
                     📍 {profile.location}
                   </span>
-                )}
-                <span className="flex items-center text-sm font-semibold text-primary bg-primary/10 backdrop-blur-md px-3 py-1 rounded-full border border-primary/20">
-                  ● Live Market Access
-                </span>
-              </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setShowCart(true)}
+              data-tour-id="cart-button"
               className="relative bg-white text-slate-900 px-6 py-3 rounded-xl hover:bg-slate-50 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl active:scale-95 group"
             >
               <span className="text-xl">🛒</span>
@@ -318,6 +324,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             <NotificationCenter onNavigate={(link) => setActiveTab(link)} />
             <button
               onClick={() => setShowMessaging(true)}
+              data-tour-id="messages-button"
               className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
             >
               <span className="text-xl group-hover:rotate-12 transition-transform">💬</span>
@@ -338,6 +345,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              data-tour-id={tab.id === "marketplace" ? "marketplace-tab" : undefined}
               className={`flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
                 ? "bg-primary text-white shadow-xl shadow-primary/25 scale-[1.02]"
                 : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
@@ -369,6 +377,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
+                  data-tour-id={`${tab.id}-tab`}
                   className={`w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
                     ? "bg-primary/10 text-primary"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -407,6 +416,8 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               <p className="text-sm font-bold opacity-70">All time records</p>
             </div>
           </div>
+
+          <OnboardingChecklist userRole="buyer" />
 
           {profile.preferredProducts && profile.preferredProducts.length > 0 && (
             <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
@@ -691,6 +702,16 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
       {activeTab === "community" && (
         <CommunityHub />
       )}
+
+      {/* Tutorial Components */}
+      {!tutorialProgress?.hasSeenWelcome && (
+        <WelcomeModal
+          userRole="buyer"
+          onComplete={() => { }}
+        />
+      )}
+
+      <HelpButton />
 
       {/* Cart Modal */}
       {

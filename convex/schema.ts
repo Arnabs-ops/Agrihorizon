@@ -13,6 +13,13 @@ const applicationTables = {
     farmSize: v.optional(v.string()), // For sellers
     cropTypes: v.optional(v.array(v.string())), // For sellers
     preferredProducts: v.optional(v.array(v.string())), // For buyers
+    tutorialProgress: v.optional(v.object({
+      hasSeenWelcome: v.boolean(),
+      hasCompletedTour: v.boolean(),
+      completedSteps: v.array(v.string()),
+      dismissedChecklist: v.boolean(),
+      lastTutorialDate: v.number(),
+    })),
   }).index("by_user_id", ["userId"]),
 
   products: defineTable({

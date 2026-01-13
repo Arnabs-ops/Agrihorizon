@@ -8,13 +8,15 @@ import { BuyerDashboard } from "./BuyerDashboard";
 import { SellerDashboard } from "./SellerDashboard";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { translations, Language } from "./translations";
-
 import { LanguageProvider, useLanguage } from "./useLanguage.tsx";
+import { TutorialProvider } from "./TutorialProvider";
 
 export default function App() {
   return (
     <LanguageProvider>
-      <AppContent />
+      <TutorialProvider>
+        <AppContent />
+      </TutorialProvider>
     </LanguageProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { CommunityHub } from "./CommunityHub";
@@ -7,8 +7,12 @@ import { NotificationCenter } from "./NotificationCenter";
 import { MarketPrices } from "./MarketPrices";
 import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
-import { useLanguage } from "./useLanguage.tsx";
+import { useLanguage } from "./useLanguage";
 import sellerBg from "./assets/seller_bg.png";
+import { WelcomeModal } from "./WelcomeModal";
+import { OnboardingChecklist } from "./OnboardingChecklist";
+import { HelpButton } from "./HelpButton";
+import { useTutorial } from "./TutorialProvider";
 
 interface UserProfile {
   user: any;
@@ -71,6 +75,10 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const [showMessaging, setShowMessaging] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+
+  // Tutorial state
+  const { tutorialProgress } = useTutorial();
+
   const { t } = useLanguage();
 
   const { user, profile } = userProfile;
@@ -176,18 +184,19 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
               <span className="text-4xl">🚜</span>
             </div>
             <div>
-              <p className="text-white font-bold tracking-widest uppercase text-xs mb-1 drop-shadow-md">{t('sellerTerminal')}</p>
-              <h1 className="text-4xl font-black text-white leading-tight drop-shadow-lg">
-                {t('welcome')}, <span className="text-primary">{profile.fullName}!</span>
+              <p className="text-slate-300 font-bold tracking-widest uppercase text-xs mb-2 drop-shadow-md">{t('sellerTerminal')}</p>
+              <h1 className="text-4xl font-black leading-tight drop-shadow-lg mb-3">
+                <span className="text-white">{t('welcome')},</span><br />
+                <span className="text-primary">{profile.fullName}!</span>
               </h1>
-              <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
                 {profile.businessName && (
-                  <span className="flex items-center text-sm font-semibold text-slate-200 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                  <span className="flex items-center text-sm font-semibold text-white bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
                     🏪 {profile.businessName}
                   </span>
                 )}
                 {profile.location && (
-                  <span className="flex items-center text-sm font-semibold text-slate-200 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                  <span className="flex items-center text-sm font-semibold text-white bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
                     📍 {profile.location}
                   </span>
                 )}
@@ -197,6 +206,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setShowAddProduct(true)}
+              data-tour-id="add-product-button"
               className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all flex items-center gap-2 shadow-lg active:scale-95"
             >
               <span className="text-xl">+</span> {t('addProduct')}
@@ -204,6 +214,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             <NotificationCenter onNavigate={(link) => setActiveTab(link)} />
             <button
               onClick={() => setShowMessaging(true)}
+              data-tour-id="messages-button"
               className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
             >
               <span className="text-xl group-hover:rotate-12 transition-transform">💬</span>
@@ -224,6 +235,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              data-tour-id={tab.id === "orders" ? "orders-tab" : undefined}
               className={`flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
                 ? "bg-primary text-white shadow-xl shadow-primary/25 scale-[1.02]"
                 : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
@@ -237,6 +249,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
           {/* More Features Dropdown */}
           <div className="relative group/more flex-1">
             <button
+              data-tour-id="more-tab"
               className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["analytics", "prices", "community"].includes(activeTab)
                 ? "bg-slate-900 text-white shadow-xl"
                 : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
@@ -256,6 +269,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
+                  data-tour-id={`${tab.id}-tab`}
                   className={`w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
                     ? "bg-primary/10 text-primary"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -312,13 +326,15 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             </div>
           </div>
 
+          <OnboardingChecklist userRole="seller" />
+
           {profile.farmSize && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-100 modern-shadow">
-              <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
-                <span className="w-1 h-6 bg-primary rounded-full"></span>
+            <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
+              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <span className="w-2 h-8 bg-primary rounded-full"></span>
                 Farm Information
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Farm Size</p>
                   <p className="font-bold text-slate-900 capitalize text-lg">{profile.farmSize}</p>
@@ -342,30 +358,38 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             </div>
           )}
 
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Recent Orders
-            </h3>
-            <div className="space-y-3">
+          <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
+                <span className="w-2 h-8 bg-slate-900 rounded-full"></span>
+                Recent Orders
+              </h3>
+              <button onClick={() => setActiveTab("orders")} className="text-sm font-bold text-primary hover:underline">View All Orders →</button>
+            </div>
+            <div className="space-y-4">
               {sellerOrders.slice(0, 3).map((order) => (
-                <div key={order._id} className="flex items-center gap-3 p-3 bg-white rounded">
-                  <span className="text-2xl">{order.product?.imageEmoji}</span>
-                  <div className="flex-1">
-                    <span className="font-medium">
-                      Order from {order.buyer.profile?.fullName}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      {order.product?.name} - {order.quantity} {order.product?.unit}
-                    </span>
+                <div key={order._id} className="flex items-center gap-6 p-5 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200">
+                  <div className="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-3xl">
+                    {order.product?.imageEmoji}
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(order.status)}`}>
-                    {order.status}
-                  </span>
-                  <span className="text-sm text-gray-500">{formatDate(order.orderDate)}</span>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-1">
+                      <div>
+                        <p className="font-black text-slate-900">Order from {order.buyer.profile?.fullName}</p>
+                        <p className="text-xs font-bold text-slate-500">{order.product?.name} • {order.quantity} {order.product?.unit}</p>
+                      </div>
+                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
+                        {t(order.status as any)}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{formatDate(order.orderDate)}</p>
+                  </div>
                 </div>
               ))}
-              {sellerOrders.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No orders yet.</p>
+              {sellerOrders?.length === 0 && (
+                <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-slate-400 font-bold">{t('noOrdersYet') || "No orders yet"}</p>
+                </div>
               )}
             </div>
           </div>
@@ -425,7 +449,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => editingProduct ? null : setEditingProduct(product)}
+                      onClick={() => setEditingProduct(product)}
                       className="flex-1 bg-slate-900 text-white py-3 px-4 rounded-xl font-bold hover:bg-slate-800 transition-all text-sm active:scale-95"
                     >
                       {t('update')}
@@ -443,9 +467,9 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             })}
           </div>
 
-          {sellerProducts.length === 0 && (
+          {sellerProducts?.length === 0 && (
             <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-              <p className="text-slate-400 text-xl font-bold mb-6">{t('cartEmpty')}</p>
+              <p className="text-slate-400 text-xl font-bold mb-6">{t('noProductsYet') || "No products yet"}</p>
               <button
                 onClick={() => setShowAddProduct(true)}
                 className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all active:scale-95"
@@ -497,12 +521,6 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                         {t(order.status as any)}
                       </span>
 
-                      {(order as any).deliveryStep && (order as any).deliveryStep !== "delivered" && (
-                        <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 animate-pulse">
-                          🚚 {t((order as any).deliveryStep as any)}
-                        </span>
-                      )}
-
                       <div className="flex gap-2">
                         {order.status === "pending" && (
                           <button
@@ -526,9 +544,9 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                 </div>
               </div>
             ))}
-            {sellerOrders.length === 0 && (
+            {sellerOrders?.length === 0 && (
               <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-                <p className="text-slate-400 text-xl font-bold">{t('cartEmpty')}</p>
+                <p className="text-slate-400 text-xl font-bold">{t('noOrdersYet') || "No orders yet"}</p>
               </div>
             )}
           </div>
@@ -546,7 +564,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                 Top Products
               </h3>
               <div className="space-y-6">
-                {analytics?.topProducts?.map((product, index) => (
+                {analytics?.topProducts?.map((product: any, index: number) => (
                   <div key={index} className="space-y-2">
                     <div className="flex justify-between text-sm font-bold">
                       <span className="text-slate-700">{product.name}</span>
@@ -581,7 +599,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('delivered')}</p>
                   </div>
                   <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                    <p className="text-2xl font-black text-emerald-400">{analytics?.activeProducts || 0}</p>
+                    <p className="text-2xl font-black text-emerald-400">{analytics?.totalProducts || 0}</p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('inventory')}</p>
                   </div>
                 </div>
@@ -598,6 +616,16 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
       {activeTab === "community" && (
         <CommunityHub />
       )}
+
+      {/* Tutorial Components */}
+      {!tutorialProgress?.hasSeenWelcome && (
+        <WelcomeModal
+          userRole="seller"
+          onComplete={() => { }}
+        />
+      )}
+
+      <HelpButton />
 
       {/* Add/Edit Product Modal */}
       {(showAddProduct || editingProduct) && (
