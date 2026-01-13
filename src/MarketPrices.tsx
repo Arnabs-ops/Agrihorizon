@@ -266,37 +266,37 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('profitTomorrow')}</p>
-                          <p className={`text-2xl font-black ${calculateProfit((priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2) >= 0 ? 'text-primary' : 'text-red-600'}`}>
-                            ₹{calculateProfit((priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2).toLocaleString()}
+                          <p className={`text-2xl font-black ${calculateProfit(((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2) >= 0 ? 'text-primary' : 'text-red-600'}`}>
+                            ₹{calculateProfit(((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2).toLocaleString()}
                           </p>
                         </div>
                         <div className="bg-primary/10 px-3 py-1 rounded-full">
-                          <p className="text-[10px] font-black text-primary">ROI: {calculateROI((priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2)}%</p>
+                          <p className="text-[10px] font-black text-primary">ROI: {calculateROI(((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2)}%</p>
                         </div>
                       </div>
                       <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-primary transition-all duration-1000"
-                          style={{ width: `${Math.min(Math.max(calculateROI((priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2), 0), 100)}%` }}
+                          style={{ width: `${Math.min(Math.max(calculateROI(((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2), 0), 100)}%` }}
                         ></div>
                       </div>
                     </div>
 
                     {/* AI Strategy Recommendation */}
-                    <div className={`lg:col-span-2 p-6 rounded-2xl border-2 flex items-center gap-6 ${(priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2 > (priceData.currentPrice || 0) * 1.05
+                    <div className={`lg:col-span-2 p-6 rounded-2xl border-2 flex items-center gap-6 ${((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2 > (priceData.currentPrice || 0) * 1.05
                       ? "bg-amber-50 border-amber-200"
                       : "bg-emerald-50 border-emerald-200"
                       }`}>
                       <div className="text-4xl">
-                        {(priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2 > (priceData.currentPrice || 0) * 1.05 ? "⏳" : "✅"}
+                        {((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2 > (priceData.currentPrice || 0) * 1.05 ? "⏳" : "✅"}
                       </div>
                       <div>
                         <h5 className="font-black text-slate-900 uppercase tracking-tight text-sm mb-1">{t('strategyRecommendation')}</h5>
-                        <p className={`font-bold text-lg ${(priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2 > (priceData.currentPrice || 0) * 1.05
+                        <p className={`font-bold text-lg ${((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2 > (priceData.currentPrice || 0) * 1.05
                           ? "text-amber-700"
                           : "text-emerald-700"
                           }`}>
-                          {(priceData.tomorrowPrediction?.min! + priceData.tomorrowPrediction?.max!) / 2 > (priceData.currentPrice || 0) * 1.05
+                          {((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2 > (priceData.currentPrice || 0) * 1.05
                             ? t('waitLater')
                             : t('sellNow')}
                         </p>
@@ -379,7 +379,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
 
                       <div className="flex items-end gap-6 relative z-10 h-full w-full justify-center">
                         {priceData.history.map((entry, index) => {
-                          const maxPrice = Math.max(...priceData.history.map(h => h.price), priceData.prediction?.predictedPrice || 0);
+                          const maxPrice = Math.max(...priceData.history.map(h => h.price));
                           const height = (entry.price / maxPrice) * 100;
                           return (
                             <div key={index} className="flex flex-col items-center relative group/bar h-full justify-end animate-entry" style={{ animationDelay: `${index * 100}ms` }}>
@@ -397,21 +397,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
                           );
                         })}
 
-                        {/* Prediction Ghost Bar */}
-                        {priceData.prediction && (
-                          <div className="flex flex-col items-center relative group/bar h-full justify-end animate-entry" style={{ animationDelay: `${priceData.history.length * 100}ms` }}>
-                            <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-12 bg-primary text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-2xl transition-all mb-2 z-20 whitespace-nowrap pointer-events-none">
-                              {t('tomorrow')}: {formatPrice(priceData.prediction.predictedPrice)}
-                            </div>
-                            <div
-                              className="bg-primary/10 border-2 border-dashed border-primary/30 rounded-t-xl w-14 transition-all duration-700 hover:bg-primary/20 hover:border-primary/50"
-                              style={{ height: `${(priceData.prediction.predictedPrice / Math.max(...priceData.history.map(h => h.price), priceData.prediction.predictedPrice)) * 100}%` }}
-                            ></div>
-                            <span className="text-[10px] font-black text-primary/40 mt-4 uppercase tracking-[0.2em]">
-                              Next
-                            </span>
-                          </div>
-                        )}
+
                       </div>
                     </div>
                   </div>

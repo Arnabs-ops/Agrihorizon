@@ -54,7 +54,7 @@ export function CommunityHub() {
     const handleCreatePost = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!content.trim() && !image) return;
-
+        
         setIsUploading(true);
         try {
             let imageStorageId = undefined;
@@ -92,7 +92,7 @@ export function CommunityHub() {
     const handleAddComment = async (postId: any) => {
         const text = commentContent[postId];
         if (!text?.trim()) return;
-
+        
         try {
             await addComment({ postId, content: text });
             setCommentContent({ ...commentContent, [postId]: "" });
