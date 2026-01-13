@@ -119,6 +119,7 @@ export const markOrdersAsPaid = mutation({
     }
 
     const paymentDate = Date.now();
+    const failedOrders: { orderId: Id<"orders">; productName: string; reason: string }[] = [];
 
     // Process each order
     for (const orderId of args.orderIds) {
@@ -140,7 +141,18 @@ export const markOrdersAsPaid = mutation({
 
       // Check stock availability
       if (product.stockQuantity < order.quantity) {
-        throw new Error(`Insufficient stock for ${product.name}`);
+        // Notify the buyer about insufficient stock
+        await ctx.db.insert("notifications", {
+          userId: order.buyerId,
+          type: "order_status",
+          title: "Order Failed",
+          content: `Your order for ${product.name} could not be processed due to insufficient stock.`,
+          isRead: false,
+          link: "orders",
+          timestamp: Date.now(),
+        });
+        failedOrders.push({ orderId, productName: product.name, reason: "Insufficient stock" });
+        continue;
       }
 
       // Mark order as paid
@@ -154,11 +166,35 @@ export const markOrdersAsPaid = mutation({
         stockQuantity: product.stockQuantity - order.quantity,
       });
 
+      // Check if stock is now empty and handle accordingly
+      const updatedProduct = await ctx.db.get(order.productId);
+      if (updatedProduct && updatedProduct.stockQuantity === 0) {
+        // Notify seller about empty stock
+        await ctx.db.insert("notifications", {
+          userId: updatedProduct.sellerId,
+          type: "stock_empty",
+          title: "Stock Empty!",
+          content: `Your product "${updatedProduct.name}" is out of stock. Please add more stock or remove the product.`,
+          isRead: false,
+          link: "products",
+          timestamp: Date.now(),
+        });
+
+        // Deactivate the product to remove it from the marketplace
+        await ctx.db.patch(order.productId, {
+          isActive: false,
+        });
+      }
+
       // Trigger delivery simulation
       await ctx.scheduler.runAfter(10000, internal.orders.advanceDeliverySimulation, {
         orderId,
         nextStep: "picking_up",
       });
+    }
+
+    if (failedOrders.length > 0) {
+      return { success: false, failedOrders, message: "Some orders could not be processed due to insufficient stock." };
     }
 
     return { success: true, paidCount: args.orderIds.length };

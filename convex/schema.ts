@@ -100,7 +100,7 @@ const applicationTables = {
     .index("by_seller", ["sellerId"]),
   notifications: defineTable({
     userId: v.id("users"),
-    type: v.union(v.literal("order_new"), v.literal("order_status"), v.literal("review_new"), v.literal("message")),
+    type: v.union(v.literal("order_new"), v.literal("order_status"), v.literal("review_new"), v.literal("message"), v.literal("stock_empty")),
     title: v.string(),
     content: v.string(),
     isRead: v.boolean(),

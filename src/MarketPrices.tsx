@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { toast } from "sonner";
@@ -38,6 +38,35 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
 
   const { t } = useLanguage();
   const getComprehensivePriceData = useAction(api.vegPrices.getComprehensivePriceData);
+
+  // Preload images for faster rendering
+  useEffect(() => {
+    const preloadImages = () => {
+      const images = [
+        "/src/assets/buyer_bg.png",
+        "/src/assets/seller_bg.png",
+        "/src/assets/payment-qr.jpg"
+      ];
+      images.forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      });
+    };
+    preloadImages();
+  }, []);
+
+  // Lazy load images for the marketplace
+  const [lazyLoadedImages, setLazyLoadedImages] = useState<Set<string>>(new Set());
+
+  const handleImageLoad = (src: string) => {
+    if (!lazyLoadedImages.has(src)) {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        setLazyLoadedImages(prev => new Set(prev).add(src));
+      };
+    }
+  };
 
   const calculateProfit = (price: number) => {
     if (!quantity) return 0;

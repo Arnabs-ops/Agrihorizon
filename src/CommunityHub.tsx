@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { toast } from "sonner";
@@ -12,6 +12,22 @@ export function CommunityHub() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { t } = useLanguage();
+
+    // Preload images for faster rendering
+    useEffect(() => {
+      const preloadImages = () => {
+        const images = [
+          "/src/assets/buyer_bg.png",
+          "/src/assets/seller_bg.png",
+          "/src/assets/payment-qr.jpg"
+        ];
+        images.forEach((src) => {
+          const img = new Image();
+          img.src = src;
+        });
+      };
+      preloadImages();
+    }, []);
 
     const posts = useQuery(api.community.getPosts) || [];
     const userProfile = useQuery(api.users.getCurrentUserProfile);
@@ -199,7 +215,7 @@ export function CommunityHub() {
                             <p className="text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">{post.content}</p>
                             {post.imageUrl && (
                                 <div className="rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
-                                    <img src={post.imageUrl} alt="Post" className="w-full max-h-[500px] object-cover" />
+                                    <img src={post.imageUrl} alt="Post" className="w-full max-h-[500px] object-cover" loading="lazy" />
                                 </div>
                             )}
                         </div>
