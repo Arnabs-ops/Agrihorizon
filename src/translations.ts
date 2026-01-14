@@ -56,6 +56,11 @@ export const translations = {
         discountPrice: "Discount Price",
         addTier: "Add Tier",
         remove: "Remove",
+        noTiersConfigured: "No bulk pricing configured",
+        image: "Image",
+        selectEmoji: "Select Emoji",
+        orUploadImage: "Or Upload Image",
+        saveProduct: "Save Product",
 
         // Orders
         pending: "Pending",
@@ -299,6 +304,11 @@ export const translations = {
         discountPrice: "छूट मूल्य",
         addTier: "श्रेणी जोड़ें",
         remove: "हटाएं",
+        noTiersConfigured: "कोई थोक मूल्य निर्धारण कॉन्फ़िगर नहीं किया गया",
+        image: "छवि",
+        selectEmoji: "इमोजी चुनें",
+        orUploadImage: "या छवि अपलोड करें",
+        saveProduct: "उत्पाद सहेजें",
 
         // Orders
         pending: "लंबित",

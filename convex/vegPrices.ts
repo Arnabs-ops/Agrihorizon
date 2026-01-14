@@ -53,7 +53,7 @@ export const getPriceHistory = query({
     location: v.string(),
     days: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Array<{ date: string; price: number; source: string }>> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error("User must be authenticated");
@@ -69,7 +69,7 @@ export const getPriceHistory = query({
       .order("desc")
       .take(daysToFetch);
 
-    return prices.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return prices.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) as any;
   },
 });
 

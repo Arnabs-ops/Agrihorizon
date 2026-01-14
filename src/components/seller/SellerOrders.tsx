@@ -1,0 +1,96 @@
+import React from 'react';
+import { useLanguage } from '../../useLanguage';
+import { Order } from '../../types/seller';
+import { Id } from '../../../convex/_generated/dataModel';
+
+interface SellerOrdersProps {
+    sellerOrders: Order[];
+    onProcessOrder: (orderId: Id<"orders">) => void;
+    onCompleteOrder: (orderId: Id<"orders">) => void;
+    formatPrice: (price: number) => string;
+    formatDate: (timestamp: number) => string;
+    getStatusColor: (status: string) => string;
+}
+
+export function SellerOrders({
+    sellerOrders,
+    onProcessOrder,
+    onCompleteOrder,
+    formatPrice,
+    formatDate,
+    getStatusColor,
+}: SellerOrdersProps) {
+    const { t } = useLanguage();
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-2xl font-black text-slate-900">{t('myOrders')}</h2>
+            <div className="space-y-4">
+                {sellerOrders.map((order) => (
+                    <div key={order._id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-primary/30 transition-all modern-shadow">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-6">
+                                <div className="text-4xl w-16 h-16 bg-slate-50 flex items-center justify-center rounded-xl">{order.product?.imageEmoji}</div>
+                                <div>
+                                    <h3 className="font-black text-slate-900 text-xl mb-1">
+                                        {order.product?.name}
+                                    </h3>
+                                    <p className="text-sm font-bold text-slate-500 flex items-center gap-2">
+                                        👤 {order.buyer.profile?.fullName}
+                                    </p>
+                                    <p className="text-sm font-bold text-slate-500 mt-1">
+                                        📦 {order.quantity} {order.product?.unit}
+                                    </p>
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <p className="text-xs font-bold text-slate-400">
+                                            📅 {formatDate(order.orderDate)}
+                                        </p>
+                                        {order.deliveryAddress && (
+                                            <p className="text-xs font-bold text-primary">
+                                                📍 {order.deliveryAddress}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="font-black text-slate-900 text-2xl mb-2">
+                                    {formatPrice(order.totalAmount)}
+                                </p>
+                                <div className="flex flex-col items-end gap-3">
+                                    <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
+                                        {t(order.status as any)}
+                                    </span>
+
+                                    <div className="flex gap-2">
+                                        {order.status === "pending" && (
+                                            <button
+                                                onClick={() => onProcessOrder(order._id)}
+                                                className="bg-amber-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-amber-600 transition-all shadow-lg active:scale-95"
+                                            >
+                                                {t('processOrder')}
+                                            </button>
+                                        )}
+                                        {order.status === "processing" && (
+                                            <button
+                                                onClick={() => onCompleteOrder(order._id)}
+                                                className="bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
+                                            >
+                                                {t('markDelivered')}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                {sellerOrders?.length === 0 && (
+                    <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                        <p className="text-slate-400 text-xl font-bold">{t('noOrdersYet') || "No orders yet"}</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
