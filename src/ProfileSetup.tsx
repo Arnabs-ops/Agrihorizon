@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useLanguage } from "./useLanguage";
 
 export function ProfileSetup() {
+  const { t } = useLanguage();
   const [role, setRole] = useState<"seller" | "buyer" | "">("");
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -20,7 +21,7 @@ export function ProfileSetup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!role || !fullName) {
-      toast.error("Please fill in all required fields");
+      toast.error(t('fillRequired'));
       return;
     }
 
@@ -36,9 +37,9 @@ export function ProfileSetup() {
         cropTypes: role === "seller" && cropTypes.length > 0 ? cropTypes : undefined,
         preferredProducts: role === "buyer" && preferredProducts.length > 0 ? preferredProducts : undefined,
       });
-      toast.success("Profile created successfully!");
+      toast.success(t('profileCreated'));
     } catch (error) {
-      toast.error("Failed to create profile. Please try again.");
+      toast.error(t('profileFailed'));
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -58,40 +59,40 @@ export function ProfileSetup() {
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-green-800 mb-2">Complete Your Profile</h2>
-        <p className="text-green-600">Tell us about yourself to get started</p>
+        <h2 className="text-3xl font-bold text-green-800 mb-2">{t('completeProfile')}</h2>
+        <p className="text-green-600">{t('profileSubtext')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Role Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            I am a: <span className="text-red-500">*</span>
+            {t('iAmA')} <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => setRole("seller")}
               className={`p-4 border-2 rounded-lg text-center transition-all ${role === "seller"
-                  ? "border-green-500 bg-green-50 text-green-700"
-                  : "border-gray-200 hover:border-green-300"
+                ? "border-green-500 bg-green-50 text-green-700"
+                : "border-gray-200 hover:border-green-300"
                 }`}
             >
               <div className="text-2xl mb-2">🚜</div>
-              <div className="font-semibold">Seller/Farmer</div>
-              <div className="text-sm text-gray-600">I want to sell agricultural products</div>
+              <div className="font-semibold">{t('sellerFarmer')}</div>
+              <div className="text-sm text-gray-600">{t('sellerDescription')}</div>
             </button>
             <button
               type="button"
               onClick={() => setRole("buyer")}
               className={`p-4 border-2 rounded-lg text-center transition-all ${role === "buyer"
-                  ? "border-green-500 bg-green-50 text-green-700"
-                  : "border-gray-200 hover:border-green-300"
+                ? "border-green-500 bg-green-50 text-green-700"
+                : "border-gray-200 hover:border-green-300"
                 }`}
             >
               <div className="text-2xl mb-2">🛒</div>
-              <div className="font-semibold">Buyer</div>
-              <div className="text-sm text-gray-600">I want to buy agricultural products</div>
+              <div className="font-semibold">{t('buyerLabel')}</div>
+              <div className="text-sm text-gray-600">{t('buyerDescription')}</div>
             </button>
           </div>
         </div>
@@ -100,41 +101,41 @@ export function ProfileSetup() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name <span className="text-red-500">*</span>
+              {t('fullNameLabel')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Enter your full name"
+              placeholder={t('fullNameLabel')}
               required
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
+              {t('phoneNumberLabel')}
             </label>
             <input
               type="tel"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Enter your phone number"
+              placeholder={t('phoneNumberLabel')}
             />
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Location
+            {t('locationLabel')}
           </label>
           <input
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="City, State/Province, Country"
+            placeholder={t('locationPlaceholder')}
           />
         </div>
 
@@ -144,42 +145,42 @@ export function ProfileSetup() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Business/Farm Name
+                  {t('businessFarmName')}
                 </label>
                 <input
                   type="text"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Enter your farm or business name"
+                  placeholder={t('businessPlaceholder')}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Farm Size
+                  {t('farmSize')}
                 </label>
                 <select
                   value={farmSize}
                   onChange={(e) => setFarmSize(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="">Select farm size</option>
-                  <option value="small">Small (&lt; 5 acres)</option>
-                  <option value="medium">Medium (5-50 acres)</option>
-                  <option value="large">Large (50-500 acres)</option>
-                  <option value="commercial">Commercial (&gt; 500 acres)</option>
+                  <option value="">{t('selectFarmSize')}</option>
+                  <option value="small">{t('smallFarm')}</option>
+                  <option value="medium">{t('mediumFarm')}</option>
+                  <option value="large">{t('largeFarm')}</option>
+                  <option value="commercial">{t('commercialFarm')}</option>
                 </select>
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Crop Types (comma-separated)
+                {t('cropTypes')}
               </label>
               <input
                 type="text"
                 onChange={(e) => handleCropTypesChange(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="e.g., Wheat, Corn, Tomatoes, Apples"
+                placeholder={t('cropTypesPlaceholder')}
               />
             </div>
           </>
@@ -189,13 +190,13 @@ export function ProfileSetup() {
         {role === "buyer" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Preferred Products (comma-separated)
+              {t('preferredProducts')}
             </label>
             <input
               type="text"
               onChange={(e) => handlePreferredProductsChange(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="e.g., Organic Vegetables, Fresh Fruits, Grains"
+              placeholder={t('preferredProductsPlaceholder')}
             />
           </div>
         )}
@@ -205,7 +206,7 @@ export function ProfileSetup() {
           disabled={isSubmitting || !role || !fullName}
           className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Creating Profile..." : "Complete Setup"}
+          {isSubmitting ? t('creatingProfile') : t('completeSetup')}
         </button>
       </form>
     </div>

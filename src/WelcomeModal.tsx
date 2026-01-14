@@ -16,25 +16,25 @@ export function WelcomeModal({ userRole, onComplete }: WelcomeModalProps) {
         {
             emoji: "🛒",
             title: t('welcome') + "!",
-            description: "Discover fresh farm products directly from local sellers at the best prices.",
+            description: t('buyerSlide1Desc'),
             color: "from-blue-500 to-indigo-600",
         },
         {
             emoji: "📊",
-            title: "Live Market Prices",
-            description: "Get AI-powered price predictions and make smart purchasing decisions.",
+            title: t('buyerSlide2Title'),
+            description: t('buyerSlide2Desc'),
             color: "from-emerald-500 to-green-600",
         },
         {
             emoji: "💬",
-            title: "Connect with Sellers",
-            description: "Chat directly with farmers, track your orders, and join the community.",
+            title: t('buyerSlide3Title'),
+            description: t('buyerSlide3Desc'),
             color: "from-purple-500 to-pink-600",
         },
         {
             emoji: "🎯",
-            title: "Let's Get Started!",
-            description: "We'll show you around in a quick tour. Ready to explore?",
+            title: t('buyerSlide4Title'),
+            description: t('buyerSlide4Desc'),
             color: "from-orange-500 to-red-600",
         },
     ];
@@ -43,25 +43,25 @@ export function WelcomeModal({ userRole, onComplete }: WelcomeModalProps) {
         {
             emoji: "🚜",
             title: t('welcome') + "!",
-            description: "Reach thousands of buyers and sell your farm products directly online.",
+            description: t('sellerSlide1Desc'),
             color: "from-green-500 to-emerald-600",
         },
         {
             emoji: "💹",
-            title: "Market Intelligence",
-            description: "Get real-time price insights and maximize your profits with AI predictions.",
+            title: t('sellerSlide2Title'),
+            description: t('sellerSlide2Desc'),
             color: "from-blue-500 to-cyan-600",
         },
         {
             emoji: "📦",
-            title: "Easy Management",
-            description: "Add products, track orders, and manage your inventory all in one place.",
+            title: t('sellerSlide3Title'),
+            description: t('sellerSlide3Desc'),
             color: "from-purple-500 to-violet-600",
         },
         {
             emoji: "🎯",
-            title: "Let's Get Started!",
-            description: "We'll show you around in a quick tour. Ready to sell?",
+            title: t('sellerSlide4Title'),
+            description: t('sellerSlide4Desc'),
             color: "from-orange-500 to-amber-600",
         },
     ];
@@ -93,10 +93,10 @@ export function WelcomeModal({ userRole, onComplete }: WelcomeModalProps) {
                             <div
                                 key={index}
                                 className={`h-1.5 rounded-full transition-all duration-300 ${index === currentSlide
-                                        ? "w-8 bg-primary"
-                                        : index < currentSlide
-                                            ? "w-1.5 bg-primary/40"
-                                            : "w-1.5 bg-slate-200"
+                                    ? "w-8 bg-primary"
+                                    : index < currentSlide
+                                        ? "w-1.5 bg-primary/40"
+                                        : "w-1.5 bg-slate-200"
                                     }`}
                             />
                         ))}
@@ -105,7 +105,7 @@ export function WelcomeModal({ userRole, onComplete }: WelcomeModalProps) {
                         onClick={handleSkip}
                         className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors px-3 py-1 rounded-lg hover:bg-slate-50"
                     >
-                        Skip
+                        {t('skip')}
                     </button>
                 </div>
 
@@ -138,12 +138,12 @@ export function WelcomeModal({ userRole, onComplete }: WelcomeModalProps) {
                     >
                         {isLastSlide ? (
                             <>
-                                <span>Start Tour</span>
+                                <span>{t('startTour')}</span>
                                 <span className="text-xl">🚀</span>
                             </>
                         ) : (
                             <>
-                                <span>Next</span>
+                                <span>{t('next')}</span>
                                 <span className="text-xl">→</span>
                             </>
                         )}

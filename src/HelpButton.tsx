@@ -22,8 +22,8 @@ export function HelpButton() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all active:scale-95 ${isNewUser
-                        ? "bg-gradient-to-br from-primary to-emerald-500 animate-pulse"
-                        : "bg-slate-900 hover:bg-slate-800"
+                    ? "bg-gradient-to-br from-primary to-emerald-500 animate-pulse"
+                    : "bg-slate-900 hover:bg-slate-800"
                     }`}
                 title="Help & Tutorial"
             >
@@ -34,47 +34,45 @@ export function HelpButton() {
             {isOpen && (
                 <div className="fixed bottom-24 right-6 z-50 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 animate-scale-up">
                     <h3 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
-                        <span>💡</span> Need Help?
+                        <span>💡</span> {t('needHelp')}
                     </h3>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {/* Restart Tutorial */}
                         <button
                             onClick={handleRestartTutorial}
-                            className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-3"
+                            className="w-full text-left p-4 rounded-xl border border-slate-100 hover:border-primary hover:bg-primary/5 transition-all group mb-4"
                         >
-                            <span className="text-xl">🔄</span>
-                            <span>Restart Tutorial</span>
+                            <div className="font-bold text-slate-900 group-hover:text-primary mb-1 flex items-center justify-between">
+                                {t('restartTutorial')}
+                                <span>🔄</span>
+                            </div>
                         </button>
 
-                        {/* Quick Tips */}
-                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                            <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
-                                Quick Tips
-                            </p>
-                            <ul className="space-y-2 text-sm font-medium text-slate-600">
-                                <li className="flex items-start gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>Use the tabs to navigate between features</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>Check market prices before buying/selling</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>Message sellers/buyers directly</span>
-                                </li>
-                            </ul>
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
+                                {t('quickTips')}
+                            </h4>
+                            {[
+                                { icon: "🧭", text: t('tip1') },
+                                { icon: "💹", text: t('tip2') },
+                                { icon: "✉️", text: t('tip3') },
+                            ].map((tip, idx) => (
+                                <div key={idx} className="flex gap-3 items-start">
+                                    <span className="text-lg">{tip.icon}</span>
+                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                                        {tip.text}
+                                    </p>
+                                </div>
+                            ))}
                         </div>
 
-                        {/* Contact Support (Future) */}
-                        <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                            <p className="text-xs font-black text-blue-700 uppercase tracking-wider mb-1">
-                                Need more help?
+                        <div className="mt-6 pt-6 border-t border-slate-100">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                                {t('moreHelp')}
                             </p>
-                            <p className="text-sm font-medium text-blue-600">
-                                Contact support or check our video tutorials (coming soon)
+                            <p className="text-[10px] font-medium text-slate-500 leading-relaxed">
+                                {t('supportComingSoon')}
                             </p>
                         </div>
                     </div>

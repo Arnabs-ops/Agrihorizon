@@ -103,6 +103,7 @@ interface Review {
 export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [showMessaging, setShowMessaging] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [orderQuantities, setOrderQuantities] = useState<Record<string, number>>({});
@@ -359,35 +360,41 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
           {/* More Features Dropdown */}
           <div className="relative group/more flex-1">
             <button
-              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["prices", "community"].includes(activeTab)
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["prices", "community"].includes(activeTab) || showMoreMenu
                 ? "bg-slate-900 text-white shadow-xl"
                 : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
                 }`}
             >
               <span className="text-xl">✨</span>
               <span className="hidden md:inline">More</span>
-              <span className="text-[10px] opacity-50 ml-1">▼</span>
+              <span className={`text-[10px] opacity-50 ml-1 transition-transform ${showMoreMenu ? "rotate-180" : ""}`}>▼</span>
             </button>
 
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 p-2 opacity-0 translate-y-2 pointer-events-none group-hover/more:opacity-100 group-hover/more:translate-y-0 group-hover/more:pointer-events-auto transition-all duration-300 z-50">
-              {[
-                { id: "prices", label: t('marketIntelligence'), icon: "💰" },
-                { id: "community", label: t('communityHub'), icon: "🌱" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  data-tour-id={`${tab.id}-tab`}
-                  className={`w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
-                    ? "bg-primary/10 text-primary"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    }`}
-                >
-                  <span className="text-xl">{tab.icon}</span>
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+            {showMoreMenu && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 p-2 animate-scale-up z-50">
+                {[
+                  { id: "prices", label: t('marketIntelligence'), icon: "💰" },
+                  { id: "community", label: t('communityHub'), icon: "🌱" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setShowMoreMenu(false);
+                    }}
+                    data-tour-id={`${tab.id}-tab`}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
+                      ? "bg-primary/10 text-primary"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      }`}
+                  >
+                    <span className="text-xl">{tab.icon}</span>
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </nav>
       </div>
@@ -395,25 +402,25 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
       {activeTab === "overview" && (
         <div className="space-y-8 animate-entry">
           <div className="dashboard-grid">
-            <div className="bg-gradient-to-br from-indigo-950 to-indigo-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
+            <div className="bg-gradient-to-br from-blue-950 to-blue-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-blue-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
               <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
               <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">{t('marketplace')}</h3>
               <p className="text-6xl font-black mb-2">{marketplaceProducts.length}</p>
-              <p className="text-sm font-bold opacity-70">Verified products</p>
+              <p className="text-sm font-bold opacity-70">{t('verifiedProducts')}</p>
             </div>
 
             <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-slate-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
               <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
               <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">{t('myOrders')}</h3>
               <p className="text-6xl font-black mb-2">{activeOrders}</p>
-              <p className="text-sm font-bold opacity-70">Currently processing</p>
+              <p className="text-sm font-bold opacity-70">{t('currentlyProcessing')}</p>
             </div>
 
             <div className="bg-gradient-to-br from-slate-950 to-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-black/40 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
               <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">Lifetime Records</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">{t('lifetimeRecords')}</h3>
               <p className="text-6xl font-black mb-2">{buyerOrders.length}</p>
-              <p className="text-sm font-bold opacity-70">All time records</p>
+              <p className="text-sm font-bold opacity-70">{t('allTimeRecords')}</p>
             </div>
           </div>
 
@@ -423,7 +430,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
               <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
                 <span className="w-2 h-8 bg-primary rounded-full"></span>
-                Your Catalog Interests
+                {t('catalogInterests')}
               </h3>
               <div className="flex flex-wrap gap-3">
                 {profile.preferredProducts.map((product, index) => (
@@ -442,9 +449,9 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
                 <span className="w-2 h-8 bg-slate-900 rounded-full"></span>
-                Recent Activity
+                {t('recentActivity')}
               </h3>
-              <button onClick={() => setActiveTab("orders")} className="text-sm font-bold text-primary hover:underline">View All Orders →</button>
+              <button onClick={() => setActiveTab("orders")} className="text-sm font-bold text-primary hover:underline">{t('viewAllOrders')} →</button>
             </div>
             <div className="space-y-4">
               {buyerOrders.slice(0, 3).map((order) => (

@@ -20,19 +20,19 @@ export function OnboardingChecklist({ userRole }: OnboardingChecklistProps) {
     if (tutorialProgress?.dismissedChecklist) return null;
 
     const buyerTasks: ChecklistItem[] = [
-        { id: "browse_products", label: "Browse marketplace products", icon: "🏪" },
-        { id: "add_to_cart", label: "Add item to cart", icon: "🛒" },
-        { id: "place_order", label: "Place your first order", icon: "📦" },
-        { id: "check_prices", label: "Check market prices", icon: "💹" },
-        { id: "join_community", label: "Join the community", icon: "🌱" },
+        { id: "browse_products", label: t('browseProducts'), icon: "🏪" },
+        { id: "add_to_cart", label: t('addItemToCart'), icon: "🛒" },
+        { id: "place_order", label: t('placeFirstOrder'), icon: "📦" },
+        { id: "check_prices", label: t('checkMarketPrices'), icon: "💹" },
+        { id: "join_community", label: t('joinCommunityTask'), icon: "🌱" },
     ];
 
     const sellerTasks: ChecklistItem[] = [
-        { id: "add_product", label: "Add your first product", icon: "📦" },
-        { id: "check_prices", label: "Check market prices", icon: "💹" },
-        { id: "process_order", label: "Process your first order", icon: "✅" },
-        { id: "view_analytics", label: "View your analytics", icon: "📊" },
-        { id: "join_community", label: "Join the community", icon: "🌱" },
+        { id: "add_product", label: t('addFirstProduct'), icon: "📦" },
+        { id: "check_prices", label: t('checkMarketPrices'), icon: "💹" },
+        { id: "process_order", label: t('processFirstOrder'), icon: "✅" },
+        { id: "view_analytics", label: t('viewAnalyticsTask'), icon: "📊" },
+        { id: "join_community", label: t('joinCommunityTask'), icon: "🌱" },
     ];
 
     const tasks = userRole === "buyer" ? buyerTasks : sellerTasks;
@@ -53,10 +53,10 @@ export function OnboardingChecklist({ userRole }: OnboardingChecklistProps) {
                     </div>
                     <div>
                         <h3 className="text-lg font-black text-slate-900">
-                            {isCompleted ? "🎉 All Done!" : "Getting Started"}
+                            {isCompleted ? t('allDone') : t('gettingStarted')}
                         </h3>
                         <p className="text-xs font-bold text-slate-500">
-                            {completedCount} of {tasks.length} completed
+                            {completedCount} {t('of')} {tasks.length} {t('completedTask')}
                         </p>
                     </div>
                 </div>
@@ -96,22 +96,22 @@ export function OnboardingChecklist({ userRole }: OnboardingChecklistProps) {
                             <div
                                 key={task.id}
                                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${isCompleted
-                                        ? "bg-emerald-50 border-emerald-200"
-                                        : "bg-white border-slate-200 hover:border-primary/30"
+                                    ? "bg-emerald-50 border-emerald-200"
+                                    : "bg-white border-slate-200 hover:border-primary/30"
                                     }`}
                             >
                                 <div
                                     className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black transition-all ${isCompleted
-                                            ? "bg-emerald-500 text-white"
-                                            : "bg-slate-100 text-slate-400"
+                                        ? "bg-emerald-500 text-white"
+                                        : "bg-slate-100 text-slate-400"
                                         }`}
                                 >
                                     {isCompleted ? "✓" : task.icon}
                                 </div>
                                 <span
                                     className={`flex-1 font-bold text-sm ${isCompleted
-                                            ? "text-emerald-700 line-through"
-                                            : "text-slate-700"
+                                        ? "text-emerald-700 line-through"
+                                        : "text-slate-700"
                                         }`}
                                 >
                                     {task.label}
@@ -127,7 +127,7 @@ export function OnboardingChecklist({ userRole }: OnboardingChecklistProps) {
                 <div className="mt-6 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-2xl p-4 text-center">
                     <p className="text-2xl mb-2">🎊</p>
                     <p className="font-black text-emerald-700 text-sm">
-                        Great job! You're all set to get started!
+                        {t('celebrationMessage')}
                     </p>
                 </div>
             )}
