@@ -371,7 +371,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
 
                   {/* Simple Visual Chart */}
                   <div className="lg:col-span-2">
-                    <div className="flex items-end justify-center gap-6 h-56 bg-white border border-slate-100 rounded-3xl p-8 relative overflow-hidden group/chart">
+                    <div className="flex items-end justify-center gap-6 h-56 bg-white border border-slate-100 rounded-3xl p-8 relative group/chart">
                       {/* Grid lines */}
                       <div className="absolute inset-0 flex flex-col justify-between py-8 px-6">
                         {[1, 2, 3, 4].map(i => <div key={i} className="w-full border-t border-slate-100 border-dashed transition-colors group-hover/chart:border-slate-200"></div>)}

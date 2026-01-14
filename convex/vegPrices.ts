@@ -373,7 +373,7 @@ CONFIDENCE: [High/Medium/Low]`;
           "X-Title": "AgriHorizon Price Predictor"
         },
         body: JSON.stringify({
-          model: "meta-llama/llama-3.2-3b-instruct:free",
+          model: "xiaomi/mimo-v2-flash:free",
           messages: [
             {
               role: "system",
