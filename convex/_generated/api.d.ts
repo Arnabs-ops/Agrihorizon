@@ -12,6 +12,7 @@ import type * as advisor from "../advisor.js";
 import type * as auth from "../auth.js";
 import type * as community from "../community.js";
 import type * as files from "../files.js";
+import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
 import type * as messages from "../messages.js";
 import type * as notifications from "../notifications.js";
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   community: typeof community;
   files: typeof files;
+  helpers: typeof helpers;
   http: typeof http;
   messages: typeof messages;
   notifications: typeof notifications;

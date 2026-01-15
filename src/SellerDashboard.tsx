@@ -12,7 +12,10 @@ import sellerBg from "./assets/seller_bg.png";
 import { WelcomeModal } from "./WelcomeModal";
 import { HelpButton } from "./HelpButton";
 import { useTutorial } from "./TutorialProvider";
-import { SellerDashboardProps, Product, Order, AnalyticsData } from "./types/seller";
+import { useFormatters } from "./hooks/useFormatters";
+import { useErrorHandler } from "./hooks/useErrorHandler";
+import { OrderStatus } from "./lib/constants";
+import type { SellerDashboardProps, Product, OrderWithDetails, AnalyticsData } from "./types";
 import { SellerOverview } from "./components/seller/SellerOverview";
 import { SellerInventory } from "./components/seller/SellerInventory";
 import { SellerOrders } from "./components/seller/SellerOrders";
@@ -32,11 +35,13 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const { tutorialProgress } = useTutorial();
 
   const { t } = useLanguage();
+  const { formatPrice, formatDate, getStatusColor } = useFormatters();
+  const { handleError, handleSuccess } = useErrorHandler();
 
   const { profile } = userProfile;
-  const sellerProducts: Product[] = (useQuery(api.products.getSellerProducts) as any) || [];
-  const sellerOrders: Order[] = (useQuery(api.orders.getSellerOrders) as any) || [];
-  const analytics: AnalyticsData | undefined = useQuery(api.orders.getSellerAnalytics) as any;
+  const sellerProducts = (useQuery(api.products.getSellerProducts) || []) as Product[];
+  const sellerOrders = (useQuery(api.orders.getSellerOrders) || []) as OrderWithDetails[];
+  const analytics = useQuery(api.orders.getSellerAnalytics) as AnalyticsData | undefined;
 
 
   const addProduct = useMutation(api.products.addProduct);
@@ -50,59 +55,34 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
 
   const handleProcessOrder = useCallback(async (orderId: Id<"orders">) => {
     try {
-      await updateOrderStatus({ orderId, status: "processing" });
-      toast.success("Order status updated to processing");
+      await updateOrderStatus({ orderId, status: OrderStatus.PROCESSING });
+      handleSuccess(t('orderStatusUpdated') || "Order status updated to processing");
     } catch (error) {
-      toast.error("Failed to update order status");
-      console.error(error);
+      handleError(error, t('orderStatusUpdateFailed') || "Failed to update order status");
     }
-  }, [updateOrderStatus]);
+  }, [updateOrderStatus, handleSuccess, handleError, t]);
 
   const handleCompleteOrder = useCallback(async (orderId: Id<"orders">) => {
     try {
-      await updateOrderStatus({ orderId, status: "delivered" });
-      toast.success("Order marked as delivered");
+      await updateOrderStatus({ orderId, status: OrderStatus.DELIVERED });
+      handleSuccess(t('orderMarkedDelivered') || "Order marked as delivered");
     } catch (error) {
-      toast.error("Failed to update order status");
-      console.error(error);
+      handleError(error, t('orderStatusUpdateFailed') || "Failed to update order status");
     }
-  }, [updateOrderStatus]);
+  }, [updateOrderStatus, handleSuccess, handleError, t]);
 
   const handleDeleteProduct = useCallback(async (productId: Id<"products">) => {
     if (window.confirm(t('confirmDelete'))) {
       try {
         await deleteProduct({ productId });
-        toast.success(t('productDeleted'));
+        handleSuccess(t('productDeleted') || "Product deleted successfully");
       } catch (error) {
-        toast.error("Failed to delete product");
-        console.error(error);
+        handleError(error, t('productDeleteFailed') || "Failed to delete product");
       }
     }
-  }, [deleteProduct, t]);
+  }, [deleteProduct, handleSuccess, handleError, t]);
 
   const handleAddProduct = useCallback(() => setShowAddProduct(true), []);
-
-  const formatPrice = useCallback((price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(price);
-  }, []);
-
-  const formatDate = useCallback((timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString();
-  }, []);
-
-  const getStatusColor = useCallback((status: string) => {
-    switch (status) {
-      case "delivered": return "bg-green-100 text-green-800";
-      case "shipped": return "bg-blue-100 text-blue-800";
-      case "processing": return "bg-yellow-100 text-yellow-800";
-      case "pending": return "bg-gray-100 text-gray-800";
-      case "cancelled": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  }, []);
 
   return (
     <div className="space-y-8 animate-entry">
@@ -245,9 +225,6 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
           profile={profile}
           sellerOrders={sellerOrders}
           setActiveTab={setActiveTab}
-          formatPrice={formatPrice}
-          formatDate={formatDate}
-          getStatusColor={getStatusColor}
         />
       )}
 
@@ -266,9 +243,6 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
           sellerOrders={sellerOrders}
           onProcessOrder={handleProcessOrder}
           onCompleteOrder={handleCompleteOrder}
-          formatPrice={formatPrice}
-          formatDate={formatDate}
-          getStatusColor={getStatusColor}
         />
       )}
 
@@ -292,7 +266,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
       )}
 
       {activeTab === "portfolio" && (
-        <FarmPortfolio userProfile={userProfile as any} />
+        <FarmPortfolio userProfile={userProfile} />
       )}
 
       {/* Tutorial Components */}
@@ -317,16 +291,15 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             try {
               if (editingProduct) {
                 await updateProduct({ productId: editingProduct._id, ...productData });
-                toast.success("Product updated successfully!");
+                handleSuccess(t('productUpdated') || "Product updated successfully!");
               } else {
                 await addProduct(productData);
-                toast.success("Product added successfully!");
+                handleSuccess(t('productAdded') || "Product added successfully!");
               }
               setShowAddProduct(false);
               setEditingProduct(null);
             } catch (error) {
-              toast.error("Failed to save product");
-              console.error(error);
+              handleError(error, t('productSaveFailed') || "Failed to save product");
             }
           }}
         />

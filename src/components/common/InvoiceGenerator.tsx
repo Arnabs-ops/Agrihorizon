@@ -1,9 +1,9 @@
 import { useRef } from 'react';
 import { useLanguage } from '../../useLanguage';
-import { Order } from '../../types/seller';
+import { OrderWithDetails } from '../../types';
 
 interface InvoiceGeneratorProps {
-    order: Order;
+    order: OrderWithDetails;
     formatPrice: (price: number) => string;
     formatDate: (timestamp: number) => string;
     onClose: () => void;

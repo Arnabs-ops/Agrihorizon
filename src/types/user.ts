@@ -1,4 +1,4 @@
-import { Id } from "../../convex/_generated/dataModel";
+import { Id, Doc } from "../../convex/_generated/dataModel";
 
 export interface TutorialProgress {
     hasSeenWelcome: boolean;
@@ -21,9 +21,15 @@ export interface UserProfileData {
     cropTypes?: string[];
     preferredProducts?: string[];
     tutorialProgress?: TutorialProgress;
+    farmBio?: string; // For sellers
+    farmImages?: Id<"_storage">[]; // For sellers
+    isVerified?: boolean; // For sellers
 }
 
+// Properly type the auth user from Convex
+export type AuthUser = Doc<"users">;
+
 export interface UserProfile {
-    user: any; // Keeping 'any' for the auth user object as it comes from a different system, or we can define it if known.
+    user: AuthUser;
     profile: UserProfileData | null;
 }

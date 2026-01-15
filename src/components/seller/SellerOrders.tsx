@@ -1,28 +1,25 @@
 import React from 'react';
 import { useLanguage } from '../../useLanguage';
-import { Order } from '../../types/seller';
+import { useFormatters } from '../../hooks/useFormatters';
+import { OrderStatus } from '../../lib/constants';
+import type { OrderWithDetails } from '../../types';
 import { Id } from '../../../convex/_generated/dataModel';
 import { InvoiceGenerator } from '../common/InvoiceGenerator';
 
 interface SellerOrdersProps {
-    sellerOrders: Order[];
+    sellerOrders: OrderWithDetails[];
     onProcessOrder: (orderId: Id<"orders">) => void;
     onCompleteOrder: (orderId: Id<"orders">) => void;
-    formatPrice: (price: number) => string;
-    formatDate: (timestamp: number) => string;
-    getStatusColor: (status: string) => string;
 }
 
 export function SellerOrders({
     sellerOrders,
     onProcessOrder,
     onCompleteOrder,
-    formatPrice,
-    formatDate,
-    getStatusColor,
 }: SellerOrdersProps) {
     const { t } = useLanguage();
-    const [selectedOrderForInvoice, setSelectedOrderForInvoice] = React.useState<Order | null>(null);
+    const { formatPrice, formatDate, getStatusColor } = useFormatters();
+    const [selectedOrderForInvoice, setSelectedOrderForInvoice] = React.useState<OrderWithDetails | null>(null);
 
     return (
         <div className="space-y-6">
@@ -60,12 +57,12 @@ export function SellerOrders({
                                     {formatPrice(order.totalAmount)}
                                 </p>
                                 <div className="flex flex-col items-end gap-3">
-                                    <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
-                                        {t(order.status as any)}
+                                    <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status as OrderStatus)} shadow-sm`}>
+                                        {t(order.status as any) || order.status}
                                     </span>
 
                                     <div className="flex gap-2">
-                                        {order.status === "pending" && (
+                                        {order.status === OrderStatus.PENDING && (
                                             <button
                                                 onClick={() => onProcessOrder(order._id)}
                                                 className="bg-amber-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-amber-600 transition-all shadow-lg active:scale-95"
@@ -73,7 +70,7 @@ export function SellerOrders({
                                                 {t('processOrder')}
                                             </button>
                                         )}
-                                        {order.status === "processing" && (
+                                        {order.status === OrderStatus.PROCESSING && (
                                             <button
                                                 onClick={() => onCompleteOrder(order._id)}
                                                 className="bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg active:scale-95"
@@ -81,7 +78,7 @@ export function SellerOrders({
                                                 {t('markDelivered')}
                                             </button>
                                         )}
-                                        {order.status === "delivered" && (
+                                        {order.status === OrderStatus.DELIVERED && (
                                             <button
                                                 onClick={() => setSelectedOrderForInvoice(order)}
                                                 className="bg-slate-900 dark:bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-primary/90 transition-all shadow-lg active:scale-95 flex items-center gap-2"

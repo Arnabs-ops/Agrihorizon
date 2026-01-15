@@ -15,67 +15,15 @@ import { OnboardingChecklist } from "./OnboardingChecklist";
 import { HelpButton } from "./HelpButton";
 import { useTutorial } from "./TutorialProvider";
 import { VoiceInput } from "./components/common/VoiceInput";
-
-import { UserProfile } from "./types/user";
+import { useFormatters } from "./hooks/useFormatters";
+import { useErrorHandler } from "./hooks/useErrorHandler";
+import { OrderStatus, DeliverySteps, DeliveryStep } from "./lib/constants";
+import type { UserProfile, ProductWithSeller, OrderWithDetails } from "./types";
 
 interface BuyerDashboardProps {
   userProfile: UserProfile;
 }
 
-interface Product {
-  _id: Id<"products">;
-  sellerId: Id<"users">;
-  name: string;
-  description?: string;
-  price: number;
-  unit: string;
-  category: string;
-  stockQuantity: number;
-  imageEmoji: string;
-  imageStorageId?: Id<"_storage">;
-  imageUrl?: string | null;
-  isActive: boolean;
-  priceTiers?: Array<{ minQuantity: number; price: number }>;
-  seller: {
-    user: any;
-    profile: {
-      fullName: string;
-      businessName?: string;
-      [key: string]: any;
-    } | null;
-  };
-}
-
-interface Order {
-  _id: Id<"orders">;
-  status: string;
-  quantity: number;
-  unitPrice: number;
-  totalAmount: number;
-  orderDate: number;
-  productId: Id<"products">;
-  sellerId: Id<"users">;
-  deliveryAddress?: string;
-  isPaid?: boolean;
-  paymentDate?: number;
-  driverName?: string;
-  driverPhone?: string;
-  deliveryStep?: "assigning" | "picking_up" | "delivering" | "delivered";
-  product: {
-    name: string;
-    unit: string;
-    imageEmoji: string;
-    [key: string]: any;
-  } | null;
-  seller: {
-    user: any;
-    profile: {
-      fullName: string;
-      businessName?: string;
-      [key: string]: any;
-    } | null;
-  };
-}
 interface Review {
   _id: Id<"reviews">;
   productId: Id<"products">;
@@ -107,10 +55,12 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const { tutorialProgress } = useTutorial();
 
   const { t } = useLanguage();
+  const { formatPrice, formatDate, getStatusColor } = useFormatters();
+  const { handleError, handleSuccess } = useErrorHandler();
 
   const { user, profile } = userProfile;
-  const marketplaceProducts = (useQuery(api.products.getMarketplaceProducts) || []) as Product[];
-  const allOrders = (useQuery(api.orders.getBuyerOrders) || []) as Order[];
+  const marketplaceProducts = (useQuery(api.products.getMarketplaceProducts) || []) as ProductWithSeller[];
+  const allOrders = (useQuery(api.orders.getBuyerOrders) || []) as OrderWithDetails[];
   const createOrder = useMutation(api.orders.createOrder);
   const markOrdersAsPaid = useMutation(api.orders.markOrdersAsPaid);
   const deleteOrder = useMutation(api.orders.deleteOrder);
@@ -124,12 +74,11 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
       await markOrdersAsPaid({
         orderIds: cartItems.map(item => item._id)
       });
-      toast.success("Payment successful! Orders are now being processed.");
+      handleSuccess("Payment successful! Orders are now being processed.", "paymentSuccessful");
       setShowPayment(false);
       setShowCart(false);
     } catch (error) {
-      toast.error("Payment failed. Please try again.");
-      console.error(error);
+      handleError(error, t('paymentFailed') || "Payment failed. Please try again.");
     }
   };
 
@@ -150,7 +99,9 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
 
   // Calculate stats
   const activeOrders = buyerOrders.filter(order =>
-    order.status === "pending" || order.status === "processing" || order.status === "shipped"
+    order.status === OrderStatus.PENDING ||
+    order.status === OrderStatus.PROCESSING ||
+    order.status === OrderStatus.SHIPPED
   ).length;
 
   const handleCreateOrder = async (productId: Id<"products">, sellerId: Id<"users">) => {
@@ -170,27 +121,25 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
         deliveryAddress: profile.location,
       });
 
-      toast.success(t('addedToCart'));
+      handleSuccess(t('addedToCart') || "Added to cart successfully!");
       setOrderQuantities(prev => ({ ...prev, [productId]: 1 }));
     } catch (error) {
-      toast.error(t('addToCartFailed'));
-      console.error(error);
+      handleError(error, t('addToCartFailed') || "Failed to add to cart.");
     }
   };
 
   const handleRemoveFromCart = async (orderId: Id<"orders">) => {
     try {
       await deleteOrder({ orderId });
-      toast.success(t('removedFromCart') || "Item removed from cart");
+      handleSuccess(t('removedFromCart') || "Item removed from cart");
     } catch (error) {
-      toast.error(t('removeFailed') || "Failed to remove item");
-      console.error(error);
+      handleError(error, t('removeFailed') || "Failed to remove item");
     }
   };
 
   const handleUpdateAddress = async () => {
     if (!newAddress.trim()) {
-      toast.error("Please enter a valid address");
+      toast.error(t('addressRequired') || "Please enter a valid address");
       return;
     }
 
@@ -201,7 +150,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
         fullName: profile.fullName,
         location: newAddress,
       });
-      toast.success("Address updated!");
+      handleSuccess(t('addressUpdated') || "Address updated!");
 
       const addr = newAddress;
       setShowAddressModal(false);
@@ -215,16 +164,16 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
           quantity,
           deliveryAddress: addr,
         });
-        toast.success(t('addedToCart'));
+        handleSuccess(t('addedToCart') || "Added to cart successfully!");
         setOrderQuantities(prev => ({ ...prev, [pendingOrder.productId]: 1 }));
         setPendingOrder(null);
       }
     } catch (error) {
-      toast.error("Failed to update address");
+      handleError(error, t('addressUpdateFailed') || "Failed to update address");
     }
   };
 
-  const calculateItemTotal = (item: Order) => {
+  const calculateItemTotal = (item: OrderWithDetails) => {
     // Frontend logic to find the correct tier price for cart display
     let unitPrice = item.unitPrice || 0;
     const product = marketplaceProducts.find(p => p._id === item.productId);
@@ -245,27 +194,6 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
 
   const cartTotal = calculateCartTotal();
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(price);
-  };
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString();
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "delivered": return "bg-green-100 text-green-800";
-      case "shipped": return "bg-blue-100 text-blue-800";
-      case "processing": return "bg-yellow-100 text-yellow-800";
-      case "pending": return "bg-gray-100 text-gray-800";
-      case "cancelled": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
 
   return (
     <div className="space-y-8 animate-entry">
@@ -466,8 +394,8 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
-                      {order.status}
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status as OrderStatus)} shadow-sm`}>
+                      {t(order.status as any) || order.status}
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{formatDate(order.orderDate)}</span>
                   </div>
@@ -619,8 +547,8 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                     <p className="font-black text-slate-900 text-2xl mb-2">
                       {formatPrice(order.totalAmount)}
                     </p>
-                    <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
-                      {t(order.status as any)}
+                    <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status as OrderStatus)} shadow-sm`}>
+                      {t(order.status as any) || order.status}
                     </span>
                   </div>
                 </div>
@@ -649,21 +577,22 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                       <div
                         className="absolute top-4 left-0 h-1 bg-primary rounded-full transition-all duration-1000"
                         style={{
-                          width: order.deliveryStep === "assigning" ? "12%" :
-                            order.deliveryStep === "picking_up" ? "37%" :
-                              order.deliveryStep === "delivering" ? "62%" : "100%"
+                          width: order.deliveryStep === DeliverySteps.ASSIGNING ? "12%" :
+                            order.deliveryStep === DeliverySteps.PICKING_UP ? "37%" :
+                              order.deliveryStep === DeliverySteps.DELIVERING ? "62%" : "100%"
                         }}
                       ></div>
 
                       {/* Steps */}
                       <div className="relative flex justify-between">
                         {[
-                          { step: "assigning", icon: "📋", label: t('assigning') },
-                          { step: "picking_up", icon: "📦", label: t('picking_up') },
-                          { step: "delivering", icon: "🚚", label: t('delivering') },
-                          { step: "delivered", icon: "🏠", label: t('deliveredStatus') },
+                          { step: DeliverySteps.ASSIGNING, icon: "📋", label: t('assigning') },
+                          { step: DeliverySteps.PICKING_UP, icon: "📦", label: t('picking_up') },
+                          { step: DeliverySteps.DELIVERING, icon: "🚚", label: t('delivering') },
+                          { step: DeliverySteps.DELIVERED, icon: "🏠", label: t('deliveredStatus') },
                         ].map((s, idx) => {
-                          const isCompleted = ["assigning", "picking_up", "delivering", "delivered"].indexOf(order.deliveryStep!) >= idx;
+                          const stepOrder = [DeliverySteps.ASSIGNING, DeliverySteps.PICKING_UP, DeliverySteps.DELIVERING, DeliverySteps.DELIVERED];
+                          const isCompleted = stepOrder.indexOf(order.deliveryStep as DeliveryStep) >= idx;
                           const isActive = order.deliveryStep === s.step;
 
                           return (
@@ -899,16 +828,17 @@ function ProductReviews({ productId }: { productId: Id<"products"> }) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const { t } = useLanguage();
+  const { handleError, handleSuccess } = useErrorHandler();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await postReview({ productId, rating, comment });
-      toast.success("Review posted!");
+      handleSuccess("Review posted!", "reviewPosted");
       setShowForm(false);
       setComment("");
     } catch (error) {
-      toast.error("Failed to post review");
+      handleError(error, t('reviewFailed') || "Failed to post review");
     }
   };
 

@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import { VoiceInput } from "./components/common/VoiceInput";
+import { ConversationWithDetails, MessageWithSender } from "./types";
 
 interface MessagingSystemProps {
   onClose: () => void;
@@ -14,11 +15,11 @@ export function MessagingSystem({ onClose }: MessagingSystemProps) {
   const [showNewConversation, setShowNewConversation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const conversations = useQuery(api.messages.getUserConversations) || [];
-  const messages = useQuery(
+  const conversations = (useQuery(api.messages.getUserConversations) || []) as ConversationWithDetails[];
+  const messages = (useQuery(
     api.messages.getConversationMessages,
     selectedConversation ? { conversationId: selectedConversation } : "skip"
-  ) || [];
+  ) || []) as MessageWithSender[];
   const allUsers = useQuery(api.messages.getAllUsers) || [];
 
   const sendMessage = useMutation(api.messages.sendMessage);
@@ -112,12 +113,11 @@ export function MessagingSystem({ onClose }: MessagingSystemProps) {
               </div>
             ) : (
               conversations
-                .filter((conversation): conversation is NonNullable<typeof conversation> => conversation !== null)
                 .map((conversation) => (
                   <div
                     key={conversation._id}
-                    onClick={() => setSelectedConversation(conversation._id)}
-                    className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${selectedConversation === conversation._id ? "bg-green-50" : ""
+                    onClick={() => setSelectedConversation(conversation._id as Id<"conversations">)}
+                    className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${selectedConversation === (conversation._id as Id<"conversations">) ? "bg-green-50" : ""
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -244,7 +244,7 @@ export function MessagingSystem({ onClose }: MessagingSystemProps) {
                   .map((userProfile) => (
                     <div
                       key={userProfile.user!._id}
-                      onClick={() => handleStartNewConversation(userProfile.user!._id)}
+                      onClick={() => handleStartNewConversation(userProfile.user!._id as Id<"users">)}
                       className="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
                     >
                       <div className="flex items-center gap-3">

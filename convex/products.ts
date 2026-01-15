@@ -1,41 +1,22 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuth, requireRole, enrichProductWithSeller, Errors } from "./helpers";
 
 // Get all active products for marketplace
 export const getMarketplaceProducts = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
+    await requireAuth(ctx);
 
     const products = await ctx.db
       .query("products")
       .withIndex("by_active", (q) => q.eq("isActive", true))
       .collect();
 
-    // Get seller details for each product
+    // Enrich products with seller details
     const productsWithSellers = await Promise.all(
-      products.map(async (product) => {
-        const seller = await ctx.db.get(product.sellerId);
-        const sellerProfile = await ctx.db
-          .query("userProfiles")
-          .withIndex("by_user_id", (q) => q.eq("userId", product.sellerId))
-          .unique();
-
-        const imageUrl = product.imageStorageId ? await ctx.storage.getUrl(product.imageStorageId) : null;
-
-        return {
-          ...product,
-          imageUrl,
-          seller: {
-            user: seller,
-            profile: sellerProfile,
-          },
-        };
-      })
+      products.map(product => enrichProductWithSeller(ctx, product))
     );
 
     return productsWithSellers.filter(p => p.seller.user && p.seller.profile);
@@ -46,10 +27,7 @@ export const getMarketplaceProducts = query({
 export const getSellerProducts = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
+    const userId = await requireAuth(ctx);
 
     const products = await ctx.db
       .query("products")
@@ -81,20 +59,7 @@ export const addProduct = mutation({
     priceTiers: v.optional(v.array(v.object({ minQuantity: v.number(), price: v.number() }))),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
-
-    // Verify user is a seller
-    const userProfile = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_user_id", (q) => q.eq("userId", userId))
-      .unique();
-
-    if (!userProfile || userProfile.role !== "seller") {
-      throw new Error("Only sellers can add products");
-    }
+    const { userId } = await requireRole(ctx, "seller");
 
     const productId = await ctx.db.insert("products", {
       sellerId: userId,
@@ -161,14 +126,10 @@ export const updateProduct = mutation({
 export const deleteProduct = mutation({
   args: { productId: v.id("products") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
-
+    const userId = await requireAuth(ctx);
     const product = await ctx.db.get(args.productId);
     if (!product || product.sellerId !== userId) {
-      throw new Error("Product not found or access denied");
+      throw new Error(Errors.ACCESS_DENIED);
     }
 
     await ctx.db.delete(args.productId);

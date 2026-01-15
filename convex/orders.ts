@@ -1,8 +1,8 @@
 import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
+import { requireAuth, requireRole, enrichOrderWithDetails, Errors } from "./helpers";
 
 const FAKE_DRIVERS = [
   { name: "Rajesh Kumar", phone: "+91 98765-43210" },
@@ -21,20 +21,7 @@ export const createOrder = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
-
-    // Verify user is a buyer
-    const userProfile = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_user_id", (q) => q.eq("userId", userId))
-      .unique();
-
-    if (!userProfile || userProfile.role !== "buyer") {
-      throw new Error("Only buyers can create orders");
-    }
+    const { userId } = await requireRole(ctx, "buyer");
 
     // Get product details
     const product = await ctx.db.get(args.productId);
@@ -103,20 +90,7 @@ export const markOrdersAsPaid = mutation({
     orderIds: v.array(v.id("orders")),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
-
-    // Verify user is a buyer
-    const userProfile = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_user_id", (q) => q.eq("userId", userId))
-      .unique();
-
-    if (!userProfile || userProfile.role !== "buyer") {
-      throw new Error("Only buyers can mark orders as paid");
-    }
+    const { userId } = await requireRole(ctx, "buyer");
 
     const paymentDate = Date.now();
     const failedOrders: { orderId: Id<"orders">; productName: string; reason: string }[] = [];
@@ -238,10 +212,7 @@ export const advanceDeliverySimulation = internalMutation({
 export const getBuyerOrders = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
+    const userId = await requireAuth(ctx);
 
     const orders = await ctx.db
       .query("orders")
@@ -249,25 +220,9 @@ export const getBuyerOrders = query({
       .order("desc")
       .collect();
 
-    // Get product and seller details for each order
+    // Enrich orders with details
     const ordersWithDetails = await Promise.all(
-      orders.map(async (order) => {
-        const product = await ctx.db.get(order.productId);
-        const seller = await ctx.db.get(order.sellerId);
-        const sellerProfile = await ctx.db
-          .query("userProfiles")
-          .withIndex("by_user_id", (q) => q.eq("userId", order.sellerId))
-          .unique();
-
-        return {
-          ...order,
-          product,
-          seller: {
-            user: seller,
-            profile: sellerProfile,
-          },
-        };
-      })
+      orders.map(order => enrichOrderWithDetails(ctx, order))
     );
 
     return ordersWithDetails;
@@ -278,10 +233,7 @@ export const getBuyerOrders = query({
 export const getSellerOrders = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
+    const userId = await requireAuth(ctx);
 
     // Only show paid orders to sellers
     const allOrders = await ctx.db
@@ -292,25 +244,9 @@ export const getSellerOrders = query({
 
     const orders = allOrders.filter(order => order.isPaid === true || order.isPaid === undefined);
 
-    // Get product and buyer details for each order
+    // Enrich orders with details
     const ordersWithDetails = await Promise.all(
-      orders.map(async (order) => {
-        const product = await ctx.db.get(order.productId);
-        const buyer = await ctx.db.get(order.buyerId);
-        const buyerProfile = await ctx.db
-          .query("userProfiles")
-          .withIndex("by_user_id", (q) => q.eq("userId", order.buyerId))
-          .unique();
-
-        return {
-          ...order,
-          product,
-          buyer: {
-            user: buyer,
-            profile: buyerProfile,
-          },
-        };
-      })
+      orders.map(order => enrichOrderWithDetails(ctx, order))
     );
 
     return ordersWithDetails;
@@ -330,14 +266,10 @@ export const updateOrderStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
-
+    const userId = await requireAuth(ctx);
     const order = await ctx.db.get(args.orderId);
     if (!order || order.sellerId !== userId) {
-      throw new Error("Order not found or access denied");
+      throw new Error(Errors.ACCESS_DENIED);
     }
 
     await ctx.db.patch(args.orderId, {
@@ -363,10 +295,7 @@ export const updateOrderStatus = mutation({
 export const getSellerAnalytics = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
+    const userId = await requireAuth(ctx);
 
     const orders = await ctx.db
       .query("orders")
@@ -434,14 +363,10 @@ export const getSellerAnalytics = query({
 export const deleteOrder = mutation({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
-
+    const userId = await requireAuth(ctx);
     const order = await ctx.db.get(args.orderId);
     if (!order || order.buyerId !== userId) {
-      throw new Error("Order not found or access denied");
+      throw new Error(Errors.ACCESS_DENIED);
     }
 
     // Only allow deleting unpaid orders (cart items)

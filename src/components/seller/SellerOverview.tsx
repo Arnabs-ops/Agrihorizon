@@ -1,16 +1,15 @@
 import React from 'react';
 import { OnboardingChecklist } from '../../OnboardingChecklist';
 import { useLanguage } from '../../useLanguage';
-import { AnalyticsData, Order, UserProfile } from '../../types/seller';
+import { useFormatters } from '../../hooks/useFormatters';
+import { OrderStatus } from '../../lib/constants';
+import type { AnalyticsData, OrderWithDetails, UserProfile } from '../../types';
 
 interface SellerOverviewProps {
     analytics: AnalyticsData;
     profile: UserProfile['profile'];
-    sellerOrders: Order[];
+    sellerOrders: OrderWithDetails[];
     setActiveTab: (tab: string) => void;
-    formatPrice: (price: number) => string;
-    formatDate: (timestamp: number) => string;
-    getStatusColor: (status: string) => string;
 }
 
 export function SellerOverview({
@@ -18,11 +17,9 @@ export function SellerOverview({
     profile,
     sellerOrders,
     setActiveTab,
-    formatPrice,
-    formatDate,
-    getStatusColor,
 }: SellerOverviewProps) {
     const { t } = useLanguage();
+    const { formatPrice, formatDate, getStatusColor } = useFormatters();
 
     if (!profile) return null;
 
@@ -124,8 +121,8 @@ export function SellerOverview({
                                         <p className="font-black text-slate-900 dark:text-white">{t('orderFrom')} {order.buyer.profile?.fullName}</p>
                                         <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{order.product?.name} • {order.quantity} {order.product?.unit}</p>
                                     </div>
-                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status)} shadow-sm`}>
-                                        {t(order.status as any)}
+                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusColor(order.status as OrderStatus)} shadow-sm`}>
+                                        {t(order.status as any) || order.status}
                                     </span>
                                 </div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{formatDate(order.orderDate)}</p>
