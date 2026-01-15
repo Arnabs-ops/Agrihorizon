@@ -3,6 +3,7 @@ import { useAction, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { toast } from "sonner";
 import { useLanguage } from "./useLanguage.tsx";
+import { VoiceInput } from "./components/common/VoiceInput";
 
 interface MarketPricesProps {
   userRole: "seller" | "buyer";
@@ -39,9 +40,69 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
   const { t, language } = useLanguage();
   const getComprehensivePriceData = useAction(api.vegPrices.getComprehensivePriceData);
   const getSalesStrategy = useAction(api.vegPrices.getSalesStrategy);
+  const parseVoiceQuery = useAction(api.vegPrices.parseVoiceQuery);
+
+  const [isListening, setIsListening] = useState(false);
+
+  const handleVoiceSearch = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast.error("Voice search not supported in this browser");
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast.info(t('voiceSearchStart'));
+    };
+
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      toast.success(`${t('listening')}: "${transcript}"`);
+
+      try {
+        const parsed = await parseVoiceQuery({ query: transcript, language });
+        if (parsed.vegetable && parsed.location) {
+          setVegetable(parsed.vegetable);
+          setLocation(parsed.location);
+
+          // Trigger search after state update
+          setTimeout(() => {
+            const searchBtn = document.getElementById('search-btn');
+            if (searchBtn) searchBtn.click();
+          }, 500);
+        } else {
+          toast.error(t('voiceSearchError'));
+        }
+      } catch (e) {
+        console.error(e);
+        toast.error(t('voiceSearchError'));
+      }
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      toast.error(t('voiceSearchError'));
+    };
+
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
+  };
+
+  // Generic voice input for other fields
+  const handleGenericVoice = (setter: (v: any) => void) => (val: string) => setter(val);
+
 
   const [analyzing, setAnalyzing] = useState(false);
-  const [strategyData, setStrategyData] = useState<{
+  const [aiStrategyRes, setAiStrategyRes] = useState<{
     recommendation: string;
     reasoning: string;
     confidence: string;
@@ -62,7 +123,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
         quantity,
         language: language,
       });
-      setStrategyData(result);
+      setAiStrategyRes(result);
       toast.success("AI Strategy analysis complete!");
     } catch (error) {
       toast.error("Strategy analysis failed");
@@ -166,18 +227,28 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
 
         {/* Search Form */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🍅</span>
+          <div className="relative group">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-transform group-focus-within:scale-110 z-10">🍅</span>
             <input
               type="text"
               placeholder={t('enterVegetable')}
               value={vegetable}
               onChange={(e) => setVegetable(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+              className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
             />
+            <button
+              onClick={handleVoiceSearch}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all active:scale-90 shadow-sm border border-slate-200 flex items-center justify-center z-20 ${isListening
+                ? 'bg-red-500 text-white animate-pulse border-red-400'
+                : 'bg-white text-slate-600 hover:text-primary hover:border-primary hover:shadow-md'
+                }`}
+              title="Voice Search"
+            >
+              🎤
+            </button>
           </div>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">📍</span>
+          <div className="relative group">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-transform group-focus-within:scale-110 z-10">📍</span>
             <input
               type="text"
               placeholder={t('enterLocation')}
@@ -187,6 +258,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
             />
           </div>
           <button
+            id="search-btn"
             onClick={handleSearch}
             disabled={loading}
             className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-primary/25 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
@@ -246,31 +318,23 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
                     <label className="block text-sm font-black text-slate-500 uppercase tracking-widest">
                       {t('estimatedYield')}
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">⚖️</span>
-                      <input
-                        type="number"
-                        placeholder="e.g. 500"
-                        value={quantity || ""}
-                        onChange={(e) => setQuantity(Number(e.target.value))}
-                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
-                      />
-                    </div>
+                    <VoiceInput
+                      value={quantity ? String(quantity) : ""}
+                      onChange={(val) => setQuantity(Number(val.replace(/[^0-9]/g, "")))}
+                      placeholder="e.g. 500"
+                      className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                    />
                   </div>
                   <div className="space-y-4">
                     <label className="block text-sm font-black text-slate-500 uppercase tracking-widest">
                       {t('productionCost')}
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">💰</span>
-                      <input
-                        type="number"
-                        placeholder="e.g. 5000"
-                        value={investment || ""}
-                        onChange={(e) => setInvestment(Number(e.target.value))}
-                        className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
-                      />
-                    </div>
+                    <VoiceInput
+                      value={investment ? String(investment) : ""}
+                      onChange={(val) => setInvestment(Number(val.replace(/[^0-9]/g, "")))}
+                      placeholder="e.g. 5000"
+                      className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                    />
                   </div>
                 </div>
 
@@ -318,7 +382,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
 
                     {/* AI Strategy Actions */}
                     <div className="lg:col-span-2 space-y-4">
-                      {!strategyData ? (
+                      {!aiStrategyRes ? (
                         <button
                           onClick={handleGetStrategy}
                           disabled={analyzing || !quantity || !investment}
@@ -337,34 +401,34 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
                           )}
                         </button>
                       ) : (
-                        <div className={`p-6 rounded-2xl border-2 animate-scale-up ${strategyData.recommendation.toUpperCase().includes("WAIT")
+                        <div className={`p-6 rounded-2xl border-2 animate-scale-up ${aiStrategyRes.recommendation?.toUpperCase().includes("WAIT")
                           ? "bg-amber-50 border-amber-200"
                           : "bg-emerald-50 border-emerald-200"
                           }`}>
                           <div className="flex items-start gap-4">
                             <div className="text-4xl bg-white p-2 rounded-xl shadow-sm">
-                              {strategyData.recommendation.toUpperCase().includes("WAIT") ? "⏳" : "✅"}
+                              {aiStrategyRes.recommendation?.toUpperCase().includes("WAIT") ? "⏳" : "✅"}
                             </div>
                             <div>
                               <div className="flex items-center gap-2 mb-1">
-                                <h5 className={`font-black uppercase tracking-tight text-lg ${strategyData.recommendation.toUpperCase().includes("WAIT")
+                                <h5 className={`font-black uppercase tracking-tight text-lg ${aiStrategyRes.recommendation?.toUpperCase().includes("WAIT")
                                   ? "text-amber-800"
                                   : "text-emerald-800"
                                   }`}>
-                                  {strategyData.recommendation}
+                                  {aiStrategyRes.recommendation}
                                 </h5>
                                 <span className="bg-white/50 px-2 py-0.5 rounded-lg text-[10px] font-bold text-slate-500 uppercase">
-                                  {strategyData.confidence} Confidence
+                                  {aiStrategyRes.confidence} Confidence
                                 </span>
                               </div>
-                              <p className={`font-medium leading-relaxed opacity-90 ${strategyData.recommendation.toUpperCase().includes("WAIT")
+                              <p className={`font-medium leading-relaxed opacity-90 ${aiStrategyRes.recommendation?.toUpperCase().includes("WAIT")
                                 ? "text-amber-900"
                                 : "text-emerald-900"
                                 }`}>
-                                {strategyData.reasoning}
+                                {aiStrategyRes.reasoning}
                               </p>
                               <button
-                                onClick={() => setStrategyData(null)}
+                                onClick={() => setAiStrategyRes(null)}
                                 className="mt-3 text-xs font-bold underline opacity-60 hover:opacity-100 transition-opacity"
                               >
                                 {t('reanalyze')}

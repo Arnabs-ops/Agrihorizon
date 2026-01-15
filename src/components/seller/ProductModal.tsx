@@ -3,6 +3,7 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { useLanguage } from "../../useLanguage";
+import { VoiceInput } from "../common/VoiceInput";
 
 interface ProductModalProps {
     product?: any;
@@ -99,12 +100,11 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                             <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
                                 {t('productName')}
                             </label>
-                            <input
-                                type="text"
+                            <VoiceInput
                                 value={formData.name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                onChange={(val) => setFormData(prev => ({ ...prev, name: val }))}
+                                placeholder={t('productName')}
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
-                                required
                             />
                         </div>
 
@@ -144,11 +144,12 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                             <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">
                                 {t('description')}
                             </label>
-                            <textarea
+                            <VoiceInput
+                                type="textarea"
                                 value={formData.description}
-                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium"
-                                rows={3}
+                                onChange={(val) => setFormData(prev => ({ ...prev, description: val }))}
+                                placeholder={t('description')}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-medium resize-none"
                             />
                         </div>
 

@@ -3,6 +3,7 @@ import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { toast } from "sonner";
 import { useLanguage } from "./useLanguage";
+import { VoiceInput } from "./components/common/VoiceInput";
 
 export function ProfileSetup() {
   const { t } = useLanguage();
@@ -103,13 +104,11 @@ export function ProfileSetup() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t('fullNameLabel')} <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
+            <VoiceInput
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              onChange={setFullName}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent font-medium"
               placeholder={t('fullNameLabel')}
-              required
             />
           </div>
           <div>
@@ -130,11 +129,10 @@ export function ProfileSetup() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t('locationLabel')}
           </label>
-          <input
-            type="text"
+          <VoiceInput
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            onChange={setLocation}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent font-medium"
             placeholder={t('locationPlaceholder')}
           />
         </div>
@@ -147,11 +145,10 @@ export function ProfileSetup() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t('businessFarmName')}
                 </label>
-                <input
-                  type="text"
+                <VoiceInput
                   value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={setBusinessName}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent font-medium"
                   placeholder={t('businessPlaceholder')}
                 />
               </div>

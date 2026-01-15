@@ -14,6 +14,7 @@ import { WelcomeModal } from "./WelcomeModal";
 import { OnboardingChecklist } from "./OnboardingChecklist";
 import { HelpButton } from "./HelpButton";
 import { useTutorial } from "./TutorialProvider";
+import { VoiceInput } from "./components/common/VoiceInput";
 
 import { UserProfile } from "./types/user";
 
@@ -476,12 +477,11 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-800">{t('marketplace')}</h2>
             <div className="flex gap-4">
-              <input
-                type="text"
-                placeholder={t('searchProducts')}
+              <VoiceInput
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                onChange={setSearchTerm}
+                placeholder={t('searchProducts')}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium"
               />
               <select
                 value={selectedCategory}
@@ -831,12 +831,12 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
                   Full Delivery Address
                 </label>
-                <textarea
+                <VoiceInput
+                  type="textarea"
                   value={newAddress}
-                  onChange={(e) => setNewAddress(e.target.value)}
+                  onChange={setNewAddress}
                   placeholder={t('addressPlaceholder')}
                   className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all font-bold text-slate-700 min-h-[120px] resize-none shadow-inner"
-                  required
                 />
               </div>
 
@@ -928,13 +928,12 @@ function ProductReviews({ productId }: { productId: Id<"products"> }) {
               </button>
             ))}
           </div>
-          <textarea
+          <VoiceInput
+            type="textarea"
             value={comment}
-            onChange={(e) => setComment(e.target.value)}
+            onChange={setComment}
             placeholder="Share your experience..."
-            className="w-full p-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-primary"
-            rows={2}
-            required
+            className="w-full p-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-primary resize-none"
           />
           <button type="submit" className="w-full py-2 bg-primary text-white text-[10px] font-black uppercase rounded-lg shadow-md active:scale-95 transition-all">
             Post Review

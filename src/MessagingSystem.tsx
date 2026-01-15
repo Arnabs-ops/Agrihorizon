@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
+import { VoiceInput } from "./components/common/VoiceInput";
 
 interface MessagingSystemProps {
   onClose: () => void;
@@ -65,9 +66,9 @@ export function MessagingSystem({ onClose }: MessagingSystemProps) {
   };
 
   const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -116,9 +117,8 @@ export function MessagingSystem({ onClose }: MessagingSystemProps) {
                   <div
                     key={conversation._id}
                     onClick={() => setSelectedConversation(conversation._id)}
-                    className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                      selectedConversation === conversation._id ? "bg-green-50" : ""
-                    }`}
+                    className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${selectedConversation === conversation._id ? "bg-green-50" : ""
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -159,7 +159,7 @@ export function MessagingSystem({ onClose }: MessagingSystemProps) {
                     </p>
                     <p className="text-sm text-gray-500">
                       {selectedConv.otherParticipant?.profile?.role === "seller" ? "Seller" : "Buyer"}
-                      {selectedConv.otherParticipant?.profile?.location && 
+                      {selectedConv.otherParticipant?.profile?.location &&
                         ` • ${selectedConv.otherParticipant.profile.location}`
                       }
                     </p>
@@ -177,18 +177,16 @@ export function MessagingSystem({ onClose }: MessagingSystemProps) {
                       className={`flex ${isFromOther ? "justify-start" : "justify-end"}`}
                     >
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          isFromOther
-                            ? "bg-gray-200 text-gray-800"
-                            : "bg-green-600 text-white"
-                        }`}
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isFromOther
+                          ? "bg-gray-200 text-gray-800"
+                          : "bg-green-600 text-white"
+                          }`}
                       >
                         <p>{message.content}</p>
-                        <p className={`text-xs mt-1 ${
-                          isFromOther
-                            ? "text-gray-500"
-                            : "text-green-100"
-                        }`}>
+                        <p className={`text-xs mt-1 ${isFromOther
+                          ? "text-gray-500"
+                          : "text-green-100"
+                          }`}>
                           {formatTime(message._creationTime)}
                         </p>
                       </div>
@@ -201,17 +199,16 @@ export function MessagingSystem({ onClose }: MessagingSystemProps) {
               {/* Message Input */}
               <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200">
                 <div className="flex gap-2">
-                  <input
-                    type="text"
+                  <VoiceInput
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={setNewMessage}
                     placeholder="Type your message..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent font-medium"
                   />
                   <button
                     type="submit"
                     disabled={!newMessage.trim()}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
                   >
                     Send
                   </button>

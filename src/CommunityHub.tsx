@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { toast } from "sonner";
 import { useLanguage } from "./useLanguage.tsx";
+import { VoiceInput } from "./components/common/VoiceInput";
 
 export function CommunityHub() {
     const [content, setContent] = useState("");
@@ -15,18 +16,18 @@ export function CommunityHub() {
 
     // Preload images for faster rendering
     useEffect(() => {
-      const preloadImages = () => {
-        const images = [
-          "/src/assets/buyer_bg.png",
-          "/src/assets/seller_bg.png",
-          "/src/assets/payment-qr.jpg"
-        ];
-        images.forEach((src) => {
-          const img = new Image();
-          img.src = src;
-        });
-      };
-      preloadImages();
+        const preloadImages = () => {
+            const images = [
+                "/src/assets/buyer_bg.png",
+                "/src/assets/seller_bg.png",
+                "/src/assets/payment-qr.jpg"
+            ];
+            images.forEach((src) => {
+                const img = new Image();
+                img.src = src;
+            });
+        };
+        preloadImages();
     }, []);
 
     const posts = useQuery(api.community.getPosts) || [];
@@ -54,7 +55,7 @@ export function CommunityHub() {
     const handleCreatePost = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!content.trim() && !image) return;
-        
+
         setIsUploading(true);
         try {
             let imageStorageId = undefined;
@@ -92,7 +93,7 @@ export function CommunityHub() {
     const handleAddComment = async (postId: any) => {
         const text = commentContent[postId];
         if (!text?.trim()) return;
-        
+
         try {
             await addComment({ postId, content: text });
             setCommentContent({ ...commentContent, [postId]: "" });
@@ -114,10 +115,11 @@ export function CommunityHub() {
             <div className="glass-morphism rounded-[2.5rem] shadow-2xl p-8 modern-shadow overflow-hidden relative border border-white/40">
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
                 <form onSubmit={handleCreatePost} className="space-y-6">
-                    <textarea
+                    <VoiceInput
+                        type="textarea"
                         placeholder={t('whatsOnYourMind')}
                         value={content}
-                        onChange={(e) => setContent(e.target.value)}
+                        onChange={setContent}
                         className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all resize-none h-32"
                     />
 
@@ -257,12 +259,10 @@ export function CommunityHub() {
                                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
                                     <span>💬</span>
                                 </div>
-                                <input
-                                    type="text"
-                                    placeholder={t('writeComment')}
+                                <VoiceInput
                                     value={commentContent[post._id] || ""}
-                                    onChange={(e) => setCommentContent({ ...commentContent, [post._id]: e.target.value })}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post._id)}
+                                    onChange={(val) => setCommentContent({ ...commentContent, [post._id]: val })}
+                                    placeholder={t('writeComment')}
                                     className="flex-1 pl-12 pr-12 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none font-bold transition-all placeholder:text-slate-300"
                                 />
                                 <button

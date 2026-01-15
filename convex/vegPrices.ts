@@ -693,3 +693,50 @@ export const getSalesStrategy = action({
     }
   }
 });
+
+// Parse natural language voice query
+export const parseVoiceQuery = action({
+  args: {
+    query: v.string(),
+    language: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    try {
+      const aiApiKey = process.env.OPENROUTER_API_KEY;
+      if (!aiApiKey) return { vegetable: "", location: "" };
+
+      const prompt = `Extract VEGETABLE and LOCATION from this voice search query: "${args.query}".
+      Language context: ${args.language || 'en'}.
+      Convert to English standard names (e.g., "Aloo" -> "Potato", "Kanda" -> "Onion").
+      
+      RESPOND JSON ONLY:
+      {"vegetable": "...", "location": "..."}
+      
+      If missing, return empty string.`;
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${aiApiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://convex.dev",
+          "X-Title": "AgriHorizon Voice Parser"
+        },
+        body: JSON.stringify({
+          model: "xiaomi/mimo-v2-flash:free",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 150
+        })
+      });
+
+      const result = await response.json();
+      const text = result.choices[0]?.message?.content || "{}";
+      const cleanJson = text.replace(/```json|```/g, '').trim();
+
+      return JSON.parse(cleanJson);
+    } catch (error) {
+      console.error("Voice parse error:", error);
+      return { vegetable: "", location: "" };
+    }
+  }
+});
