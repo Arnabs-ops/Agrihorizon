@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useLanguage } from '../../useLanguage';
 import { Product } from '../../types/seller';
 import { Id } from '../../../convex/_generated/dataModel';
@@ -11,7 +11,7 @@ interface SellerInventoryProps {
     formatPrice: (price: number) => string;
 }
 
-export function SellerInventory({
+export const SellerInventory = memo(function SellerInventory({
     sellerProducts,
     onAddProduct,
     onEditProduct,
@@ -46,7 +46,13 @@ export function SellerInventory({
                         <div key={product._id} className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-xl transition-all group modern-shadow">
                             <div className="relative h-48 mb-4 bg-slate-50 rounded-xl overflow-hidden group-hover:shadow-lg transition-all duration-500 flex items-center justify-center">
                                 {product.imageUrl ? (
-                                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <img
+                                        src={product.imageUrl}
+                                        alt={product.name}
+                                        loading="lazy"
+                                        decoding="async"
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                    />
                                 ) : (
                                     <span className="text-5xl group-hover:scale-120 transition-transform duration-500">{product.imageEmoji}</span>
                                 )}
@@ -111,4 +117,4 @@ export function SellerInventory({
             )}
         </div>
     );
-}
+});

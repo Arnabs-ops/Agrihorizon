@@ -36,8 +36,41 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
   const [quantity, setQuantity] = useState<number>(0);
   const [investment, setInvestment] = useState<number>(0);
 
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const getComprehensivePriceData = useAction(api.vegPrices.getComprehensivePriceData);
+  const getSalesStrategy = useAction(api.vegPrices.getSalesStrategy);
+
+  const [analyzing, setAnalyzing] = useState(false);
+  const [strategyData, setStrategyData] = useState<{
+    recommendation: string;
+    reasoning: string;
+    confidence: string;
+  } | null>(null);
+
+  const handleGetStrategy = async () => {
+    if (!priceData || !quantity || !investment || !priceData.currentPrice || !priceData.tomorrowPrediction) return;
+
+    setAnalyzing(true);
+    try {
+      const result = await getSalesStrategy({
+        vegetable: priceData.vegetable,
+        location: priceData.location,
+        currentPrice: priceData.currentPrice,
+        tomorrowMin: priceData.tomorrowPrediction.min,
+        tomorrowMax: priceData.tomorrowPrediction.max,
+        investment,
+        quantity,
+        language: language,
+      });
+      setStrategyData(result);
+      toast.success("AI Strategy analysis complete!");
+    } catch (error) {
+      toast.error("Strategy analysis failed");
+      console.error(error);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   // Preload images for faster rendering
   useEffect(() => {
@@ -91,6 +124,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
       const data = await getComprehensivePriceData({
         vegetable: vegetable.trim(),
         location: location.trim(),
+        language: language,
       });
 
       setPriceData(data as PriceData);
@@ -282,25 +316,63 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
                       </div>
                     </div>
 
-                    {/* AI Strategy Recommendation */}
-                    <div className={`lg:col-span-2 p-6 rounded-2xl border-2 flex items-center gap-6 ${((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2 > (priceData.currentPrice || 0) * 1.05
-                      ? "bg-amber-50 border-amber-200"
-                      : "bg-emerald-50 border-emerald-200"
-                      }`}>
-                      <div className="text-4xl">
-                        {((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2 > (priceData.currentPrice || 0) * 1.05 ? "⏳" : "✅"}
-                      </div>
-                      <div>
-                        <h5 className="font-black text-slate-900 uppercase tracking-tight text-sm mb-1">{t('strategyRecommendation')}</h5>
-                        <p className={`font-bold text-lg ${((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2 > (priceData.currentPrice || 0) * 1.05
-                          ? "text-amber-700"
-                          : "text-emerald-700"
+                    {/* AI Strategy Actions */}
+                    <div className="lg:col-span-2 space-y-4">
+                      {!strategyData ? (
+                        <button
+                          onClick={handleGetStrategy}
+                          disabled={analyzing || !quantity || !investment}
+                          className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                          {analyzing ? (
+                            <>
+                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                              {t('analyzing')}
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-xl">🤖</span>
+                              {t('getAiStrategy')}
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <div className={`p-6 rounded-2xl border-2 animate-scale-up ${strategyData.recommendation.toUpperCase().includes("WAIT")
+                          ? "bg-amber-50 border-amber-200"
+                          : "bg-emerald-50 border-emerald-200"
                           }`}>
-                          {((priceData.tomorrowPrediction?.min ?? 0) + (priceData.tomorrowPrediction?.max ?? 0)) / 2 > (priceData.currentPrice || 0) * 1.05
-                            ? t('waitLater')
-                            : t('sellNow')}
-                        </p>
-                      </div>
+                          <div className="flex items-start gap-4">
+                            <div className="text-4xl bg-white p-2 rounded-xl shadow-sm">
+                              {strategyData.recommendation.toUpperCase().includes("WAIT") ? "⏳" : "✅"}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h5 className={`font-black uppercase tracking-tight text-lg ${strategyData.recommendation.toUpperCase().includes("WAIT")
+                                  ? "text-amber-800"
+                                  : "text-emerald-800"
+                                  }`}>
+                                  {strategyData.recommendation}
+                                </h5>
+                                <span className="bg-white/50 px-2 py-0.5 rounded-lg text-[10px] font-bold text-slate-500 uppercase">
+                                  {strategyData.confidence} Confidence
+                                </span>
+                              </div>
+                              <p className={`font-medium leading-relaxed opacity-90 ${strategyData.recommendation.toUpperCase().includes("WAIT")
+                                ? "text-amber-900"
+                                : "text-emerald-900"
+                                }`}>
+                                {strategyData.reasoning}
+                              </p>
+                              <button
+                                onClick={() => setStrategyData(null)}
+                                className="mt-3 text-xs font-bold underline opacity-60 hover:opacity-100 transition-opacity"
+                              >
+                                {t('reanalyze')}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

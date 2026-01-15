@@ -15,19 +15,7 @@ import { OnboardingChecklist } from "./OnboardingChecklist";
 import { HelpButton } from "./HelpButton";
 import { useTutorial } from "./TutorialProvider";
 
-interface UserProfile {
-  user: any;
-  profile: {
-    role: "seller" | "buyer";
-    fullName: string;
-    phoneNumber?: string;
-    location?: string;
-    businessName?: string;
-    farmSize?: string;
-    cropTypes?: string[];
-    preferredProducts?: string[];
-  } | null;
-}
+import { UserProfile } from "./types/user";
 
 interface BuyerDashboardProps {
   userProfile: UserProfile;
@@ -120,14 +108,14 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const { t } = useLanguage();
 
   const { user, profile } = userProfile;
-  const marketplaceProducts: Product[] = (useQuery(api.products.getMarketplaceProducts) as any) || [];
-  const allOrders: Order[] = (useQuery(api.orders.getBuyerOrders) as any) || [];
+  const marketplaceProducts = (useQuery(api.products.getMarketplaceProducts) || []) as Product[];
+  const allOrders = (useQuery(api.orders.getBuyerOrders) || []) as Order[];
   const createOrder = useMutation(api.orders.createOrder);
   const markOrdersAsPaid = useMutation(api.orders.markOrdersAsPaid);
   const updateProfile = useMutation(api.users.createUserProfile);
 
-  const cartItems = useMemo(() => allOrders.filter((o: any) => o.isPaid === false), [allOrders]);
-  const buyerOrders = useMemo(() => allOrders.filter((o: any) => o.isPaid === true || o.isPaid === undefined), [allOrders]);
+  const cartItems = useMemo(() => allOrders.filter((o) => o.isPaid === false), [allOrders]);
+  const buyerOrders = useMemo(() => allOrders.filter((o) => o.isPaid === true || o.isPaid === undefined), [allOrders]);
 
   const handlePayment = async () => {
     try {

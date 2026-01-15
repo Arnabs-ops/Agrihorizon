@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { CommunityHub } from "./CommunityHub";
@@ -46,7 +46,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
     return <div>Error: Profile not found</div>;
   }
 
-  const handleProcessOrder = async (orderId: Id<"orders">) => {
+  const handleProcessOrder = useCallback(async (orderId: Id<"orders">) => {
     try {
       await updateOrderStatus({ orderId, status: "processing" });
       toast.success("Order status updated to processing");
@@ -54,9 +54,9 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
       toast.error("Failed to update order status");
       console.error(error);
     }
-  };
+  }, [updateOrderStatus]);
 
-  const handleCompleteOrder = async (orderId: Id<"orders">) => {
+  const handleCompleteOrder = useCallback(async (orderId: Id<"orders">) => {
     try {
       await updateOrderStatus({ orderId, status: "delivered" });
       toast.success("Order marked as delivered");
@@ -64,9 +64,9 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
       toast.error("Failed to update order status");
       console.error(error);
     }
-  };
+  }, [updateOrderStatus]);
 
-  const handleDeleteProduct = async (productId: Id<"products">) => {
+  const handleDeleteProduct = useCallback(async (productId: Id<"products">) => {
     if (window.confirm(t('confirmDelete'))) {
       try {
         await deleteProduct({ productId });
@@ -76,20 +76,22 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
         console.error(error);
       }
     }
-  };
+  }, [deleteProduct, t]);
 
-  const formatPrice = (price: number) => {
+  const handleAddProduct = useCallback(() => setShowAddProduct(true), []);
+
+  const formatPrice = useCallback((price: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR'
     }).format(price);
-  };
+  }, []);
 
-  const formatDate = (timestamp: number) => {
+  const formatDate = useCallback((timestamp: number) => {
     return new Date(timestamp).toLocaleDateString();
-  };
+  }, []);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case "delivered": return "bg-green-100 text-green-800";
       case "shipped": return "bg-blue-100 text-blue-800";
@@ -98,7 +100,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
       case "cancelled": return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
-  };
+  }, []);
 
   return (
     <div className="space-y-8 animate-entry">
@@ -248,7 +250,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
       {activeTab === "products" && (
         <SellerInventory
           sellerProducts={sellerProducts}
-          onAddProduct={() => setShowAddProduct(true)}
+          onAddProduct={handleAddProduct}
           onEditProduct={setEditingProduct}
           onDeleteProduct={handleDeleteProduct}
           formatPrice={formatPrice}

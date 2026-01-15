@@ -81,6 +81,10 @@ export const createUserProfile = mutation({
     },
 });
 
+import { Doc } from "./_generated/dataModel";
+
+// ... existing imports
+
 // Update user profile
 export const updateUserProfile = mutation({
     args: {
@@ -108,7 +112,7 @@ export const updateUserProfile = mutation({
         }
 
         // Update profile with provided fields
-        const updates: any = {};
+        const updates: Partial<Doc<"userProfiles">> = {};
         if (args.fullName !== undefined) updates.fullName = args.fullName;
         if (args.phoneNumber !== undefined) updates.phoneNumber = args.phoneNumber;
         if (args.location !== undefined) updates.location = args.location;

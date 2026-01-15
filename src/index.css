@@ -63,6 +63,7 @@
 
 .animate-entry {
   animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
 }
 
 @keyframes slowZoom {
@@ -77,6 +78,7 @@
 
 .animate-slow-zoom {
   animation: slowZoom 20s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 @keyframes float {
@@ -93,6 +95,7 @@
 
 .animate-float {
   animation: float 4s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* Custom Scrollbar */

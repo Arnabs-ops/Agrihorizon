@@ -1,14 +1,24 @@
 import React from 'react';
-import { useLanguage } from '../../useLanguage';
-import { AnalyticsData } from '../../types/seller';
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { useLanguage } from "../../useLanguage";
+import { AnalyticsData } from "../../types/seller";
 
-interface SellerAnalyticsProps {
-    analytics: AnalyticsData;
-    formatPrice: (price: number) => string;
-}
-
-export function SellerAnalytics({ analytics, formatPrice }: SellerAnalyticsProps) {
+export function SellerAnalytics() {
     const { t } = useLanguage();
+    const analytics = useQuery(api.orders.getSellerAnalytics) as AnalyticsData | undefined;
+
+    if (!analytics) {
+        return (
+            <div className="flex items-center justify-center p-12">
+                <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
+
+    // Placeholder for formatPrice since it's no longer passed as a prop.
+    // In a real application, this would be imported or defined locally.
+    const formatPrice = (price: number) => `$${price.toFixed(2)}`;
 
     return (
         <div className="space-y-6">

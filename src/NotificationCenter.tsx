@@ -1,19 +1,33 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
+import { Id } from "../convex/_generated/dataModel";
 import { formatDistanceToNow } from "date-fns";
 import { useLanguage } from "./useLanguage.tsx";
+
+export type NotificationType = "order_new" | "order_status" | "review_new" | "message" | "stock_empty";
+
+export interface Notification {
+    _id: Id<"notifications">;
+    userId: Id<"users">;
+    type: NotificationType;
+    title: string;
+    content: string;
+    isRead: boolean;
+    link?: string;
+    timestamp: number;
+}
 
 export function NotificationCenter({ onNavigate }: { onNavigate?: (link: string) => void }) {
     const { t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
-    const notifications = useQuery(api.notifications.getMyNotifications);
+    const notifications = useQuery(api.notifications.getMyNotifications) as Notification[] | undefined;
     const markAsRead = useMutation(api.notifications.markAsRead);
     const markAllAsRead = useMutation(api.notifications.markAllAsRead);
 
     const unreadCount = notifications?.filter((n) => !n.isRead).length || 0;
 
-    const handleNotificationClick = async (notification: any) => {
+    const handleNotificationClick = async (notification: Notification) => {
         if (!notification.isRead) {
             await markAsRead({ notificationId: notification._id });
         }

@@ -301,6 +301,7 @@ export const predictWithAI = action({
   args: {
     vegetable: v.string(),
     location: v.string(),
+    language: v.optional(v.string()),
     currentPrices: v.array(v.object({
       price: v.number(),
       source: v.string(),
@@ -320,6 +321,10 @@ export const predictWithAI = action({
       if (!aiApiKey) {
         throw new Error("OPENROUTER_API_KEY environment variable is not set. Please set it using 'convex env set OPENROUTER_API_KEY your-key'");
       }
+
+      const languageInstruction = args.language === 'hi'
+        ? "CRITICAL: The user's language is Hindi. Provide the ANALYSIS and REASONING in HINDI language only. Keep labels like 'CURRENT_PRICE' in English."
+        : "";
 
       // Prepare comprehensive context for AI
       const currentPricesText = args.currentPrices
@@ -360,7 +365,8 @@ CURRENT_PRICE: [single number only]
 TOMORROW_MIN: [single number only]  
 TOMORROW_MAX: [single number only]
 ANALYSIS: [Exactly 2-3 sentences. Mention the vegetable name explicitly. Do not mention rice.]
-CONFIDENCE: [High/Medium/Low]`;
+CONFIDENCE: [High/Medium/Low]
+${languageInstruction}`;
 
       console.log("Calling AI API with prompt:", prompt);
 
@@ -471,6 +477,7 @@ export const fetchCurrentPrice = action({
   args: {
     vegetable: v.string(),
     location: v.string(),
+    language: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<any> => {
     try {
@@ -502,6 +509,7 @@ export const fetchCurrentPrice = action({
       const aiPrediction = await ctx.runAction(api.vegPrices.predictWithAI, {
         vegetable: args.vegetable,
         location: args.location,
+        language: args.language,
         currentPrices: searchResults.map((r: any) => ({
           price: r.price,
           source: r.source,
@@ -544,6 +552,7 @@ export const getComprehensivePriceData = action({
   args: {
     vegetable: v.string(),
     location: v.string(),
+    language: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<any> => {
     const userId = await getAuthUserId(ctx);
@@ -558,6 +567,7 @@ export const getComprehensivePriceData = action({
       const priceData = await ctx.runAction(api.vegPrices.fetchCurrentPrice, {
         vegetable: args.vegetable,
         location: args.location,
+        language: args.language,
       });
 
       // Get historical data
@@ -580,4 +590,106 @@ export const getComprehensivePriceData = action({
       throw new Error("Failed to fetch comprehensive price data");
     }
   },
+});
+// ... existing code ...
+
+// AI-powered sales strategy recommendation
+export const getSalesStrategy = action({
+  args: {
+    vegetable: v.string(),
+    location: v.string(),
+    currentPrice: v.number(),
+    tomorrowMin: v.number(),
+    tomorrowMax: v.number(),
+    investment: v.number(),
+    quantity: v.number(),
+    language: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<any> => {
+    try {
+      const aiApiKey = process.env.OPENROUTER_API_KEY;
+      if (!aiApiKey) throw new Error("API Key missing");
+
+      // Calculate financials
+      const currentRevenue = args.currentPrice * args.quantity;
+      const currentProfit = currentRevenue - args.investment;
+      const currentROI = Math.round((currentProfit / args.investment) * 100);
+
+      const avgTomorrowPrice = (args.tomorrowMin + args.tomorrowMax) / 2;
+      const tomorrowRevenue = avgTomorrowPrice * args.quantity;
+      const tomorrowProfit = tomorrowRevenue - args.investment;
+      const tomorrowROI = Math.round((tomorrowProfit / args.investment) * 100);
+
+      const languageInstruction = args.language === 'hi'
+        ? "CRITICAL: The user's language is Hindi. Provide the RECOMMENDATION and REASONING in HINDI language only."
+        : "";
+
+      const prompt = `You are an expert agricultural financial advisor.
+      
+      SCENARIO:
+      Vegetable: ${args.vegetable} in ${args.location}
+      Investment Cost: ₹${args.investment}
+      Harvest Quantity: ${args.quantity} kg
+      
+      OPTION 1: SELL TODAY
+      Price: ₹${args.currentPrice}/kg
+      Profit: ₹${currentProfit} (ROI: ${currentROI}%)
+      
+      OPTION 2: SELL TOMORROW (Predicted)
+      Price Range: ₹${args.tomorrowMin} - ₹${args.tomorrowMax}/kg
+      Expected Profit: ₹${tomorrowProfit} (ROI: ${tomorrowROI}%)
+      
+      TASK:
+      Analyze the risk vs. reward. Is it worth waiting for tomorrow's potential price change given the risk of spoilage or price drop?
+      
+      RESPOND IN THIS EXACT FORMAT:
+      RECOMMENDATION: [SELL NOW or WAIT]
+      REASONING: [2 sentences explaining why, referencing specific profit difference]
+      CONFIDENCE: [High/Medium/Low]
+      
+      ${languageInstruction}`;
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${aiApiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://convex.dev",
+          "X-Title": "AgriHorizon Strategy"
+        },
+        body: JSON.stringify({
+          model: "xiaomi/mimo-v2-flash:free",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 200
+        })
+      });
+
+      if (!response.ok) throw new Error("AI API failed");
+
+      const result = await response.json();
+      const text = result.choices[0]?.message?.content || "";
+
+      const recMatch = text.match(/RECOMMENDATION:\s*(.+)/i);
+      const reasonMatch = text.match(/REASONING:\s*(.+)/i);
+      const confMatch = text.match(/CONFIDENCE:\s*(.+)/i);
+
+      return {
+        recommendation: recMatch ? recMatch[1].trim() : (currentProfit > tomorrowProfit ? "SELL NOW" : "WAIT"),
+        reasoning: reasonMatch ? reasonMatch[1].trim() : "Profit analysis suggests this based on ROI comparison.",
+        confidence: confMatch ? confMatch[1].trim() : "Medium"
+      };
+
+    } catch (error) {
+      console.error("Strategy AI Error:", error);
+      // Fallback logic
+      const isBetterTomorrow = ((args.tomorrowMin + args.tomorrowMax) / 2) > args.currentPrice * 1.02;
+      return {
+        recommendation: isBetterTomorrow ? "WAIT" : "SELL NOW",
+        reasoning: isBetterTomorrow
+          ? "Projected prices for tomorrow define a higher profit margin."
+          : "Current prices offer a secure profit today; waiting involves unnecessary risk.",
+        confidence: "Calculated"
+      };
+    }
+  }
 });
