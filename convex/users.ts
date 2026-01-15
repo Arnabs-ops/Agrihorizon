@@ -95,6 +95,9 @@ export const updateUserProfile = mutation({
         farmSize: v.optional(v.string()),
         cropTypes: v.optional(v.array(v.string())),
         preferredProducts: v.optional(v.array(v.string())),
+        farmBio: v.optional(v.string()),
+        farmImages: v.optional(v.array(v.id("_storage"))),
+        isVerified: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         const userId = await getAuthUserId(ctx);
@@ -120,6 +123,9 @@ export const updateUserProfile = mutation({
         if (args.farmSize !== undefined) updates.farmSize = args.farmSize;
         if (args.cropTypes !== undefined) updates.cropTypes = args.cropTypes;
         if (args.preferredProducts !== undefined) updates.preferredProducts = args.preferredProducts;
+        if (args.farmBio !== undefined) updates.farmBio = args.farmBio;
+        if (args.farmImages !== undefined) updates.farmImages = args.farmImages;
+        if (args.isVerified !== undefined) updates.isVerified = args.isVerified;
 
         await ctx.db.patch(profile._id, updates);
         return profile._id;

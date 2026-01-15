@@ -2,6 +2,7 @@ import React from 'react';
 import { useLanguage } from '../../useLanguage';
 import { Order } from '../../types/seller';
 import { Id } from '../../../convex/_generated/dataModel';
+import { InvoiceGenerator } from '../common/InvoiceGenerator';
 
 interface SellerOrdersProps {
     sellerOrders: Order[];
@@ -21,21 +22,22 @@ export function SellerOrders({
     getStatusColor,
 }: SellerOrdersProps) {
     const { t } = useLanguage();
+    const [selectedOrderForInvoice, setSelectedOrderForInvoice] = React.useState<Order | null>(null);
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-black text-slate-900">{t('myOrders')}</h2>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white transition-colors duration-500">{t('myOrders')}</h2>
             <div className="space-y-4">
                 {sellerOrders.map((order) => (
-                    <div key={order._id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-primary/30 transition-all modern-shadow">
+                    <div key={order._id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-primary/30 transition-all duration-500 modern-shadow">
                         <div className="flex justify-between items-start">
                             <div className="flex items-center gap-6">
-                                <div className="text-4xl w-16 h-16 bg-slate-50 flex items-center justify-center rounded-xl">{order.product?.imageEmoji}</div>
+                                <div className="text-4xl w-16 h-16 bg-slate-50 dark:bg-slate-800 flex items-center justify-center rounded-xl">{order.product?.imageEmoji}</div>
                                 <div>
-                                    <h3 className="font-black text-slate-900 text-xl mb-1">
+                                    <h3 className="font-black text-slate-900 dark:text-white text-xl mb-1">
                                         {order.product?.name}
                                     </h3>
-                                    <p className="text-sm font-bold text-slate-500 flex items-center gap-2">
+                                    <p className="text-sm font-bold text-slate-50 dark:text-slate-400 flex items-center gap-2">
                                         👤 {order.buyer.profile?.fullName}
                                     </p>
                                     <p className="text-sm font-bold text-slate-500 mt-1">
@@ -54,7 +56,7 @@ export function SellerOrders({
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="font-black text-slate-900 text-2xl mb-2">
+                                <p className="font-black text-slate-900 dark:text-white text-2xl mb-2">
                                     {formatPrice(order.totalAmount)}
                                 </p>
                                 <div className="flex flex-col items-end gap-3">
@@ -79,6 +81,14 @@ export function SellerOrders({
                                                 {t('markDelivered')}
                                             </button>
                                         )}
+                                        {order.status === "delivered" && (
+                                            <button
+                                                onClick={() => setSelectedOrderForInvoice(order)}
+                                                className="bg-slate-900 dark:bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-primary/90 transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                                            >
+                                                <span>📄</span> {t('downloadInvoice')}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -86,11 +96,20 @@ export function SellerOrders({
                     </div>
                 ))}
                 {sellerOrders?.length === 0 && (
-                    <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-                        <p className="text-slate-400 text-xl font-bold">{t('noOrdersYet') || "No orders yet"}</p>
+                    <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/30 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+                        <p className="text-slate-400 dark:text-slate-500 text-xl font-bold">{t('noOrdersYet') || "No orders yet"}</p>
                     </div>
                 )}
             </div>
+
+            {selectedOrderForInvoice && (
+                <InvoiceGenerator
+                    order={selectedOrderForInvoice}
+                    formatPrice={formatPrice}
+                    formatDate={formatDate}
+                    onClose={() => setSelectedOrderForInvoice(null)}
+                />
+            )}
         </div>
     );
 }

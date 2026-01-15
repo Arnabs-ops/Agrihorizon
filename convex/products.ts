@@ -175,3 +175,7 @@ export const deleteProduct = mutation({
     return args.productId;
   },
 });
+
+export const generateUploadUrl = mutation(async (ctx) => {
+  return await ctx.storage.generateUploadUrl();
+});

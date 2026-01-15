@@ -113,6 +113,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const allOrders = (useQuery(api.orders.getBuyerOrders) || []) as Order[];
   const createOrder = useMutation(api.orders.createOrder);
   const markOrdersAsPaid = useMutation(api.orders.markOrdersAsPaid);
+  const deleteOrder = useMutation(api.orders.deleteOrder);
   const updateProfile = useMutation(api.users.createUserProfile);
 
   const cartItems = useMemo(() => allOrders.filter((o) => o.isPaid === false), [allOrders]);
@@ -173,6 +174,16 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
       setOrderQuantities(prev => ({ ...prev, [productId]: 1 }));
     } catch (error) {
       toast.error(t('addToCartFailed'));
+      console.error(error);
+    }
+  };
+
+  const handleRemoveFromCart = async (orderId: Id<"orders">) => {
+    try {
+      await deleteOrder({ orderId });
+      toast.success(t('removedFromCart') || "Item removed from cart");
+    } catch (error) {
+      toast.error(t('removeFailed') || "Failed to remove item");
       console.error(error);
     }
   };
@@ -301,7 +312,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             <button
               onClick={() => setShowCart(true)}
               data-tour-id="cart-button"
-              className="relative bg-white text-slate-900 px-6 py-3 rounded-xl hover:bg-slate-50 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl active:scale-95 group"
+              className="relative bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-xl active:scale-95 group border border-transparent dark:border-slate-800"
             >
               <span className="text-xl">🛒</span>
               <span className="font-bold">{t('cart')}</span>
@@ -315,7 +326,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             <button
               onClick={() => setShowMessaging(true)}
               data-tour-id="messages-button"
-              className="group bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
+              className="group bg-slate-900 dark:bg-primary text-white px-6 py-3 rounded-xl hover:bg-slate-800 dark:hover:bg-primary/90 transition-all duration-300 flex items-center gap-3 shadow-xl hover:shadow-slate-200 active:scale-95"
             >
               <span className="text-xl group-hover:rotate-12 transition-transform">💬</span>
               <span className="font-bold">{t('messages')}</span>
@@ -336,9 +347,9 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               data-tour-id={tab.id === "marketplace" ? "marketplace-tab" : undefined}
-              className={`flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
+              className={`flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition flex-1 justify-center transition-colors duration-200 ${activeTab === tab.id
                 ? "bg-primary text-white shadow-xl shadow-primary/25 scale-[1.02]"
-                : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+                : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <span className={`text-xl ${activeTab === tab.id ? "animate-float" : ""}`}>{tab.icon}</span>
@@ -350,9 +361,9 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
           <div className="relative group/more flex-1">
             <button
               onClick={() => setShowMoreMenu(!showMoreMenu)}
-              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["prices", "community"].includes(activeTab) || showMoreMenu
-                ? "bg-slate-900 text-white shadow-xl"
-                : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center transition-colors duration-200 ${["prices", "community"].includes(activeTab) || showMoreMenu
+                ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl"
+                : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <span className="text-xl">✨</span>
@@ -361,7 +372,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             </button>
 
             {showMoreMenu && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 p-2 animate-scale-up z-50">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 p-2 animate-scale-up z-50">
                 {[
                   { id: "prices", label: t('marketIntelligence'), icon: "💰" },
                   { id: "community", label: t('communityHub'), icon: "🌱" },
@@ -374,8 +385,8 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                     }}
                     data-tour-id={`${tab.id}-tab`}
                     className={`w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
-                      ? "bg-primary/10 text-primary"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-primary/10 dark:bg-primary/20 text-primary"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                       }`}
                   >
                     <span className="text-xl">{tab.icon}</span>
@@ -416,8 +427,8 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
           <OnboardingChecklist userRole="buyer" />
 
           {profile.preferredProducts && profile.preferredProducts.length > 0 && (
-            <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
-              <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-100 dark:border-slate-800 modern-shadow transition-colors duration-500">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-3">
                 <span className="w-2 h-8 bg-primary rounded-full"></span>
                 {t('catalogInterests')}
               </h3>
@@ -425,7 +436,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                 {profile.preferredProducts.map((product, index) => (
                   <span
                     key={index}
-                    className="bg-primary/5 text-primary border border-primary/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-colors cursor-default"
+                    className="bg-primary/5 dark:bg-primary/20 text-primary border border-primary/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-colors cursor-default"
                   >
                     {product}
                   </span>
@@ -434,24 +445,24 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
             </div>
           )}
 
-          <div className="bg-white p-8 rounded-2xl border border-slate-100 modern-shadow">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-100 dark:border-slate-800 modern-shadow transition-colors duration-500">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
-                <span className="w-2 h-8 bg-slate-900 rounded-full"></span>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                <span className="w-2 h-8 bg-slate-900 dark:bg-white rounded-full"></span>
                 {t('recentActivity')}
               </h3>
               <button onClick={() => setActiveTab("orders")} className="text-sm font-bold text-primary hover:underline">{t('viewAllOrders')} →</button>
             </div>
             <div className="space-y-4">
               {buyerOrders.slice(0, 3).map((order) => (
-                <div key={order._id} className="flex items-center gap-6 p-5 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200">
-                  <div className="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center text-3xl">
+                <div key={order._id} className="flex items-center gap-6 p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                  <div className="w-14 h-14 bg-white dark:bg-slate-800 rounded-xl shadow-sm flex items-center justify-center text-3xl">
                     {order.product?.imageEmoji}
                   </div>
                   <div className="flex-1">
-                    <p className="font-black text-slate-900 text-lg leading-tight">{order.product?.name}</p>
-                    <p className="text-sm font-bold text-slate-500 mt-1">
-                      {order.quantity} {order.product?.unit} • <span className="text-emerald-600">{formatPrice(order.totalAmount)}</span>
+                    <p className="font-black text-slate-900 dark:text-white text-lg leading-tight">{order.product?.name}</p>
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1">
+                      {order.quantity} {order.product?.unit} • <span className="text-emerald-600 dark:text-emerald-400">{formatPrice(order.totalAmount)}</span>
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
@@ -463,8 +474,8 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                 </div>
               ))}
               {buyerOrders.length === 0 && (
-                <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                  <p className="text-slate-400 font-bold">{t('noOrders')}</p>
+                <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 font-bold">
+                  <p className="text-slate-400 dark:text-slate-500">{t('noOrders')}</p>
                 </div>
               )}
             </div>
@@ -749,14 +760,23 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                             </span>
                           )}
                         </div>
-                        <div className="font-black text-lg text-primary">
-                          {formatPrice(itemTotal)}
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="font-black text-lg text-primary">
+                            {formatPrice(itemTotal)}
+                          </div>
+                          <button
+                            onClick={() => handleRemoveFromCart(item._id)}
+                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                            title={t('remove') || "Remove"}
+                          >
+                            <span className="text-xl">🗑️</span>
+                          </button>
                         </div>
                       </div>
                     );
                   })
-                )}
-              </div>
+                )
+                }</div>
 
               {cartItems.length > 0 && (
                 <div className="p-6 border-t border-slate-100 bg-slate-50 space-y-4">

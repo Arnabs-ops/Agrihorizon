@@ -19,6 +19,7 @@ import { SellerOrders } from "./components/seller/SellerOrders";
 import { SellerAnalytics } from "./components/seller/SellerAnalytics";
 import { ProductModal } from "./components/seller/ProductModal";
 import { CropAdvisor } from "./components/seller/CropAdvisor";
+import { FarmPortfolio } from "./components/seller/FarmPortfolio";
 
 export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -177,14 +178,15 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             { id: "overview", label: t('overview'), icon: "📊" },
             { id: "products", label: t('inventory'), icon: "🌾" },
             { id: "orders", label: t('myOrders'), icon: "📦" },
+            { id: "portfolio", label: t('portfolio') || "Portfolio", icon: "🏛️" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               data-tour-id={tab.id === "orders" ? "orders-tab" : undefined}
-              className={`flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition flex-1 justify-center ${activeTab === tab.id
+              className={`flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition flex-1 justify-center transition-colors duration-200 ${activeTab === tab.id
                 ? "bg-primary text-white shadow-xl shadow-primary/25 scale-[1.02]"
-                : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+                : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <span className={`text-xl ${activeTab === tab.id ? "animate-float" : ""}`}>{tab.icon}</span>
@@ -197,9 +199,9 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             <button
               onClick={() => setShowMoreMenu(!showMoreMenu)}
               data-tour-id="more-tab"
-              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["analytics", "prices", "community", "advisory"].includes(activeTab) || showMoreMenu
-                ? "bg-slate-900 text-white shadow-xl"
-                : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
+              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center transition-colors duration-200 ${["analytics", "prices", "community", "advisory"].includes(activeTab) || showMoreMenu
+                ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl"
+                : "text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <span className="text-xl">✨</span>
@@ -208,7 +210,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             </button>
 
             {showMoreMenu && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 p-2 animate-scale-up z-50">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 p-2 animate-scale-up z-50">
                 {[
                   { id: "analytics", label: t('analytics'), icon: "📈" },
                   { id: "prices", label: t('marketIntelligence'), icon: "💹" },
@@ -223,8 +225,8 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                     }}
                     data-tour-id={`${tab.id}-tab`}
                     className={`w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.id
-                      ? "bg-primary/10 text-primary"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-primary/10 dark:bg-primary/20 text-primary"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                       }`}
                   >
                     <span className="text-xl">{tab.icon}</span>
@@ -287,6 +289,10 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
           location={profile.location || t('enterLocation')}
           crops={profile.cropTypes || []}
         />
+      )}
+
+      {activeTab === "portfolio" && (
+        <FarmPortfolio userProfile={userProfile as any} />
       )}
 
       {/* Tutorial Components */}

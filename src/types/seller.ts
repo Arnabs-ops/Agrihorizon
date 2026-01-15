@@ -11,6 +11,9 @@ export interface UserProfile {
         farmSize?: string;
         cropTypes?: string[];
         preferredProducts?: string[];
+        farmBio?: string;
+        farmImages?: Id<"_storage">[];
+        isVerified?: boolean;
     } | null;
 }
 
@@ -37,6 +40,7 @@ export interface Order {
     _id: Id<"orders">;
     status: string;
     quantity: number;
+    unitPrice: number;
     totalAmount: number;
     orderDate: number;
     deliveryAddress?: string;
@@ -51,6 +55,15 @@ export interface Order {
         profile: {
             fullName: string;
             businessName?: string;
+            [key: string]: any;
+        } | null;
+    };
+    seller: {
+        user: any;
+        profile: {
+            fullName: string;
+            businessName?: string;
+            location?: string;
             [key: string]: any;
         } | null;
     };

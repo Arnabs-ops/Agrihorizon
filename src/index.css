@@ -19,6 +19,11 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.dark .glass-morphism {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .glass-morphism-dark {
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(12px) saturate(180%);
@@ -35,8 +40,15 @@
     0 24px 48px rgba(0, 0, 0, 0.05);
 }
 
+.dark .modern-shadow {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 12px 24px rgba(0, 0, 0, 0.4);
+}
+
 .auth-input-field {
-  @apply w-full px-5 py-4 rounded-2xl bg-white border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all duration-300 font-medium;
+  @apply w-full px-5 py-4 rounded-2xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all duration-300 font-medium dark:text-white;
 }
 
 .auth-button {

@@ -429,3 +429,27 @@ export const getSellerAnalytics = query({
     };
   },
 });
+
+// Delete order (cart item)
+export const deleteOrder = mutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User must be authenticated");
+    }
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order || order.buyerId !== userId) {
+      throw new Error("Order not found or access denied");
+    }
+
+    // Only allow deleting unpaid orders (cart items)
+    if (order.isPaid) {
+      throw new Error("Cannot delete a paid order");
+    }
+
+    await ctx.db.delete(args.orderId);
+    return args.orderId;
+  },
+});

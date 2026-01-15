@@ -1,56 +1,84 @@
-# AgriHorizon - Agriculture Role-Based Authentication App
-  
-This is a project built with [Chef](https://chef.convex.dev) [ note that only the prototype was made using chef ]  using [Convex](https://convex.dev) as its backend.
- You can find docs about Chef with useful information like how to deploy to production [here](https://docs.convex.dev/chef).
-  
-This project is connected to the Convex deployment named [`modest-swan-464`](https://dashboard.convex.dev/d/modest-swan-464).
-  
-## Project structure
-  
-The frontend code is in the `app` directory and is built with [Vite](https://vitejs.dev/).
-  
-The backend code is in the `convex` directory.
-  
-`npm run dev` will start the frontend and backend servers.
+# 🌾 AgriHorizon
 
-## App authentication
+**AgriHorizon** is an AI-powered agricultural intelligence platform designed to empower farmers and buyers with real-time market data, predictive analytics, and localized advisory services.
 
-Chef apps use [Convex Auth](https://auth.convex.dev/) with Anonymous auth for easy sign in. You may wish to change this before deploying your app.
+Built with a high-performance stack, AgriHorizon bridges the gap between traditional farming and modern financial technology.
 
-## Developing and deploying your app
+---
 
-Check out the [Convex docs](https://docs.convex.dev/) for more information on how to develop with Convex.
-* If you're new to Convex, the [Overview](https://docs.convex.dev/understanding/) is a good place to start
-* Check out the [Hosting and Deployment](https://docs.convex.dev/production/) docs for how to deploy your app
-* Read the [Best Practices](https://docs.convex.dev/understanding/best-practices/) guide for tips on how to improve you app further
+## 🚀 Key Features
 
-## HTTP API
+### 🤖 AI Market Intelligence
+*   **Predictive Pricing**: Real-time DuckDuckGo web scraping combined with **Mimo v2 Flash AI** to predict tomorrow's vegetable price ranges.
+*   **Historical Trends**: 7-day price tracking for all major vegetables and locations.
+*   **Savings Analysis**: Buyers receive "Best Deals" notifications based on real-time price drops.
 
-User-defined http routes are defined in the `convex/router.ts` file. We split these routes into a separate file from `convex/http.ts` to allow us to prevent the LLM from modifying the authentication routes.
+### 📊 Yield & Sales Analytics
+*   **AI Sales Strategy**: Input your harvest quantity and investment to get a risk-reward analysis (Wait vs. Sell) based on predicted price movements.
+*   **ROI Tracking**: Automated profit calculation and financial forecasting for sellers.
 
-## Environment Variables
+### 🌦️ AI Crop Advisor
+*   **Localized Weather**: Integration with **Open-Meteo** for live temperature, humidity, and wind speed.
+*   **Weather-Driven Advice**: AI generates proactive farming tips based on your specific crops and current weather conditions (e.g., "High humidity detected: Monitor tomatoes for fungal spots").
 
-This application requires environment variables to be set for full functionality:
+### 🎤 Voice-Activated Interface
+*   **Global Voice Input**: Fully integrated speech-to-text functionality across the entire platform.
+*   **Natural Language Queries**: Ask the AI advisor questions using your voice or search for market prices hands-free.
 
-### Required: OPENROUTER_API_KEY
+### 🇮🇳 Multilingual Support
+*   **Native Hindi Support**: Complete localization for both English and Hindi.
+*   **AI Localization**: AI analysis, strategy, and advisory responses are dynamically translated to the user's preferred language.
 
-The OpenRouter API key is required for AI-powered vegetable price predictions.
+### 🤝 Community & Commerce
+*   **Community Hub**: A social platform for farmers to share updates, images, and tips.
+*   **Direct Messaging**: Secure communication channel between buyers and sellers.
+*   **Advanced Orders**: Role-based order management system with status tracking.
 
-**Quick Setup:**
+---
+
+## 🛠️ Technology Stack
+
+*   **Backend**: [Convex](https://convex.dev) (Real-time database, Auth, Actions)
+*   **Frontend**: [Vite](https://vitejs.dev/) + [React](https://reactjs.org/)
+*   **Styling**: Vanilla CSS + Tailwind-inspired utility layers
+*   **AI Models**: `xiaomi/mimo-v2-flash:free` via [OpenRouter](https://openrouter.ai/)
+*   **Weather Data**: [Open-Meteo API](https://open-meteo.com/)
+*   **Search**: DuckDuckGo HTML 
+*   **Speech**: Web Speech API
+
+---
+
+## 🛠️ Installation & Setup
+
+### 1. Clone & Install
 ```bash
-npx convex env set OPENROUTER_API_KEY your-api-key-here
+npm install
 ```
 
-For detailed instructions, see [ENV_SETUP.md](./ENV_SETUP.md).
+### 2. Environment Variables
+You need an **OpenRouter API Key** for the AI features. Set it in your Convex environment:
+```bash
+npx convex env set OPENROUTER_API_KEY your_key_here
+```
 
-## Features
+### 3. Run Development Server
+```bash
+npm run dev
+```
 
-### Vegetable Price Search & Prediction
+---
 
-- **Live Web Search**: Real-time DuckDuckGo search for current vegetable prices
-- **AI-Powered Predictions**: Uses OpenRouter AI to predict tomorrow's prices based on:
-  - Live web search results
-  - Historical price data (last 7 days)
-  - Market trends and seasonal patterns
-- **Seller Dashboard**: Market Prices section for monitoring current and predicted prices
-- **Buyer Dashboard**: Best Deals section with price drop alerts and savings recommendations
+## 📁 Project Structure
+
+*   `convex/`: Backend functions (Queries, Mutations, Actions), Schema, and API routes.
+*   `src/`: React frontend application.
+    *   `src/components/`: Modular UI components (Seller, Buyer, Common).
+    *   `src/translations.ts`: Localization dictionary for EN/HI.
+*   `assets/`: Image resources and branding.
+
+---
+
+## 📄 License
+
+This project is built for the benefit of the agricultural community.
+© 2026 AgriHorizon Team.

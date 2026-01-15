@@ -20,6 +20,9 @@ const applicationTables = {
       dismissedChecklist: v.boolean(),
       lastTutorialDate: v.number(),
     })),
+    farmBio: v.optional(v.string()), // For sellers
+    farmImages: v.optional(v.array(v.id("_storage"))), // For sellers
+    isVerified: v.optional(v.boolean()), // For sellers
   }).index("by_user_id", ["userId"]),
 
   products: defineTable({
