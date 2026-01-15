@@ -254,6 +254,16 @@ export const translations = {
         verifiedProducts: "Verified products",
         noOrdersYet: "No orders yet",
         noProductsYet: "No products yet",
+        cropAdvisor: "AI Crop Advisor",
+        weatherInfo: "Local Weather",
+        currentConditions: "Current Conditions",
+        humidity: "Humidity",
+        windSpeed: "Wind Speed",
+        getAdvice: "Get AI Advice",
+        askAdvisor: "Ask your AI Advisor",
+        askPlaceholder: "Ask about pests, weather, or harvest...",
+        advisory: "Advisory",
+        proTip: "Pro-Tip",
     },
     hi: {
         // Navigation & Common
@@ -508,5 +518,15 @@ export const translations = {
         verifiedProducts: "सत्यापित उत्पाद",
         noOrdersYet: "अभी तक कोई आदेश नहीं",
         noProductsYet: "अभी तक कोई उत्पाद नहीं",
+        cropAdvisor: "AI फसल सलाहकार",
+        weatherInfo: "स्थानीय मौसम",
+        currentConditions: "वर्तमान स्थिति",
+        humidity: "नमी",
+        windSpeed: "हवा की गति",
+        getAdvice: "AI सलाह लें",
+        askAdvisor: "अपने AI सलाहकार से पूछें",
+        askPlaceholder: "कीटों, मौसम या कटाई के बारे में पूछें...",
+        advisory: "सलाह",
+        proTip: "प्रो-टिप",
     }
 };

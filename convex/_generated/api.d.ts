@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as advisor from "../advisor.js";
 import type * as auth from "../auth.js";
 import type * as community from "../community.js";
 import type * as files from "../files.js";
@@ -28,6 +29,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  advisor: typeof advisor;
   auth: typeof auth;
   community: typeof community;
   files: typeof files;

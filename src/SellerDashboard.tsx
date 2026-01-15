@@ -18,6 +18,7 @@ import { SellerInventory } from "./components/seller/SellerInventory";
 import { SellerOrders } from "./components/seller/SellerOrders";
 import { SellerAnalytics } from "./components/seller/SellerAnalytics";
 import { ProductModal } from "./components/seller/ProductModal";
+import { CropAdvisor } from "./components/seller/CropAdvisor";
 
 export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -196,7 +197,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
             <button
               onClick={() => setShowMoreMenu(!showMoreMenu)}
               data-tour-id="more-tab"
-              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["analytics", "prices", "community"].includes(activeTab) || showMoreMenu
+              className={`w-full flex items-center gap-3 py-3.5 px-6 rounded-2xl font-black text-sm tab-transition justify-center ${["analytics", "prices", "community", "advisory"].includes(activeTab) || showMoreMenu
                 ? "bg-slate-900 text-white shadow-xl"
                 : "text-slate-500 hover:bg-white/50 hover:text-slate-900"
                 }`}
@@ -211,6 +212,7 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
                 {[
                   { id: "analytics", label: t('analytics'), icon: "📈" },
                   { id: "prices", label: t('marketIntelligence'), icon: "💹" },
+                  { id: "advisory", label: t('cropAdvisor'), icon: "🌾" },
                   { id: "community", label: t('communityHub'), icon: "🌱" },
                 ].map((tab) => (
                   <button
@@ -268,11 +270,8 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
         />
       )}
 
-      {activeTab === "analytics" && analytics && (
-        <SellerAnalytics
-          analytics={analytics}
-          formatPrice={formatPrice}
-        />
+      {activeTab === "analytics" && (
+        <SellerAnalytics />
       )}
 
       {activeTab === "prices" && (
@@ -281,6 +280,13 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
 
       {activeTab === "community" && (
         <CommunityHub />
+      )}
+
+      {activeTab === "advisory" && (
+        <CropAdvisor
+          location={profile.location || t('enterLocation')}
+          crops={profile.cropTypes || []}
+        />
       )}
 
       {/* Tutorial Components */}

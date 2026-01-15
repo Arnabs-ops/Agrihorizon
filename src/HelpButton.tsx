@@ -21,18 +21,18 @@ export function HelpButton() {
             {/* Floating Help Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all active:scale-95 ${isNewUser
-                    ? "bg-gradient-to-br from-primary to-emerald-500 animate-pulse"
+                className={`fixed bottom-2 right-2 z-[100] w-10 h-10 rounded-full shadow-2xl flex items-center justify-center transition-all active:scale-95 ${isNewUser
+                    ? "bg-gradient-to-br from-primary to-emerald-500"
                     : "bg-slate-900 hover:bg-slate-800"
                     }`}
                 title="Help & Tutorial"
             >
-                <span className="text-2xl">{isOpen ? "✕" : "❓"}</span>
+                <span className="text-xl">{isOpen ? "✕" : "❓"}</span>
             </button>
 
             {/* Help Menu */}
             {isOpen && (
-                <div className="fixed bottom-24 right-6 z-50 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 animate-scale-up">
+                <div className="fixed bottom-14 right-2 z-[100] w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 animate-scale-up">
                     <h3 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
                         <span>💡</span> {t('needHelp')}
                     </h3>
