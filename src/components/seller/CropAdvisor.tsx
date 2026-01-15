@@ -168,7 +168,7 @@ export function CropAdvisor({ location, crops }: CropAdvisorProps) {
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center h-64 text-slate-400 space-y-4">
-                                <div className="text-6xl animate-bounce">⚡</div>
+                                <div className="text-6xl animate-pulse">⚡</div>
                                 <p className="font-bold">Analyzing weather and crops...</p>
                             </div>
                         )}

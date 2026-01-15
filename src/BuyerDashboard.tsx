@@ -317,7 +317,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
               <span className="text-xl">🛒</span>
               <span className="font-bold">{t('cart')}</span>
               {cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full animate-bounce">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full animate-pulse">
                   {cartItems.length}
                 </span>
               )}

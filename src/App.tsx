@@ -11,6 +11,7 @@ import { translations, Language } from "./translations";
 import { LanguageProvider, useLanguage } from "./useLanguage.tsx";
 import { TutorialProvider } from "./TutorialProvider";
 import { useTheme } from "./ThemeContext";
+import logo from "./assets/logo.png";
 
 export default function App() {
   return (
@@ -30,8 +31,8 @@ function AppContent() {
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#020617] selection:bg-primary/20 transition-colors duration-500">
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md h-20 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 px-8 modern-shadow">
         <div className="flex items-center gap-4 group cursor-pointer">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110 duration-300">
-            <span className="text-white text-xl animate-float">🌾</span>
+          <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-lg shadow-primary/10 transition-transform group-hover:scale-110 duration-300 overflow-hidden border border-slate-100 dark:border-slate-700">
+            <img src={logo} alt="AgriHorizon Logo" className="w-full h-full object-cover" />
           </div>
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Agri<span className="text-primary">Horizon</span></h2>
         </div>
