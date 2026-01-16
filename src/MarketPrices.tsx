@@ -219,8 +219,8 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 modern-shadow">
-        <h3 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
+      <div className="bg-white dark:bg-slate-900/40 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 modern-shadow transition-colors duration-500">
+        <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-8 flex items-center gap-3">
           <span className="text-3xl">💹</span>
           {userRole === "seller" ? t('marketIntelligence') : t('bestDeals')}
         </h3>
@@ -234,7 +234,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
               placeholder={t('enterVegetable')}
               value={vegetable}
               onChange={(e) => setVegetable(e.target.value)}
-              className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+              className="w-full pl-12 pr-12 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all dark:text-white"
             />
             <button
               onClick={handleVoiceSearch}
@@ -254,7 +254,7 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
               placeholder={t('enterLocation')}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+              className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all dark:text-white"
             />
           </div>
           <button
@@ -272,33 +272,33 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
           <div className="space-y-8 animate-fade-in">
             {/* Current Price & Prediction */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-blue-50 p-8 rounded-3xl border border-blue-100 relative overflow-hidden group">
+              <div className="bg-blue-50 dark:bg-blue-900/10 p-8 rounded-3xl border border-blue-100 dark:border-blue-900/20 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-500">
                   <span className="text-6xl">💰</span>
                 </div>
-                <h4 className="text-sm font-black text-blue-800 mb-4 uppercase tracking-widest opacity-70">
+                <h4 className="text-sm font-black text-blue-800 dark:text-blue-400 mb-4 uppercase tracking-widest opacity-70">
                   {t('currentPrice')}
                 </h4>
-                <p className="text-5xl font-black text-blue-600 mb-2">
+                <p className="text-5xl font-black text-blue-600 dark:text-blue-400 mb-2">
                   {priceData.currentPrice ? formatPrice(priceData.currentPrice) : "N/A"}
                 </p>
-                <p className="text-sm font-bold text-blue-600/60 flex items-center gap-2">
+                <p className="text-sm font-bold text-blue-600/60 dark:text-blue-400/60 flex items-center gap-2">
                   <span className="capitalize">{priceData.vegetable}</span> • {priceData.location}
                 </p>
               </div>
 
-              <div className="bg-emerald-50 p-8 rounded-3xl border border-emerald-100 relative overflow-hidden group">
+              <div className="bg-emerald-50 dark:bg-emerald-900/10 p-8 rounded-3xl border border-emerald-100 dark:border-emerald-900/20 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-500">
                   <span className="text-6xl">🔮</span>
                 </div>
-                <h4 className="text-sm font-black text-emerald-800 mb-4 uppercase tracking-widest opacity-70">
+                <h4 className="text-sm font-black text-emerald-800 dark:text-emerald-400 mb-4 uppercase tracking-widest opacity-70">
                   {t('tomorrowPrediction')}
                 </h4>
-                <p className="text-5xl font-black text-emerald-600 mb-2">
+                <p className="text-5xl font-black text-emerald-600 dark:text-emerald-400 mb-2">
                   {priceData.tomorrowPrediction?.range || "N/A"}
                 </p>
                 {trend && (
-                  <p className={`text-sm font-bold mt-1 px-3 py-1 bg-white/50 rounded-full inline-block ${trend.color}`}>
+                  <p className={`text-sm font-bold mt-1 px-3 py-1 bg-white/50 dark:bg-emerald-900/30 rounded-full inline-block ${trend.color} dark:text-emerald-400`}>
                     {trend.message}
                   </p>
                 )}

@@ -40,7 +40,7 @@ function AppContent() {
           <button
             onClick={toggleTheme}
             className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xl hover:scale-105 transition-all active:scale-95"
-            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            title={theme === 'light' ? t('switchToDarkMode') : t('switchToLightMode')}
           >
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
@@ -76,6 +76,7 @@ function AppContent() {
 }
 
 function Content() {
+  const { t } = useLanguage();
   const userProfile = useQuery(api.users.getCurrentUserProfile);
 
   if (userProfile === undefined) {
@@ -91,14 +92,15 @@ function Content() {
       <Unauthenticated>
         <div className="text-center mb-12 animate-slide-up">
           <div className="inline-block px-4 py-1.5 mb-6 text-sm font-bold tracking-wider text-primary uppercase bg-primary/10 rounded-full animate-fade-in">
-            The Future of Agriculture
+            {t('futureOfAgriculture')}
           </div>
           <h1 className="text-6xl font-black text-slate-900 dark:text-white mb-6 leading-tight">
-            Connecting Farmers and <br /><span className="text-primary">Global Markets</span>
+            {t('connectingFarmers')} <br /><span className="text-primary">{t('globalMarkets')}</span>
           </h1>
           <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            The ultimate marketplace for high-quality agricultural products.
-            Empowering farmers with AI-driven market insights and direct buyer connections.
+            {t('landingPageDesc1')}
+            <br />
+            {t('landingPageDesc2')}
           </p>
           <div className="bg-white dark:bg-slate-900 p-8 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-800 max-w-md mx-auto transform hover:scale-[1.02] transition-transform duration-500 modern-shadow">
             <SignInForm />

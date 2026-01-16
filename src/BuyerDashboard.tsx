@@ -439,34 +439,34 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
-              <div key={product._id} className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-xl transition-all group modern-shadow">
-                <div className="relative h-40 mb-3 bg-slate-50 rounded-xl overflow-hidden flex items-center justify-center">
+              <div key={product._id} className="bg-white dark:bg-slate-900/40 border border-gray-200 dark:border-slate-800 rounded-2xl p-4 hover:shadow-xl transition-all group modern-shadow transition-colors duration-500">
+                <div className="relative h-40 mb-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl overflow-hidden flex items-center justify-center">
                   {product.imageUrl ? (
                     <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   ) : (
                     <span className="text-4xl group-hover:scale-110 transition-transform duration-500">{product.imageEmoji}</span>
                   )}
                 </div>
-                <h3 className="font-bold text-gray-800 mb-1">{product.name}</h3>
+                <h3 className="font-bold text-gray-800 dark:text-white mb-1">{product.name}</h3>
                 <div className="space-y-1 mb-2">
-                  <p className="text-blue-600 font-bold">
+                  <p className="text-blue-600 dark:text-blue-400 font-bold">
                     {formatPrice(product.price)}/{product.unit}
                   </p>
                   {product.priceTiers && product.priceTiers.length > 0 && (
-                    <div className="bg-amber-50 p-2 rounded border border-amber-100">
-                      <p className="text-[10px] font-black uppercase text-amber-700 mb-1">{t('tieredPricing')}</p>
+                    <div className="bg-amber-50 dark:bg-amber-900/10 p-2 rounded border border-amber-100 dark:border-amber-900/20">
+                      <p className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-500 mb-1">{t('tieredPricing')}</p>
                       {product.priceTiers.map((tier, idx) => (
-                        <p key={idx} className="text-xs text-amber-800">
+                        <p key={idx} className="text-xs text-amber-800 dark:text-amber-400">
                           {tier.minQuantity}+ {product.unit}: <span className="font-bold">{formatPrice(tier.price)}</span>
                         </p>
                       ))}
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-600 mb-1">
+                <p className="text-sm text-gray-600 dark:text-slate-400 mb-1">
                   {t('by')} {product.seller.profile?.businessName || product.seller.profile?.fullName}
                 </p>
-                <p className="text-sm text-gray-500 mb-3">
+                <p className="text-sm text-gray-500 dark:text-slate-500 mb-3">
                   {t('stock')}: {product.stockQuantity} {product.unit}
                 </p>
 
