@@ -4,6 +4,9 @@ import { api } from "../convex/_generated/api";
 import { toast } from "sonner";
 import { useLanguage } from "./useLanguage.tsx";
 import { VoiceInput } from "./components/common/VoiceInput";
+import buyerBg from "./assets/buyer_bg.png";
+import sellerBg from "./assets/seller_bg.png";
+import paymentQr from "./assets/payment-qr.jpg";
 
 interface MarketPricesProps {
   userRole: "seller" | "buyer";
@@ -137,9 +140,9 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
   useEffect(() => {
     const preloadImages = () => {
       const images = [
-        "/src/assets/buyer_bg.png",
-        "/src/assets/seller_bg.png",
-        "/src/assets/payment-qr.jpg"
+        buyerBg,
+        sellerBg,
+        paymentQr
       ];
       images.forEach((src) => {
         const img = new Image();

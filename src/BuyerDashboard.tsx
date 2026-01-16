@@ -10,6 +10,7 @@ import paymentQr from "./assets/payment-qr.jpg";
 import { CommunityHub } from "./CommunityHub";
 import { useLanguage } from "./useLanguage.tsx";
 import buyerBg from "./assets/buyer_bg.png";
+import sellerBg from "./assets/seller_bg.png";
 import { WelcomeModal } from "./WelcomeModal";
 import { OnboardingChecklist } from "./OnboardingChecklist";
 import { HelpButton } from "./HelpButton";

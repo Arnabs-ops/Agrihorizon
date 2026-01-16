@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
 import { useLanguage } from "./useLanguage";
 import sellerBg from "./assets/seller_bg.png";
+import buyerBg from "./assets/buyer_bg.png";
+import paymentQr from "./assets/payment-qr.jpg";
 import { WelcomeModal } from "./WelcomeModal";
 import { HelpButton } from "./HelpButton";
 import { useTutorial } from "./TutorialProvider";
