@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Id } from "../convex/_generated/dataModel";
 import paymentQr from "./assets/payment-qr.jpg";
 import { CommunityHub } from "./CommunityHub";
+import { FarmPortfolio } from "./components/seller/FarmPortfolio";
 import { useLanguage } from "./useLanguage.tsx";
 import buyerBg from "./assets/buyer_bg.png";
 import sellerBg from "./assets/seller_bg.png";
@@ -51,6 +52,7 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [newAddress, setNewAddress] = useState("");
   const [pendingOrder, setPendingOrder] = useState<{ productId: Id<"products">, sellerId: Id<"users"> } | null>(null);
+  const [viewingSellerId, setViewingSellerId] = useState<Id<"users"> | null>(null);
 
   // Tutorial state
   const { tutorialProgress } = useTutorial();
@@ -441,12 +443,22 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
               <div key={product._id} className="bg-white dark:bg-slate-900/40 border border-gray-200 dark:border-slate-800 rounded-2xl p-4 hover:shadow-xl transition-all group modern-shadow transition-colors duration-500">
-                <div className="relative h-40 mb-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl overflow-hidden flex items-center justify-center">
+                <div className="relative h-40 mb-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl overflow-hidden flex items-center justify-center group/img-container">
                   {product.imageUrl ? (
                     <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   ) : (
                     <span className="text-4xl group-hover:scale-110 transition-transform duration-500">{product.imageEmoji}</span>
                   )}
+
+                  {/* Hover Overlay for Farm Portfolio */}
+                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/img-container:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                    <button
+                      onClick={() => setViewingSellerId(product.sellerId)}
+                      className="bg-white text-slate-900 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                    >
+                      <span>🚜</span> {t('viewFarm') || "View Farm"}
+                    </button>
+                  </div>
                 </div>
                 <h3 className="font-bold text-gray-800 dark:text-white mb-1">{product.name}</h3>
                 <div className="space-y-1 mb-2">
@@ -696,10 +708,10 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
                           </div>
                           <button
                             onClick={() => handleRemoveFromCart(item._id)}
-                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                            className="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-2.5 rounded-full transition-all border border-slate-100 group/trash"
                             title={t('remove') || "Remove"}
                           >
-                            <span className="text-xl">🗑️</span>
+                            <span className="text-lg group-hover/trash:scale-110 transition-transform block">🗑️</span>
                           </button>
                         </div>
                       </div>
@@ -812,6 +824,16 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
         </div>
       )}
 
+      {/* Seller Farm Portfolio Modal */}
+      {viewingSellerId && (
+        <SellerPortfolioModal
+          sellerId={viewingSellerId}
+          onClose={() => setViewingSellerId(null)}
+        />
+      )}
+
+      <HelpButton />
+
       {/* Messaging System */}
       {
         showMessaging && (
@@ -908,6 +930,45 @@ function ProductReviews({ productId }: { productId: Id<"products"> }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function SellerPortfolioModal({ sellerId, onClose }: { sellerId: Id<"users">; onClose: () => void }) {
+  const sellerData = useQuery(api.users.getPublicProfile, { userId: sellerId });
+  const { t } = useLanguage();
+
+  if (!sellerData) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
+      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-scale-up border border-white/20">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+              🚜
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
+                {sellerData.profile?.businessName || sellerData.profile?.fullName}
+              </h3>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                📍 {sellerData.profile?.location}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 font-bold transition-all active:scale-90"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-8">
+          <FarmPortfolio userProfile={sellerData as any} isReadOnly={true} />
+        </div>
+      </div>
     </div>
   );
 }

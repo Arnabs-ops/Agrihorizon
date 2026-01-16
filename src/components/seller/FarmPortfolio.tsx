@@ -8,9 +8,10 @@ import { UserProfile } from "../../types/seller";
 
 interface FarmPortfolioProps {
     userProfile: UserProfile;
+    isReadOnly?: boolean;
 }
 
-export function FarmPortfolio({ userProfile }: FarmPortfolioProps) {
+export function FarmPortfolio({ userProfile, isReadOnly = false }: FarmPortfolioProps) {
     const { t } = useLanguage();
     const { profile } = userProfile;
     const updateProfile = useMutation(api.users.updateUserProfile);
@@ -81,12 +82,14 @@ export function FarmPortfolio({ userProfile }: FarmPortfolioProps) {
                             <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                 <span className="text-2xl">📖</span> {t('farmHistory') || "Farm History & Story"}
                             </h3>
-                            <button
-                                onClick={() => isEditing ? handleSaveBio() : setIsEditing(true)}
-                                className="text-sm font-bold text-primary hover:underline flex items-center gap-2"
-                            >
-                                {isEditing ? (t('save') || "Save Changes") : (t('edit') || "Edit Bio")}
-                            </button>
+                            {!isReadOnly && (
+                                <button
+                                    onClick={() => isEditing ? handleSaveBio() : setIsEditing(true)}
+                                    className="text-sm font-bold text-primary hover:underline flex items-center gap-2"
+                                >
+                                    {isEditing ? (t('save') || "Save Changes") : (t('edit') || "Edit Bio")}
+                                </button>
+                            )}
                         </div>
 
                         {isEditing ? (
@@ -109,10 +112,12 @@ export function FarmPortfolio({ userProfile }: FarmPortfolioProps) {
                             <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                                 <span className="text-2xl">📸</span> {t('farmGallery') || "Farm Gallery"}
                             </h3>
-                            <label className="cursor-pointer bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/20 active:scale-95 flex items-center gap-2">
-                                {uploading ? "..." : "+ " + (t('uploadPhoto') || "Upload Photo")}
-                                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
-                            </label>
+                            {!isReadOnly && (
+                                <label className="cursor-pointer bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/20 active:scale-95 flex items-center gap-2">
+                                    {uploading ? "..." : "+ " + (t('uploadPhoto') || "Upload Photo")}
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+                                </label>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -130,18 +135,20 @@ export function FarmPortfolio({ userProfile }: FarmPortfolioProps) {
                                             <span className="text-4xl text-white">🚜</span>
                                         </div>
                                     )}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button
-                                            onClick={() => {
-                                                const newImages = [...(profile?.farmImages || [])];
-                                                newImages.splice(index, 1);
-                                                updateProfile({ farmImages: newImages });
-                                            }}
-                                            className="text-white font-bold text-xs hover:underline bg-red-500/80 px-3 py-1.5 rounded-lg backdrop-blur-sm"
-                                        >
-                                            {t('remove') || "Remove"}
-                                        </button>
-                                    </div>
+                                    {!isReadOnly && (
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button
+                                                onClick={() => {
+                                                    const newImages = [...(profile?.farmImages || [])];
+                                                    newImages.splice(index, 1);
+                                                    updateProfile({ farmImages: newImages });
+                                                }}
+                                                className="text-white font-bold text-xs hover:underline bg-red-500/80 px-3 py-1.5 rounded-lg backdrop-blur-sm"
+                                            >
+                                                {t('remove') || "Remove"}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {(!profile?.farmImages || profile.farmImages.length === 0) && (
