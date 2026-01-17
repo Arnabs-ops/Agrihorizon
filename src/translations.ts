@@ -177,6 +177,11 @@ export const translations = {
         addressUpdated: "Address updated successfully",
         addressUpdateFailed: "Failed to update address",
         addressRequired: "Address is required",
+        viewFarm: "View Farm",
+        writeReview: "Write Review",
+        shareExperience: "Share your experience...",
+        postReview: "Post Review",
+        noReviews: "No reviews",
 
         // Onboarding & Profile
         completeProfile: "Complete Your Profile",
@@ -503,6 +508,11 @@ export const translations = {
         addressUpdated: "पता सफलतापूर्वक अपडेट किया गया",
         addressUpdateFailed: "पता अपडेट करने में विफल",
         addressRequired: "पता आवश्यक है",
+        viewFarm: "फार्म देखें",
+        writeReview: "समीक्षा लिखें",
+        shareExperience: "अपना अनुभव साझा करें...",
+        postReview: "समीक्षा पोस्ट करें",
+        noReviews: "कोई समीक्षा नहीं",
 
         // Onboarding & Profile
         completeProfile: "अपनी प्रोफाइल पूरी करें",

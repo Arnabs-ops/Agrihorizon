@@ -857,7 +857,7 @@ function ProductReviews({ productId }: { productId: Id<"products"> }) {
     e.preventDefault();
     try {
       await postReview({ productId, rating, comment });
-      handleSuccess("Review posted!", "reviewPosted");
+      handleSuccess(t('reviewPosted') || "Review posted!", "reviewPosted");
       setShowForm(false);
       setComment("");
     } catch (error) {
@@ -876,14 +876,14 @@ function ProductReviews({ productId }: { productId: Id<"products"> }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <span className="text-amber-400 font-bold">★</span>
-          <span className="text-sm font-bold text-slate-700">{avgRating || "No reviews"}</span>
+          <span className="text-sm font-bold text-slate-700">{avgRating !== "0.0" ? avgRating : t('noReviews')}</span>
           <span className="text-xs text-slate-400">({reviews.length})</span>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="text-[10px] font-black uppercase text-primary hover:underline"
         >
-          {showForm ? "Cancel" : "Write Review"}
+          {showForm ? t('cancel') : t('writeReview')}
         </button>
       </div>
 
@@ -905,11 +905,11 @@ function ProductReviews({ productId }: { productId: Id<"products"> }) {
             type="textarea"
             value={comment}
             onChange={setComment}
-            placeholder="Share your experience..."
+            placeholder={t('shareExperience')}
             className="w-full p-2 text-xs border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-primary resize-none"
           />
           <button type="submit" className="w-full py-2 bg-primary text-white text-[10px] font-black uppercase rounded-lg shadow-md active:scale-95 transition-all">
-            Post Review
+            {t('postReview')}
           </button>
         </form>
       )}
