@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { Doc } from "./_generated/dataModel";
 
 // Get current user's profile
 export const getCurrentUserProfile = query({
@@ -24,6 +25,40 @@ export const getCurrentUserProfile = query({
         return {
             user,
             profile,
+        };
+    },
+});
+
+// Get a public profile by user ID (for buyers to view seller portfolios)
+export const getPublicProfile = query({
+    args: { userId: v.id("users") },
+    handler: async (ctx, args) => {
+        const user = await ctx.db.get(args.userId);
+        if (!user) return null;
+
+        const profile = await ctx.db
+            .query("userProfiles")
+            .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+            .unique();
+
+        if (!profile) return null;
+
+        return {
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+            },
+            profile: {
+                _id: profile._id,
+                fullName: profile.fullName,
+                businessName: profile.businessName,
+                location: profile.location,
+                farmBio: profile.farmBio,
+                farmImages: profile.farmImages,
+                isVerified: profile.isVerified,
+            }
         };
     },
 });
@@ -80,10 +115,6 @@ export const createUserProfile = mutation({
         return profileId;
     },
 });
-
-import { Doc } from "./_generated/dataModel";
-
-// ... existing imports
 
 // Update user profile
 export const updateUserProfile = mutation({
@@ -212,39 +243,5 @@ export const resetTutorial = mutation({
         });
 
         return true;
-    },
-});
-
-// Get a public profile by user ID (for buyers to view seller portfolios)
-export const getPublicProfile = query({
-    args: { userId: v.id("users") },
-    handler: async (ctx, args) => {
-        const user = await ctx.db.get(args.userId);
-        if (!user) return null;
-
-        const profile = await ctx.db
-            .query("userProfiles")
-            .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
-            .unique();
-
-        if (!profile) return null;
-
-        return {
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                image: user.image,
-            },
-            profile: {
-                _id: profile._id,
-                fullName: profile.fullName,
-                businessName: profile.businessName,
-                location: profile.location,
-                farmBio: profile.farmBio,
-                farmImages: profile.farmImages,
-                isVerified: profile.isVerified,
-            }
-        };
     },
 });
