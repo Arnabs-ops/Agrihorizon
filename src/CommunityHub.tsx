@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { toast } from "sonner";
 import { useLanguage } from "./useLanguage.tsx";
+import { useErrorHandler } from "./hooks/useErrorHandler";
+import { useImagePreloader } from "./hooks/useImagePreloader";
 import { VoiceInput } from "./components/common/VoiceInput";
 import buyerBg from "./assets/buyer_bg.png";
 import sellerBg from "./assets/seller_bg.png";
@@ -16,22 +17,10 @@ export function CommunityHub() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { t } = useLanguage();
+    const { handleError, handleSuccess } = useErrorHandler();
 
-    // Preload images for faster rendering
-    useEffect(() => {
-        const preloadImages = () => {
-            const images = [
-                buyerBg,
-                sellerBg,
-                paymentQr
-            ];
-            images.forEach((src) => {
-                const img = new Image();
-                img.src = src;
-            });
-        };
-        preloadImages();
-    }, []);
+    // Shared Hook for Preloading
+    useImagePreloader([buyerBg, sellerBg, paymentQr]);
 
     const posts = useQuery(api.community.getPosts) || [];
     const userProfile = useQuery(api.users.getCurrentUserProfile);
@@ -48,10 +37,9 @@ export function CommunityHub() {
 
         try {
             await deletePost({ postId });
-            toast.success(t('postDeleted'));
+            handleSuccess(t('postDeleted'), "postDeleted");
         } catch (error) {
-            toast.error("Failed to delete post");
-            console.error(error);
+            handleError(error, "deletePostFailed");
         }
     };
 
@@ -64,10 +52,7 @@ export function CommunityHub() {
             let imageStorageId = undefined;
 
             if (image) {
-                // Step 1: Get upload URL
                 const uploadUrl = await generateUploadUrl();
-
-                // Step 2: Upload file
                 const result = await fetch(uploadUrl, {
                     method: "POST",
                     headers: { "Content-Type": image.type },
@@ -78,16 +63,14 @@ export function CommunityHub() {
                 imageStorageId = storageId;
             }
 
-            // Step 3: Create post
             await createPost({ content, imageStorageId });
 
             setContent("");
             setImage(null);
             if (fileInputRef.current) fileInputRef.current.value = "";
-            toast.success(t('post'));
+            handleSuccess(t('post'), "post");
         } catch (error) {
-            toast.error("Failed to share post");
-            console.error(error);
+            handleError(error, "sharePostFailed");
         } finally {
             setIsUploading(false);
         }
@@ -101,7 +84,7 @@ export function CommunityHub() {
             await addComment({ postId, content: text });
             setCommentContent({ ...commentContent, [postId]: "" });
         } catch (error) {
-            toast.error("Failed to add comment");
+            handleError(error, "addCommentFailed");
         }
     };
 
