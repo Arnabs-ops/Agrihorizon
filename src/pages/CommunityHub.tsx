@@ -1,13 +1,13 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../convex/_generated/api";
-import { useLanguage } from "./useLanguage.tsx";
-import { useErrorHandler } from "./hooks/useErrorHandler";
-import { useImagePreloader } from "./hooks/useImagePreloader";
-import { VoiceInput } from "./components/common/VoiceInput";
-import buyerBg from "./assets/buyer_bg.png";
-import sellerBg from "./assets/seller_bg.png";
-import paymentQr from "./assets/payment-qr.jpg";
+import { api } from "../../convex/_generated/api";
+import { useLanguage } from "../context/LanguageContext";
+import { useErrorHandler } from "../hooks/useErrorHandler";
+import { useImagePreloader } from "../hooks/useImagePreloader";
+import { VoiceInput } from "../components/common/VoiceInput";
+import buyerBg from "../assets/buyer_bg.png";
+import sellerBg from "../assets/seller_bg.png";
+import paymentQr from "../assets/payment-qr.jpg";
 
 export function CommunityHub() {
     const [content, setContent] = useState("");
@@ -91,7 +91,7 @@ export function CommunityHub() {
     return (
         <div className="max-w-3xl mx-auto space-y-8 animate-entry pb-20">
             <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3">
+                <h2 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                     <span className="text-4xl text-primary">🌱</span>
                     {t('communityHub')}
                 </h2>
@@ -106,7 +106,7 @@ export function CommunityHub() {
                         placeholder={t('whatsOnYourMind')}
                         value={content}
                         onChange={setContent}
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all resize-none h-32"
+                        className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-primary outline-none font-bold transition-all resize-none h-32 dark:text-white"
                     />
 
                     {image && (
@@ -130,7 +130,7 @@ export function CommunityHub() {
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all active:scale-95 text-sm"
+                            className="flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95 text-sm"
                         >
                             <span>🖼️</span> {t('addPhoto')}
                         </button>
@@ -161,16 +161,16 @@ export function CommunityHub() {
             {/* Feed */}
             <div className="space-y-8">
                 {posts.length === 0 && (
-                    <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                    <div className="text-center py-20 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
                         <span className="text-6xl mb-4 block">🌾</span>
-                        <p className="text-slate-400 font-bold">{t('noPostsYet')}</p>
+                        <p className="text-slate-400 dark:text-slate-500 font-bold">{t('noPostsYet')}</p>
                     </div>
                 )}
 
                 {posts.map((post: any, index: number) => (
                     <div
                         key={post._id}
-                        className="bg-white rounded-[2rem] shadow-xl border border-slate-100 modern-shadow overflow-hidden animate-entry"
+                        className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-800 modern-shadow overflow-hidden animate-entry"
                         style={{ animationDelay: `${index * 150}ms` }}
                     >
                         {/* Header */}
@@ -180,8 +180,8 @@ export function CommunityHub() {
                                     {post.authorProfile?.fullName?.[0]}
                                 </div>
                                 <div>
-                                    <p className="font-black text-slate-900">{post.authorProfile?.fullName}</p>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <p className="font-black text-slate-900 dark:text-white">{post.authorProfile?.fullName}</p>
+                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                         {new Date(post.createdAt).toLocaleString()}
                                     </p>
                                 </div>
@@ -200,7 +200,7 @@ export function CommunityHub() {
 
                         {/* Content */}
                         <div className="p-6 space-y-4">
-                            <p className="text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                            <p className="text-slate-700 dark:text-slate-300 font-medium leading-relaxed whitespace-pre-wrap">{post.content}</p>
                             {post.imageUrl && (
                                 <div className="rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
                                     <img src={post.imageUrl} alt="Post" className="w-full max-h-[500px] object-cover" loading="lazy" />
@@ -209,32 +209,32 @@ export function CommunityHub() {
                         </div>
 
                         {/* Actions */}
-                        <div className="px-6 py-4 flex items-center gap-6 border-t border-slate-50">
+                        <div className="px-6 py-4 flex items-center gap-6 border-t border-slate-50 dark:border-slate-800">
                             <button
                                 onClick={() => toggleLike({ postId: post._id, increment: true })}
-                                className="flex items-center gap-2 text-slate-500 font-black hover:text-red-500 transition-colors group"
+                                className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-black hover:text-red-500 transition-colors group"
                             >
                                 <span className="text-xl group-active:scale-125 transition-transform">❤️</span>
                                 <span>{post.likes}</span>
                             </button>
-                            <div className="flex items-center gap-2 text-slate-500 font-black">
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-black">
                                 <span className="text-xl">💬</span>
                                 <span>{post.comments?.length || 0}</span>
                             </div>
                         </div>
 
                         {/* Comments Section */}
-                        <div className="px-8 pb-8 pt-4 bg-slate-50/80 backdrop-blur-sm space-y-6">
+                        <div className="px-8 pb-8 pt-4 bg-slate-50/80 dark:bg-slate-950/50 backdrop-blur-sm space-y-6">
                             {post.comments?.length > 0 && (
                                 <div className="space-y-4">
                                     {post.comments.map((comment: any, idx: number) => (
                                         <div key={idx} className="flex gap-4 group/comment animate-entry" style={{ animationDelay: `${idx * 100}ms` }}>
-                                            <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-sm font-black text-primary border border-slate-100 flex-shrink-0 group-hover/comment:scale-110 transition-transform">
+                                            <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-sm font-black text-primary border border-slate-100 dark:border-slate-700 flex-shrink-0 group-hover/comment:scale-110 transition-transform">
                                                 {comment.authorProfile?.fullName?.[0]}
                                             </div>
-                                            <div className="flex-1 bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 group-hover/comment:border-primary/20 transition-all">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{comment.authorProfile?.fullName}</p>
-                                                <p className="text-sm text-slate-700 font-medium leading-relaxed">{comment.content}</p>
+                                            <div className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 dark:border-slate-700 group-hover/comment:border-primary/20 transition-all">
+                                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{comment.authorProfile?.fullName}</p>
+                                                <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed">{comment.content}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -249,7 +249,7 @@ export function CommunityHub() {
                                     value={commentContent[post._id] || ""}
                                     onChange={(val) => setCommentContent({ ...commentContent, [post._id]: val })}
                                     placeholder={t('writeComment')}
-                                    className="flex-1 pl-12 pr-12 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none font-bold transition-all placeholder:text-slate-300"
+                                    className="flex-1 pl-12 pr-12 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none font-bold transition-all placeholder:text-slate-300 dark:text-white"
                                 />
                                 <button
                                     onClick={() => handleAddComment(post._id)}

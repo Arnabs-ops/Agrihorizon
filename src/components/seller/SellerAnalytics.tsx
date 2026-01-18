@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from '../../context/LanguageContext';
 import { AnalyticsData } from "../../types/seller";
 
 export function SellerAnalytics() {

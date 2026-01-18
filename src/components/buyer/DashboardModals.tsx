@@ -1,6 +1,6 @@
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from "../../context/LanguageContext";
 import type { OrderWithDetails } from "../../types";
-import { MessagingSystem } from "../../MessagingSystem";
+import { MessagingSystem } from "../layout/MessagingSystem";
 
 interface DashboardModalsProps {
     showCart: boolean;

@@ -1,16 +1,16 @@
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { SignInForm } from "./SignInForm";
-import { SignOutButton } from "./SignOutButton";
+import { SignInForm } from "./components/auth/SignInForm";
+import { SignOutButton } from "./components/layout/SignOutButton";
 import { Toaster } from "sonner";
-import { ProfileSetup } from "./ProfileSetup";
-import { BuyerDashboard } from "./BuyerDashboard";
-import { SellerDashboard } from "./SellerDashboard";
+import { ProfileSetup } from "./components/auth/ProfileSetup";
+import { BuyerDashboard } from "./pages/BuyerDashboard";
+import { SellerDashboard } from "./pages/SellerDashboard";
 import { createContext, useContext, useState, ReactNode } from "react";
-import { translations, Language } from "./translations";
-import { LanguageProvider, useLanguage } from "./useLanguage.tsx";
-import { TutorialProvider } from "./TutorialProvider";
-import { useTheme } from "./ThemeContext";
+import { translations, Language } from "./translations/translations";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
+import { TutorialProvider } from "./components/onboarding/TutorialProvider";
+import { useTheme } from "./context/ThemeContext";
 import logo from "./assets/logo.png";
 
 export default function App() {

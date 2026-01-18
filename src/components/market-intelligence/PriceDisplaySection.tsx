@@ -1,4 +1,4 @@
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface PriceData {
     currentPrice: number | null;
@@ -88,9 +88,9 @@ export function PriceDisplaySection({ priceData, trend, userRole }: PriceDisplay
 
             {/* Buyer-specific recommendations */}
             {userRole === "buyer" && trend && (
-                <div className={`p-8 rounded-3xl border-2 animate-scale-up ${trend.trend === "down" ? "bg-emerald-50 border-emerald-200 text-emerald-900" :
-                    trend.trend === "up" ? "bg-amber-50 border-amber-200 text-amber-900" :
-                        "bg-blue-50 border-blue-200 text-blue-900"
+                <div className={`p-8 rounded-3xl border-2 animate-scale-up ${trend.trend === "down" ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400" :
+                    trend.trend === "up" ? "bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400" :
+                        "bg-blue-50 border-blue-200 text-blue-900 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400"
                     }`}>
                     <h4 className="text-lg font-black mb-3 flex items-center gap-3">
                         <span className="text-2xl">

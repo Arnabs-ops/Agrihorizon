@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { useLanguage } from '../../useLanguage';
+import { useLanguage } from '../../context/LanguageContext';
 import { Product } from '../../types/seller';
 import { Id } from '../../../convex/_generated/dataModel';
 

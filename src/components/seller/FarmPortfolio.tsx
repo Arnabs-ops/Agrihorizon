@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import { toast } from "sonner";
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from "../../context/LanguageContext";
 import { UserProfile } from "../../types/seller";
 
 interface FarmPortfolioProps {
@@ -126,7 +126,7 @@ export function FarmPortfolio({ userProfile, isReadOnly = false }: FarmPortfolio
                                     {url ? (
                                         <img
                                             src={url}
-                                            alt={`Farm ${index + 1}`}
+                                            alt={`Farm ${index + 1} `}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             loading="lazy"
                                         />

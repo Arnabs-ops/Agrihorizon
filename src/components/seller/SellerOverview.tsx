@@ -1,6 +1,6 @@
 import React from 'react';
-import { OnboardingChecklist } from '../../OnboardingChecklist';
-import { useLanguage } from '../../useLanguage';
+import { OnboardingChecklist } from '../onboarding/OnboardingChecklist';
+import { useLanguage } from '../../context/LanguageContext';
 import { useFormatters } from '../../hooks/useFormatters';
 import { OrderStatus } from '../../lib/constants';
 import type { AnalyticsData, OrderWithDetails, UserProfile } from '../../types';

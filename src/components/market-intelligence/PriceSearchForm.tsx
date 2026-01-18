@@ -1,4 +1,4 @@
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from "../../context/LanguageContext";
 import { useSpeechRecognition } from "../../hooks/useSpeechRecognition";
 
 interface PriceSearchFormProps {
@@ -41,9 +41,9 @@ export function PriceSearchForm({
                 />
                 <button
                     onClick={startListening}
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all active:scale-90 shadow-sm border border-slate-200 flex items-center justify-center z-20 ${isListening
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all active:scale-90 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center z-20 ${isListening
                         ? 'bg-red-500 text-white animate-pulse border-red-400'
-                        : 'bg-white text-slate-600 hover:text-primary hover:border-primary hover:shadow-md'
+                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-primary hover:border-primary hover:shadow-md'
                         }`}
                     title="Voice Search"
                 >

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useTutorial } from "./TutorialProvider";
-import { useLanguage } from "./useLanguage.tsx";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface TourStep {
     id: string;

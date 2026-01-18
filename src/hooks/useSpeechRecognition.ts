@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useLanguage } from "../useLanguage";
+import { useLanguage } from "../context/LanguageContext";
 import { useErrorHandler } from "./useErrorHandler";
 
 interface UseSpeechRecognitionProps {

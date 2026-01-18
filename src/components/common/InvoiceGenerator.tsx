@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useLanguage } from '../../useLanguage';
+import { useLanguage } from "../../context/LanguageContext";
 import { OrderWithDetails } from '../../types';
 
 interface InvoiceGeneratorProps {

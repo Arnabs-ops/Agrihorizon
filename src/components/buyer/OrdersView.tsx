@@ -1,5 +1,5 @@
-import { OnboardingChecklist } from "../../OnboardingChecklist";
-import { useLanguage } from "../../useLanguage";
+import { OnboardingChecklist } from "../onboarding/OnboardingChecklist";
+import { useLanguage } from "../../context/LanguageContext";
 import type { OrderWithDetails, UserProfile } from "../../types";
 import { OrderStatus } from "../../lib/constants";
 

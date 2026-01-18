@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { useLanguage } from '../useLanguage';
+import { useLanguage } from "../context/LanguageContext";
 import { getErrorMessage, isAppError } from '../lib/errors';
 
 /**

@@ -1,4 +1,4 @@
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface PriceHistoryEntry {
     date: string;

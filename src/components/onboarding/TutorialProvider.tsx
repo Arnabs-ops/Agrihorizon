@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 
 interface TutorialProgress {
     hasSeenWelcome: boolean;

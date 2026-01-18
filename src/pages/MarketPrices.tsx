@@ -1,18 +1,18 @@
 import { useState, useCallback } from "react";
 import { useAction } from "convex/react";
-import { api } from "../convex/_generated/api";
-import { useLanguage } from "./useLanguage.tsx";
-import { useErrorHandler } from "./hooks/useErrorHandler";
-import { useImagePreloader } from "./hooks/useImagePreloader";
-import buyerBg from "./assets/buyer_bg.png";
-import sellerBg from "./assets/seller_bg.png";
-import paymentQr from "./assets/payment-qr.jpg";
+import { api } from "../../convex/_generated/api";
+import { useLanguage } from "../context/LanguageContext";
+import { useErrorHandler } from "../hooks/useErrorHandler";
+import { useImagePreloader } from "../hooks/useImagePreloader";
+import buyerBg from "../assets/buyer_bg.png";
+import sellerBg from "../assets/seller_bg.png";
+import paymentQr from "../assets/payment-qr.jpg";
 
 // Modular Components
-import { PriceSearchForm } from "./components/market-intelligence/PriceSearchForm";
-import { PriceDisplaySection } from "./components/market-intelligence/PriceDisplaySection";
-import { HarvestAnalytics } from "./components/market-intelligence/HarvestAnalytics";
-import { PriceChart } from "./components/market-intelligence/PriceChart";
+import { PriceSearchForm } from "../components/market-intelligence/PriceSearchForm";
+import { PriceDisplaySection } from "../components/market-intelligence/PriceDisplaySection";
+import { HarvestAnalytics } from "../components/market-intelligence/HarvestAnalytics";
+import { PriceChart } from "../components/market-intelligence/PriceChart";
 
 interface MarketPricesProps {
   userRole: "seller" | "buyer";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from "../../context/LanguageContext";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
 
 interface ProductReviewsProps {
@@ -45,8 +45,8 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span className="text-xl">⭐️</span>
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{avgRating || t('noReviews') || "No reviews"}</span>
-                    <span className="text-xs text-slate-400">({reviews.length})</span>
+                    <span className="text-sm font-black text-slate-700 dark:text-white">{avgRating || t('noReviews') || "No reviews"}</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">({reviews.length})</span>
                 </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
@@ -88,14 +88,14 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
 
             <div className="space-y-4 max-h-60 overflow-y-auto custom-scrollbar pr-2">
                 {reviews.map((review: any) => (
-                    <div key={review._id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div key={review._id} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700/50">
                         <div className="flex justify-between items-start mb-2">
-                            <p className="text-xs font-black text-slate-900 dark:text-white capitalize">{review.buyerName}</p>
+                            <p className="text-xs font-black text-slate-900 dark:text-white capitalize tracking-wide">{review.buyerName}</p>
                             <div className="flex text-[10px]">
                                 {"⭐️".repeat(review.rating)}
                             </div>
                         </div>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{review.comment}</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed italic">"{review.comment}"</p>
                     </div>
                 ))}
             </div>

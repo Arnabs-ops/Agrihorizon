@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from "../../context/LanguageContext";
 import { VoiceInput } from "../common/VoiceInput";
 
 interface ProductModalProps {
@@ -213,8 +213,8 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, category: cat }))}
                                         className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${formData.category === cat
-                                            ? "bg-slate-900 text-white shadow-lg"
-                                            : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                                ? "bg-slate-900 text-white shadow-lg"
+                                                : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                                             }`}
                                     >
                                         {cat}
@@ -270,8 +270,8 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                                                         setPreviewUrl(null);
                                                     }}
                                                     className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center transition-all ${formData.imageEmoji === emoji && !previewUrl
-                                                        ? "bg-white shadow-md border-2 border-primary transform scale-110"
-                                                        : "bg-slate-50 hover:bg-white hover:shadow-sm"
+                                                            ? "bg-white shadow-md border-2 border-primary transform scale-110"
+                                                            : "bg-slate-50 hover:bg-white hover:shadow-sm"
                                                         }`}
                                                 >
                                                     {emoji}

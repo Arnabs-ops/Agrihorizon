@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTutorial } from "./TutorialProvider";
-import { useLanguage } from "./useLanguage.tsx";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface OnboardingChecklistProps {
     userRole: "buyer" | "seller";

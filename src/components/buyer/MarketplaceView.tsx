@@ -1,5 +1,5 @@
 import React from "react";
-import { useLanguage } from "../../useLanguage";
+import { useLanguage } from '../../context/LanguageContext';
 import { VoiceInput } from "../common/VoiceInput";
 import type { ProductWithSeller } from "../../types";
 import { ProductReviews } from "./ProductReviews";

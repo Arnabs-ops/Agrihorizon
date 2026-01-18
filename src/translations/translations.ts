@@ -18,6 +18,7 @@ export const translations = {
         notifications: "Notifications",
         markAllAsRead: "Mark all as read",
         noNotifications: "No notifications yet",
+        showingRecentUpdates: "Showing recent updates",
 
         // Marketplace
         searchProducts: "Search products...",
@@ -145,6 +146,14 @@ export const translations = {
         analyzing: "Analyzing...",
         getAiStrategy: "Get AI Strategy",
         reanalyze: "Re-analyze",
+        noMessagesYet: "No messages yet",
+        newConversation: "New Conversation",
+        noConversationsYet: "No conversations yet",
+        startConversation: "Start a conversation",
+        startNewConversation: "Start New Conversation",
+        typeMessagePlaceholder: "Type your message...",
+        send: "Send",
+        selectConversationToStart: "Select a conversation to start messaging",
         listening: "Listening...",
         voiceSearchStart: "Speak now (e.g. 'Tomato in Delhi')",
         voiceSearchError: "Could not understand audio",
@@ -233,6 +242,7 @@ export const translations = {
         fillRequired: "Please fill in all required fields",
         profileCreated: "Profile created successfully!",
         profileFailed: "Failed to create profile. Please try again.",
+        commaSeparatedHint: "Separate with commas (e.g. Wheat, Rice, Corn)",
 
         // Welcome Modal
         skip: "Skip",
@@ -370,6 +380,7 @@ export const translations = {
         notifications: "सूचनाएं",
         markAllAsRead: "सभी को पढ़ा हुआ मानें",
         noNotifications: "अभी तक कोई सूचना नहीं",
+        showingRecentUpdates: "हालिया अपडेट दिखाए जा रहे हैं",
 
         // Marketplace
         searchProducts: "उत्पाद खोजें...",
@@ -497,6 +508,14 @@ export const translations = {
         analyzing: "विश्लेषण हो रहा है...",
         getAiStrategy: "AI रणनीति प्राप्त करें",
         reanalyze: "फिर से विश्लेषण करें",
+        noMessagesYet: "अभी तक कोई संदेश नहीं",
+        newConversation: "नया संदेश",
+        noConversationsYet: "अभी तक कोई संदेश नहीं",
+        startConversation: "बातचीत शुरू करें",
+        startNewConversation: "नया संदेश शुरू करें",
+        typeMessagePlaceholder: "अपना संदेश लिखें...",
+        send: "भेजें",
+        selectConversationToStart: "संदेश भेजने के लिए बातचीत चुनें",
         listening: "सुन रहा हूँ...",
         voiceSearchStart: "अब बोलें (जैसे 'दिल्ली में टमाटर')",
         voiceSearchError: "ऑडियो समझ में नहीं आया",
@@ -585,6 +604,7 @@ export const translations = {
         fillRequired: "कृपया सभी आवश्यक फ़ील्ड भरें",
         profileCreated: "प्रोफ़ाइल सफलतापूर्वक बनाई गई!",
         profileFailed: "प्रोफ़ाइल बनाने में विफल। कृपया पुन: प्रयास करें।",
+        commaSeparatedHint: "अल्पविराम से अलग करें (जैसे गेहूं, चावल, मक्का)",
 
         // Welcome Modal
         skip: "छोड़ें",

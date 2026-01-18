@@ -1,26 +1,26 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 import { MessagingSystem } from "./MessagingSystem";
 import { MarketPrices } from "./MarketPrices";
 import { toast } from "sonner";
-import { Id } from "../convex/_generated/dataModel";
+import { Id } from "../../convex/_generated/dataModel";
 import { CommunityHub } from "./CommunityHub";
-import { useLanguage } from "./useLanguage.tsx";
-import { WelcomeModal } from "./WelcomeModal";
-import { HelpButton } from "./HelpButton";
-import { useTutorial } from "./TutorialProvider";
-import { useFormatters } from "./hooks/useFormatters";
-import { useErrorHandler } from "./hooks/useErrorHandler";
-import { OrderStatus } from "./lib/constants";
-import type { UserProfile, ProductWithSeller, OrderWithDetails } from "./types";
+import { useLanguage } from "../context/LanguageContext";
+import { WelcomeModal } from "../components/auth/WelcomeModal";
+import { HelpButton } from "../components/layout/HelpButton";
+import { useTutorial } from "../components/onboarding/TutorialProvider";
+import { useFormatters } from "../hooks/useFormatters";
+import { useErrorHandler } from "../hooks/useErrorHandler";
+import { OrderStatus } from "../lib/constants";
+import type { UserProfile, ProductWithSeller, OrderWithDetails } from "../types";
 
 // Modular Components
-import { BuyerHeader } from "./components/buyer/BuyerHeader";
-import { MarketplaceView } from "./components/buyer/MarketplaceView";
-import { OrdersView } from "./components/buyer/OrdersView";
-import { DashboardModals } from "./components/buyer/DashboardModals";
-import { SellerPortfolioModal } from "./components/buyer/SellerPortfolioModal";
+import { BuyerHeader } from "../components/buyer/BuyerHeader";
+import { MarketplaceView } from "../components/buyer/MarketplaceView";
+import { OrdersView } from "../components/buyer/OrdersView";
+import { DashboardModals } from "../components/buyer/DashboardModals";
+import { SellerPortfolioModal } from "../components/buyer/SellerPortfolioModal";
 
 interface BuyerDashboardProps {
   userProfile: UserProfile;

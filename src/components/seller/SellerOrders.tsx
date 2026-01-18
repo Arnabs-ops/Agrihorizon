@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLanguage } from '../../useLanguage';
+import { useLanguage } from '../../context/LanguageContext';
 import { useFormatters } from '../../hooks/useFormatters';
 import { OrderStatus } from '../../lib/constants';
 import type { OrderWithDetails } from '../../types';

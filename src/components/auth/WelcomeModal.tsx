@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useTutorial } from "./TutorialProvider";
-import { useLanguage } from "./useLanguage.tsx";
+import { useTutorial } from "../onboarding/TutorialProvider";
+import { useLanguage } from "../../context/LanguageContext";
 
 interface WelcomeModalProps {
     userRole: "buyer" | "seller";

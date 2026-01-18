@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from 'react';
-import { useLanguage } from '../useLanguage';
+import { useLanguage } from "../context/LanguageContext";
 import {
   formatPrice as formatPriceUtil,
   formatDate as formatDateUtil,
@@ -19,38 +19,38 @@ import {
  */
 export function useFormatters() {
   const { language } = useLanguage();
-  
+
   const locale = language === 'hi' ? 'hi-IN' : 'en-IN';
   const dateLocale = language === 'hi' ? 'hi-IN' : 'en-US';
-  
+
   const formatPrice = useCallback(
     (price: number, currency: string = 'INR') => {
       return formatPriceUtil(price, currency, locale);
     },
     [locale]
   );
-  
+
   const formatDate = useCallback(
     (timestamp: number) => {
       return formatDateUtil(timestamp, dateLocale);
     },
     [dateLocale]
   );
-  
+
   const formatDateTime = useCallback(
     (timestamp: number) => {
       return formatDateTimeUtil(timestamp, dateLocale);
     },
     [dateLocale]
   );
-  
+
   const getStatusColorClass = useCallback(
     (status: string) => {
       return getStatusColor(status);
     },
     []
   );
-  
+
   return {
     formatPrice,
     formatDate,

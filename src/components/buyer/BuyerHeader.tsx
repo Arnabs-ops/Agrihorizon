@@ -1,5 +1,5 @@
-import { NotificationCenter } from "../../NotificationCenter";
-import { useLanguage } from "../../useLanguage";
+import { NotificationCenter } from "../layout/NotificationCenter";
+import { useLanguage } from "../../context/LanguageContext";
 import buyerBg from "../../assets/buyer_bg.png";
 
 interface BuyerHeaderProps {
