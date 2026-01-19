@@ -15,7 +15,16 @@ export function PaymentSettings() {
     const [upiName, setUpiName] = useState("");
     const [bankName, setBankName] = useState("");
     const [saving, setSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
+
+    // Auto-hide success message
+    useEffect(() => {
+        if (showSuccess) {
+            const timer = setTimeout(() => setShowSuccess(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [showSuccess]);
 
     // Load existing details when profile loads
     useEffect(() => {
@@ -71,6 +80,7 @@ export function PaymentSettings() {
                 upiName: upiName.trim(),
                 bankName: bankName.trim() || undefined,
             });
+            setShowSuccess(true);
             handleSuccess(t('paymentDetailsUpdated') || "Payment details updated successfully!");
         } catch (error: any) {
             handleError(error, t('paymentUpdateFailed') || "Failed to update payment details");
@@ -82,7 +92,21 @@ export function PaymentSettings() {
     const hasExistingDetails = !!(currentProfile?.profile?.upiId && currentProfile?.profile?.upiName);
 
     return (
-        <div className="bg-white dark:bg-slate-900/40 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 modern-shadow transition-colors duration-500">
+        <div className="relative bg-white dark:bg-slate-900/40 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 modern-shadow transition-colors duration-500 overflow-hidden">
+            {/* Success Pop-up Overlay */}
+            {showSuccess && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-emerald-500 text-white px-8 py-6 rounded-3xl shadow-2xl flex flex-col items-center gap-3 animate-scale-up">
+                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl animate-bounce">
+                            ✓
+                        </div>
+                        <h4 className="text-xl font-black text-center whitespace-pre-wrap">
+                            {t('paymentDetailsUpdated') || "Payment Details Updated!"}
+                        </h4>
+                    </div>
+                </div>
+            )}
+
             <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 flex items-center gap-3">
                 <span className="text-3xl">💳</span>
                 {t('paymentSettings') || 'Payment Settings'}

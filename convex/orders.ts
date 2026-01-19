@@ -3,7 +3,6 @@ import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { requireAuth, requireRole, enrichOrderWithDetails, Errors } from "./helpers";
-import crypto from "node:crypto";
 
 const FAKE_DRIVERS = [
   { name: "Rajesh Kumar", phone: "+91 98765-43210" },
@@ -111,8 +110,8 @@ export const markOrdersAsPaid = mutation({
         continue;
       }
 
-      // Security Checks (if nonce/signature provided)
-      if (args.nonce || args.signature) {
+      // Security Checks (if nonce provided)
+      if (args.nonce) {
         if (order.paymentNonce !== args.nonce) {
           await ctx.db.insert("paymentAuditLogs", {
             orderId, userId, action: "fraud_detected",
@@ -130,24 +129,6 @@ export const markOrdersAsPaid = mutation({
             statusBefore: order.paymentStatus, statusAfter: "expired", timestamp: Date.now()
           });
           throw new Error("Payment session expired. Please scan again.");
-        }
-
-        // Re-verify signature
-        const signingSecret = process.env.PAYMENT_SIGNING_SECRET || "fallback_secret_agrohorizon";
-        const amountToPay = order.lockedAmount || order.totalAmount;
-        const signatureBase = `${orderId}:${amountToPay}:${order.paymentNonce}`;
-        const expectedSignature = crypto
-          .createHmac("sha256", signingSecret)
-          .update(signatureBase)
-          .digest("hex");
-
-        if (expectedSignature !== args.signature) {
-          await ctx.db.insert("paymentAuditLogs", {
-            orderId, userId, action: "fraud_detected",
-            details: "Signature mismatch. Signature tempered.",
-            statusBefore: order.paymentStatus, statusAfter: "failed", timestamp: Date.now()
-          });
-          throw new Error("Invalid payment signature.");
         }
       }
 

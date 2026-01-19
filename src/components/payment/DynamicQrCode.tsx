@@ -22,14 +22,17 @@ export function DynamicQrCode({ orderId, amount, onPaymentConfirm, onClose }: Dy
         amount: number;
         hasPaymentDetails: boolean;
         nonce?: string;
-        paymentSignature?: string;
+        signature?: string;
         expiry?: number;
     } | null>(null);
 
     const { t } = useLanguage();
     const { handleError } = useErrorHandler();
     const initiate = useMutation(api.payments.initiatePayment);
-    const generateQr = useAction(api.payments.generateUpiQrCode);
+    const generateQr = useAction(api.paymentActions.generateUpiQrCode);
+
+    const verifySignature = useAction(api.paymentActions.verifyPaymentSignature);
+    const [verifying, setVerifying] = useState(false);
 
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
@@ -232,16 +235,39 @@ export function DynamicQrCode({ orderId, amount, onPaymentConfirm, onClose }: Dy
 
             <div className="space-y-3">
                 <button
-                    onClick={() => {
-                        if (qrData?.nonce) {
-                            onPaymentConfirm(qrData.nonce, qrData.paymentSignature);
+                    onClick={async () => {
+                        if (qrData?.nonce && qrData?.signature) {
+                            try {
+                                setVerifying(true);
+                                const isValid = await verifySignature({
+                                    orderId,
+                                    nonce: qrData.nonce,
+                                    signature: qrData.signature
+                                });
+
+                                if (isValid) {
+                                    onPaymentConfirm(qrData.nonce, qrData.signature);
+                                } else {
+                                    handleError("Security verification failed. Please regenerate QR.");
+                                }
+                            } catch (err) {
+                                handleError(err, "Payment verification failed");
+                            } finally {
+                                setVerifying(false);
+                            }
+                        } else {
+                            onPaymentConfirm();
                         }
                     }}
-                    disabled={timeLeft === 0}
+                    disabled={timeLeft === 0 || verifying}
                     className="w-full bg-emerald-500 text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale"
                 >
-                    <span>✓</span>
-                    <span>{t('confirmPayment') || 'I Have Paid - Confirm'}</span>
+                    {verifying ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    ) : (
+                        <span>✓</span>
+                    )}
+                    <span>{verifying ? t('verifying') || 'Verifying...' : t('confirmPayment') || 'I Have Paid - Confirm'}</span>
                 </button>
                 <button
                     onClick={onClose}

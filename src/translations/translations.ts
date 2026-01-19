@@ -252,6 +252,7 @@ export const translations = {
         canUpdateNote: "You can update these details anytime",
         noBankAccessNote: "We never access your bank account or payment history",
         saving: "Saving...",
+        verifying: "Verifying...",
         savePaymentDetails: "Save Payment Details",
         expired: "Expired",
 
@@ -656,6 +657,7 @@ export const translations = {
         canUpdateNote: "आप इन विवरणों को किसी भी समय अपडेट कर सकते हैं",
         noBankAccessNote: "हम कभी भी आपके बैंक खाते या भुगतान इतिहास तक नहीं पहुंचते",
         saving: "सहेजा जा रहा है...",
+        verifying: "सत्यापित किया जा रहा है...",
         savePaymentDetails: "भुगतान विवरण सहेजें",
         expired: "समय समाप्त",
 
