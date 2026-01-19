@@ -24,6 +24,7 @@ import { SellerAnalytics } from "../components/seller/SellerAnalytics";
 import { ProductModal } from "../components/seller/ProductModal";
 import { CropAdvisor } from "../components/seller/CropAdvisor";
 import { FarmPortfolio } from "../components/seller/FarmPortfolio";
+import { PaymentSettings } from "../components/seller/PaymentSettings";
 
 export function SellerDashboard({ userProfile }: SellerDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -149,6 +150,10 @@ export function SellerDashboard({ userProfile }: SellerDashboardProps) {
 
       {activeTab === "portfolio" && (
         <FarmPortfolio userProfile={userProfile} />
+      )}
+
+      {activeTab === "settings" && (
+        <PaymentSettings />
       )}
 
       {/* Tutorial Components */}

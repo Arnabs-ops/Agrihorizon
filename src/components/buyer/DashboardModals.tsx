@@ -1,6 +1,11 @@
+import { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { useLanguage } from "../../context/LanguageContext";
+import { useErrorHandler } from "../../hooks/useErrorHandler";
 import type { OrderWithDetails } from "../../types";
 import { MessagingSystem } from "../layout/MessagingSystem";
+import { DynamicQrCode } from "../payment/DynamicQrCode";
 
 interface DashboardModalsProps {
     showCart: boolean;
@@ -17,7 +22,6 @@ interface DashboardModalsProps {
     setNewAddress: (a: string) => void;
     handleRemoveFromCart: (id: any) => Promise<void>;
     handleUpdateAddress: () => Promise<void>;
-    handlePayment: () => Promise<void>;
     formatPrice: (p: number) => string;
 }
 
@@ -36,10 +40,16 @@ export function DashboardModals({
     setNewAddress,
     handleRemoveFromCart,
     handleUpdateAddress,
-    handlePayment,
     formatPrice
 }: DashboardModalsProps) {
     const { t } = useLanguage();
+    const { handleError, handleSuccess } = useErrorHandler();
+
+    // Multi-seller payment state
+    const [currentSellerIndex, setCurrentSellerIndex] = useState(0);
+
+    // Mutations for payment processing
+    const markOrdersAsPaid = useMutation(api.orders.markOrdersAsPaid);
 
     return (
         <>
@@ -113,29 +123,68 @@ export function DashboardModals({
             {showPayment && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowPayment(false)}></div>
-                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 modern-shadow text-center relative z-10 w-full max-w-md border border-white/10">
-                        <h2 className="text-2xl font-black mb-4 flex items-center justify-center gap-3">
+                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 modern-shadow relative z-10 w-full max-w-md border border-white/10 max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-2xl font-black mb-6 flex items-center justify-center gap-3">
                             <span className="text-3xl">💳</span> {t('secureCheckout')}
                         </h2>
-                        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl mb-8 border border-slate-100 dark:border-slate-700">
-                            <p className="text-slate-500 font-bold mb-2 uppercase tracking-widest text-xs">{t('scanToPay')}</p>
-                            <img src="/src/assets/payment-qr.jpg" alt="Payment QR" className="mx-auto rounded-xl w-48 h-48 border-4 border-white shadow-lg dark:border-slate-800" />
-                            <p className="mt-6 text-2xl font-black text-slate-900 dark:text-white">{formatPrice(cartTotal)}</p>
-                        </div>
-                        <div className="space-y-4">
-                            <button
-                                onClick={handlePayment}
-                                className="w-full bg-emerald-500 text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all"
-                            >
-                                {t('confirmPayment')}
-                            </button>
-                            <button
-                                onClick={() => setShowPayment(false)}
-                                className="w-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-4 rounded-xl font-bold hover:bg-slate-200 transition-all"
-                            >
-                                {t('cancel')}
-                            </button>
-                        </div>
+
+                        {/* Dynamic QR code for current seller */}
+                        {cartItems.length > 0 && cartItems[currentSellerIndex] && (
+                            <DynamicQrCode
+                                orderId={cartItems[currentSellerIndex]._id}
+                                amount={cartItems[currentSellerIndex].totalAmount}
+                                onPaymentConfirm={async (nonce, signature) => {
+                                    try {
+                                        // Mark current order as paid with security tokens
+                                        await markOrdersAsPaid({
+                                            orderIds: [cartItems[currentSellerIndex]._id],
+                                            nonce,
+                                            signature
+                                        });
+
+                                        // If more sellers remain, move to next
+                                        if (currentSellerIndex < cartItems.length - 1) {
+                                            setCurrentSellerIndex(currentSellerIndex + 1);
+                                            handleSuccess('Payment confirmed! Please pay the next seller.');
+                                        } else {
+                                            // All payments done
+                                            handleSuccess('All payments completed successfully!');
+                                            setShowPayment(false);
+                                            setShowCart(false);
+                                            setCurrentSellerIndex(0);
+                                        }
+                                    } catch (error) {
+                                        handleError(error, 'Failed to confirm payment');
+                                    }
+                                }}
+                                onClose={() => {
+                                    setShowPayment(false);
+                                    setCurrentSellerIndex(0);
+                                }}
+                            />
+                        )}
+
+                        {/* Progress indicator for multi-seller carts */}
+                        {cartItems.length > 1 && (
+                            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                                <p className="text-center text-sm font-bold text-slate-500 mb-3">
+                                    Payment Progress: {currentSellerIndex + 1} / {cartItems.length}
+                                </p>
+                                <div className="flex gap-2 justify-center">
+                                    {cartItems.map((_, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`h-2 rounded-full transition-all ${idx < currentSellerIndex
+                                                ? 'w-8 bg-emerald-500'
+                                                : idx === currentSellerIndex
+                                                    ? 'w-12 bg-primary'
+                                                    : 'w-8 bg-slate-200 dark:bg-slate-700'
+                                                }`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

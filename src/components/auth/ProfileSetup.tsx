@@ -18,6 +18,9 @@ export function ProfileSetup() {
   const [farmSize, setFarmSize] = useState("");
   const [cropTypes, setCropTypes] = useState<string[]>([]);
   const [preferredProducts, setPreferredProducts] = useState<string[]>([]);
+  const [upiId, setUpiId] = useState("");
+  const [upiName, setUpiName] = useState("");
+  const [bankName, setBankName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createProfile = useMutation(api.users.createUserProfile);
@@ -40,6 +43,9 @@ export function ProfileSetup() {
         farmSize: role === "seller" ? farmSize || undefined : undefined,
         cropTypes: role === "seller" && cropTypes.length > 0 ? cropTypes : undefined,
         preferredProducts: role === "buyer" && preferredProducts.length > 0 ? preferredProducts : undefined,
+        upiId: role === "seller" && upiId ? upiId : undefined,
+        upiName: role === "seller" && upiName ? upiName : undefined,
+        bankName: role === "seller" && bankName ? bankName : undefined,
       });
       handleSuccess(t('profileCreated') || "Profile created successfully!");
     } catch (error) {
@@ -142,6 +148,12 @@ export function ProfileSetup() {
             farmSize={farmSize}
             setFarmSize={setFarmSize}
             setCropTypes={setCropTypes}
+            upiId={upiId}
+            setUpiId={setUpiId}
+            upiName={upiName}
+            setUpiName={setUpiName}
+            bankName={bankName}
+            setBankName={setBankName}
           />
         )}
 

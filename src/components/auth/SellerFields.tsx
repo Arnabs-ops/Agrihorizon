@@ -7,6 +7,12 @@ interface SellerFieldsProps {
     farmSize: string;
     setFarmSize: (size: string) => void;
     setCropTypes: (crops: string[]) => void;
+    upiId: string;
+    setUpiId: (value: string) => void;
+    upiName: string;
+    setUpiName: (value: string) => void;
+    bankName: string;
+    setBankName: (value: string) => void;
 }
 
 export function SellerFields({
@@ -14,7 +20,13 @@ export function SellerFields({
     setBusinessName,
     farmSize,
     setFarmSize,
-    setCropTypes
+    setCropTypes,
+    upiId,
+    setUpiId,
+    upiName,
+    setUpiName,
+    bankName,
+    setBankName
 }: SellerFieldsProps) {
     const { t } = useLanguage();
 
@@ -68,6 +80,61 @@ export function SellerFields({
                 <p className="mt-2 text-xs text-slate-400 font-medium italic">
                     {t('commaSeparatedHint') || "Separate crops with commas (e.g. Wheat, Rice, Corn)"}
                 </p>
+            </div>
+
+            {/* UPI Payment Details Section */}
+            <div className="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">💳</span>
+                    <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">
+                        Payment Details (Optional)
+                    </h3>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    Add your UPI details to receive payments. You can also add this later from Payment Settings.
+                </p>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        UPI ID
+                    </label>
+                    <input
+                        type="text"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none"
+                        placeholder="yourname@paytm, yourname@ybl"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Example: farmer@paytm, seller@phonepe, business@ybl
+                    </p>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Account Name
+                    </label>
+                    <input
+                        type="text"
+                        value={upiName}
+                        onChange={(e) => setUpiName(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none"
+                        placeholder="Name as per UPI account"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Bank Name (Optional)
+                    </label>
+                    <input
+                        type="text"
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none"
+                        placeholder="e.g., State Bank of India, HDFC Bank"
+                    />
+                </div>
             </div>
         </div>
     );

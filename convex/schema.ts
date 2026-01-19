@@ -23,6 +23,10 @@ const applicationTables = {
     farmBio: v.optional(v.string()), // For sellers
     farmImages: v.optional(v.array(v.id("_storage"))), // For sellers
     isVerified: v.optional(v.boolean()), // For sellers
+    // Payment Details (For sellers)
+    upiId: v.optional(v.string()), // UPI ID (e.g., farmer@paytm)
+    upiName: v.optional(v.string()), // Name on UPI account
+    bankName: v.optional(v.string()), // Bank name for display
   }).index("by_user_id", ["userId"]),
 
   products: defineTable({
@@ -49,12 +53,26 @@ const applicationTables = {
     unitPrice: v.number(),
     totalAmount: v.number(),
     status: v.union(
+      v.literal("cart"),
       v.literal("pending"),
       v.literal("processing"),
       v.literal("shipped"),
       v.literal("delivered"),
       v.literal("cancelled")
     ),
+    paymentStatus: v.optional(v.union(
+      v.literal("pending"),
+      v.literal("initiating"),
+      v.literal("awaiting_confirmation"),
+      v.literal("paid"),
+      v.literal("failed"),
+      v.literal("expired"),
+      v.literal("disputed")
+    )),
+    paymentNonce: v.optional(v.string()),
+    paymentExpiry: v.optional(v.number()),
+    lockedAmount: v.optional(v.number()),
+    paymentSignature: v.optional(v.string()),
     orderDate: v.number(),
     deliveryAddress: v.optional(v.string()),
     notes: v.optional(v.string()),
@@ -133,6 +151,18 @@ const applicationTables = {
     content: v.string(),
     createdAt: v.number(),
   }).index("by_post", ["postId"]),
+
+  paymentAuditLogs: defineTable({
+    orderId: v.id("orders"),
+    userId: v.id("users"),
+    action: v.string(), // e.g., "qr_generated", "payment_confirmed", "expiry_reached"
+    details: v.string(),
+    statusBefore: v.optional(v.string()),
+    statusAfter: v.string(),
+    ipAddress: v.optional(v.string()),
+    timestamp: v.number(),
+  }).index("by_order", ["orderId"])
+    .index("by_user", ["userId"]),
 };
 
 export default defineSchema({

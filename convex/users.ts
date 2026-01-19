@@ -74,6 +74,9 @@ export const createUserProfile = mutation({
         farmSize: v.optional(v.string()),
         cropTypes: v.optional(v.array(v.string())),
         preferredProducts: v.optional(v.array(v.string())),
+        upiId: v.optional(v.string()),
+        upiName: v.optional(v.string()),
+        bankName: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const userId = await getAuthUserId(ctx);
@@ -102,6 +105,9 @@ export const createUserProfile = mutation({
             farmSize: args.farmSize,
             cropTypes: args.cropTypes,
             preferredProducts: args.preferredProducts,
+            upiId: args.upiId,
+            upiName: args.upiName,
+            bankName: args.bankName,
             // Initialize tutorial progress
             tutorialProgress: {
                 hasSeenWelcome: false,

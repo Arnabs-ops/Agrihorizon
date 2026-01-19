@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { requireAuth, requireRole, enrichOrderWithDetails, Errors } from "./helpers";
+import crypto from "node:crypto";
 
 const FAKE_DRIVERS = [
   { name: "Rajesh Kumar", phone: "+91 98765-43210" },
@@ -88,6 +89,8 @@ export const createOrder = mutation({
 export const markOrdersAsPaid = mutation({
   args: {
     orderIds: v.array(v.id("orders")),
+    nonce: v.optional(v.string()),
+    signature: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { userId } = await requireRole(ctx, "buyer");
@@ -103,19 +106,57 @@ export const markOrdersAsPaid = mutation({
         throw new Error("Order not found or access denied");
       }
 
-      if (order.isPaid || order.isPaid === undefined) {
-        continue; // Skip already paid or legacy orders
+      // Idempotency: Skip if already paid
+      if (order.isPaid || order.paymentStatus === "paid") {
+        continue;
+      }
+
+      // Security Checks (if nonce/signature provided)
+      if (args.nonce || args.signature) {
+        if (order.paymentNonce !== args.nonce) {
+          await ctx.db.insert("paymentAuditLogs", {
+            orderId, userId, action: "fraud_detected",
+            details: `Nonce mismatch. Provided: ${args.nonce}, Expected: ${order.paymentNonce}`,
+            statusBefore: order.paymentStatus, statusAfter: "failed", timestamp: Date.now()
+          });
+          throw new Error("Invalid payment nonce. Possible tampering.");
+        }
+
+        if (order.paymentExpiry && Date.now() > order.paymentExpiry) {
+          await ctx.db.patch(orderId, { paymentStatus: "expired" });
+          await ctx.db.insert("paymentAuditLogs", {
+            orderId, userId, action: "payment_expired",
+            details: `Payment expired at ${new Date(order.paymentExpiry).toISOString()}`,
+            statusBefore: order.paymentStatus, statusAfter: "expired", timestamp: Date.now()
+          });
+          throw new Error("Payment session expired. Please scan again.");
+        }
+
+        // Re-verify signature
+        const signingSecret = process.env.PAYMENT_SIGNING_SECRET || "fallback_secret_agrohorizon";
+        const amountToPay = order.lockedAmount || order.totalAmount;
+        const signatureBase = `${orderId}:${amountToPay}:${order.paymentNonce}`;
+        const expectedSignature = crypto
+          .createHmac("sha256", signingSecret)
+          .update(signatureBase)
+          .digest("hex");
+
+        if (expectedSignature !== args.signature) {
+          await ctx.db.insert("paymentAuditLogs", {
+            orderId, userId, action: "fraud_detected",
+            details: "Signature mismatch. Signature tempered.",
+            statusBefore: order.paymentStatus, statusAfter: "failed", timestamp: Date.now()
+          });
+          throw new Error("Invalid payment signature.");
+        }
       }
 
       // Get product to reduce stock
       const product = await ctx.db.get(order.productId);
-      if (!product) {
-        throw new Error("Product not found");
-      }
+      if (!product) throw new Error("Product not found");
 
       // Check stock availability
       if (product.stockQuantity < order.quantity) {
-        // Notify the buyer about insufficient stock
         await ctx.db.insert("notifications", {
           userId: order.buyerId,
           type: "order_status",
@@ -133,6 +174,19 @@ export const markOrdersAsPaid = mutation({
       await ctx.db.patch(orderId, {
         isPaid: true,
         paymentDate,
+        paymentStatus: "paid",
+        status: "processing", // Move to processing stage
+      });
+
+      // Audit Log
+      await ctx.db.insert("paymentAuditLogs", {
+        orderId,
+        userId,
+        action: "payment_confirmed",
+        details: `Confirmed for amount: ${order.lockedAmount || order.totalAmount}`,
+        statusBefore: order.paymentStatus,
+        statusAfter: "paid",
+        timestamp: Date.now(),
       });
 
       // Reduce product stock
@@ -140,24 +194,19 @@ export const markOrdersAsPaid = mutation({
         stockQuantity: product.stockQuantity - order.quantity,
       });
 
-      // Check if stock is now empty and handle accordingly
+      // Handle stock empty notification
       const updatedProduct = await ctx.db.get(order.productId);
       if (updatedProduct && updatedProduct.stockQuantity === 0) {
-        // Notify seller about empty stock
         await ctx.db.insert("notifications", {
           userId: updatedProduct.sellerId,
           type: "stock_empty",
           title: "Stock Empty!",
-          content: `Your product "${updatedProduct.name}" is out of stock. Please add more stock or remove the product.`,
+          content: `Your product "${updatedProduct.name}" is out of stock.`,
           isRead: false,
           link: "products",
           timestamp: Date.now(),
         });
-
-        // Deactivate the product to remove it from the marketplace
-        await ctx.db.patch(order.productId, {
-          isActive: false,
-        });
+        await ctx.db.patch(order.productId, { isActive: false });
       }
 
       // Trigger delivery simulation

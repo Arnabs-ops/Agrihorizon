@@ -17,6 +17,7 @@ import type * as http from "../http.js";
 import type * as messages from "../messages.js";
 import type * as notifications from "../notifications.js";
 import type * as orders from "../orders.js";
+import type * as payments from "../payments.js";
 import type * as products from "../products.js";
 import type * as reviews from "../reviews.js";
 import type * as router from "../router.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   messages: typeof messages;
   notifications: typeof notifications;
   orders: typeof orders;
+  payments: typeof payments;
   products: typeof products;
   reviews: typeof reviews;
   router: typeof router;

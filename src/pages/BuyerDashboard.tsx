@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { MessagingSystem } from "./MessagingSystem";
+import { MessagingSystem } from "../components/layout/MessagingSystem";
 import { MarketPrices } from "./MarketPrices";
 import { toast } from "sonner";
 import { Id } from "../../convex/_generated/dataModel";
@@ -50,25 +50,11 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
   const marketplaceProducts = (useQuery(api.products.getMarketplaceProducts) || []) as ProductWithSeller[];
   const allOrders = (useQuery(api.orders.getBuyerOrders) || []) as OrderWithDetails[];
   const createOrder = useMutation(api.orders.createOrder);
-  const markOrdersAsPaid = useMutation(api.orders.markOrdersAsPaid);
   const deleteOrder = useMutation(api.orders.deleteOrder);
   const updateProfile = useMutation(api.users.createUserProfile);
 
   const cartItems = useMemo(() => allOrders.filter((o) => o.isPaid === false), [allOrders]);
   const buyerOrders = useMemo(() => allOrders.filter((o) => o.isPaid === true || o.isPaid === undefined), [allOrders]);
-
-  const handlePayment = async () => {
-    try {
-      await markOrdersAsPaid({
-        orderIds: cartItems.map(item => item._id)
-      });
-      handleSuccess("Payment successful! Orders are now being processed.", "paymentSuccessful");
-      setShowPayment(false);
-      setShowCart(false);
-    } catch (error) {
-      handleError(error, t('paymentFailed') || "Payment failed. Please try again.");
-    }
-  };
 
   if (!profile) {
     return <div>Error: Profile not found</div>;
@@ -229,7 +215,6 @@ export function BuyerDashboard({ userProfile }: BuyerDashboardProps) {
         setNewAddress={setNewAddress}
         handleRemoveFromCart={handleRemoveFromCart}
         handleUpdateAddress={handleUpdateAddress}
-        handlePayment={handlePayment}
         formatPrice={formatPrice}
       />
 
