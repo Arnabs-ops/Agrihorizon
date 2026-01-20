@@ -69,8 +69,8 @@ export const generateUpiQrCode = action({
             .update(signatureBase)
             .digest("hex");
 
-        // UPI deep link with custom parameter for signature validation on return
-        const upiString = `upi://pay?pa=${encodeURIComponent(sellerProfile.upiId)}&pn=${encodeURIComponent(sellerProfile.upiName)}&am=${amountToPay.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Order ${args.orderId.slice(-8)}`)}&tr=${order.paymentNonce}&orgid=agrohorizon&sign=${signature}`;
+        // UPI deep link - Cleaned up for maximum compatibility (no non-standard params)
+        const upiString = `upi://pay?pa=${encodeURIComponent(sellerProfile.upiId)}&pn=${encodeURIComponent(sellerProfile.upiName)}&tr=${order.paymentNonce}&tn=${encodeURIComponent(`Order ${args.orderId.slice(-8)}`)}&am=${amountToPay.toFixed(2)}&cu=INR`;
 
         const qrCodeDataUrl = await QRCode.toDataURL(upiString, {
             width: 400,
