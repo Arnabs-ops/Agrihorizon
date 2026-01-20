@@ -47,14 +47,7 @@ window.addEventListener('message', async (message) => {
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("react")) return "react-vendor";
-            if (id.includes("convex")) return "convex-vendor";
-            if (id.includes("date-fns")) return "date-vendor";
-            return "vendor";
-          }
-        },
+        // manualChunks temporarily removed to fix TDZ ReferenceError in production
       },
     },
     chunkSizeWarningLimit: 1000,

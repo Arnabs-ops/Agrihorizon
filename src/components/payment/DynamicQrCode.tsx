@@ -4,6 +4,7 @@ import { Id } from "../../../convex/_generated/dataModel";
 import { useState, useEffect } from "react";
 import { useLanguage } from "../../context/LanguageContext";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
+import paymentQr from "../../assets/payment-qr.jpg";
 
 interface DynamicQrCodeProps {
     orderId: Id<"orders">;
@@ -106,7 +107,7 @@ export function DynamicQrCode({ orderId, amount, onPaymentConfirm, onClose }: Dy
                         {t('fallbackPaymentQr') || 'Fallback Payment QR'}
                     </p>
                     <img
-                        src="/src/assets/payment-qr.jpg"
+                        src={paymentQr}
                         alt="Payment QR"
                         className="mx-auto rounded-xl w-48 h-48 border-4 border-white shadow-lg dark:border-slate-800"
                     />
