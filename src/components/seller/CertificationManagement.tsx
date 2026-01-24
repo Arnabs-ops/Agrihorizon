@@ -207,18 +207,25 @@ export function CertificationManagement() {
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                     {t('certificationType') || "Certification Type"} *
                                 </label>
-                                <select
-                                    value={formData.certificationType}
-                                    onChange={(e) => setFormData({ ...formData, certificationType: e.target.value as any })}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 outline-none"
-                                    required
-                                >
-                                    {certificationTypes.map((type) => (
-                                        <option key={type.value} value={type.value}>
-                                            {type.icon} {type.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="relative group">
+                                    <select
+                                        value={formData.certificationType}
+                                        onChange={(e) => setFormData({ ...formData, certificationType: e.target.value as any })}
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 pr-12 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 outline-none appearance-none cursor-pointer transition-all"
+                                        required
+                                    >
+                                        {certificationTypes.map((type) => (
+                                            <option key={type.value} value={type.value}>
+                                                {type.icon} {type.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-primary transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
 
                             <div>
