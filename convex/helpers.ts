@@ -64,7 +64,7 @@ export async function requireUserProfile(
  */
 export async function requireRole(
   ctx: QueryCtx | MutationCtx,
-  role: "seller" | "buyer"
+  role: "seller" | "buyer" | "admin"
 ): Promise<{ userId: Id<"users">; profile: Doc<"userProfiles"> }> {
   const userId = await requireAuth(ctx);
   const profile = await requireUserProfile(ctx, userId);
@@ -185,3 +185,33 @@ export async function requireOrderAccess(
   return order;
 }
 
+/**
+ * Check if user is an admin
+ * Admins are defined via environment variable CONVEX_ADMIN_USER_IDS (comma-separated)
+ */
+export async function isAdmin(
+  ctx: QueryCtx | MutationCtx,
+  userId: Id<"users">
+): Promise<boolean> {
+  const adminUserIds = process.env.CONVEX_ADMIN_USER_IDS;
+  if (!adminUserIds) {
+    return false;
+  }
+  const adminIds = adminUserIds.split(",").map(id => id.trim());
+  return adminIds.includes(userId);
+}
+
+/**
+ * Require user to be an admin
+ * Throws error if user is not an admin
+ */
+export async function requireAdmin(
+  ctx: QueryCtx | MutationCtx
+): Promise<Id<"users">> {
+  const userId = await requireAuth(ctx);
+  const isUserAdmin = await isAdmin(ctx, userId);
+  if (!isUserAdmin) {
+    throw new Error("Admin access required");
+  }
+  return userId;
+}

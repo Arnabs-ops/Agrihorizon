@@ -93,15 +93,15 @@ export function PaymentSettings() {
 
     return (
         <div className="relative bg-white dark:bg-slate-900/40 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 modern-shadow transition-colors duration-500 overflow-hidden">
-            {/* Success Pop-up Overlay */}
+            {/* Minimalist Success Overlay */}
             {showSuccess && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-emerald-500 text-white px-8 py-6 rounded-3xl shadow-2xl flex flex-col items-center gap-3 animate-scale-up">
-                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl animate-bounce">
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in">
+                    <div className="bg-slate-900/90 text-white px-8 py-5 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 animate-scale-up">
+                        <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-xl shrink-0">
                             ✓
                         </div>
-                        <h4 className="text-xl font-black text-center whitespace-pre-wrap">
-                            {t('paymentDetailsUpdated') || "Payment Details Updated!"}
+                        <h4 className="text-lg font-bold tracking-tight">
+                            {t('paymentDetailsUpdated') || "Payment Details Updated"}
                         </h4>
                     </div>
                 </div>

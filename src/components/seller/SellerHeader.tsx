@@ -14,6 +14,8 @@ interface SellerHeaderProps {
 export function SellerHeader({ profile, setShowAddProduct, setShowMessaging, setActiveTab }: SellerHeaderProps) {
     const { t } = useLanguage();
 
+    if (!profile) return null;
+
     return (
         <div className="rounded-2xl p-8 modern-shadow relative min-h-[220px] flex items-center">
             {/* Dynamic Background Image with Overlay */}

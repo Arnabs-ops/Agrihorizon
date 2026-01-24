@@ -21,7 +21,7 @@ http.route({
     }
 
     try {
-      const priceData = await ctx.runAction(api.vegPrices.fetchCurrentPrice, {
+      const priceData = await ctx.runAction((api as any).vegActions.fetchCurrentPrice, {
         vegetable,
         location,
       });
@@ -33,12 +33,12 @@ http.route({
           analysis: priceData.analysis || "No analysis available",
           sources: priceData.sources || [],
         }),
-        { 
-          status: 200, 
-          headers: { 
+        {
+          status: 200,
+          headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*"
-          } 
+          }
         }
       );
     } catch (error) {
@@ -84,12 +84,12 @@ http.route({
             source: h.source,
           })),
         }),
-        { 
-          status: 200, 
-          headers: { 
+        {
+          status: 200,
+          headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*"
-          } 
+          }
         }
       );
     } catch (error) {

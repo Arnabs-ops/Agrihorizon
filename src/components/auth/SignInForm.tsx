@@ -19,11 +19,20 @@ export function SignInForm() {
           e.preventDefault();
           setSubmitting(true);
           const formData = new FormData(e.target as HTMLFormElement);
-          formData.set("flow", flow);
-          void signIn("password", formData).catch((error) => {
+          const email = formData.get("email") as string;
+          const password = formData.get("password") as string;
+
+          console.log(`[AUTH] Attempting ${flow} for ${email}`);
+
+          void signIn("password", { email, password, flow }).catch((error) => {
+            console.error(`[AUTH] ${flow} failed:`, error);
             let toastTitle = "";
             if (error.message.includes("Invalid password")) {
               toastTitle = t('invalidPassword');
+            } else if (error.message.includes("InvalidAccountId")) {
+              toastTitle = flow === "signIn"
+                ? "Account not found. Please sign up instead."
+                : "This email is already in use. Please sign in.";
             } else {
               toastTitle =
                 flow === "signIn"

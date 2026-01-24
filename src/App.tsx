@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { ProfileSetup } from "./components/auth/ProfileSetup";
 import { BuyerDashboard } from "./pages/BuyerDashboard";
 import { SellerDashboard } from "./pages/SellerDashboard";
+import { AdminDashboard } from "./pages/AdminDashboard";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { translations, Language } from "./translations/translations";
 import { LanguageProvider, useLanguage } from "./context/LanguageContext";
@@ -115,6 +116,8 @@ function Content() {
           <BuyerDashboard userProfile={userProfile as any} />
         ) : userProfile?.profile?.role === "seller" ? (
           <SellerDashboard userProfile={userProfile as any} />
+        ) : userProfile?.profile?.role === "admin" ? (
+          <AdminDashboard userProfile={userProfile as any} />
         ) : (
           <div className="text-center">
             <p className="text-red-600">Error: Invalid user role</p>

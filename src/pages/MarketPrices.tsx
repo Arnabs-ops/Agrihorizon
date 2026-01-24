@@ -58,9 +58,9 @@ export function MarketPrices({ userRole }: MarketPricesProps) {
   // Custom Hooks
   useImagePreloader([buyerBg, sellerBg, paymentQr]);
 
-  const getComprehensivePriceData = useAction(api.vegPrices.getComprehensivePriceData);
-  const getSalesStrategy = useAction(api.vegPrices.getSalesStrategy);
-  const parseVoiceQuery = useAction(api.vegPrices.parseVoiceQuery);
+  const getComprehensivePriceData = useAction((api as any).vegActions.getComprehensivePriceData);
+  const getSalesStrategy = useAction((api as any).vegActions.getSalesStrategy);
+  const parseVoiceQuery = useAction((api as any).vegActions.parseVoiceQuery);
 
   const handleSearch = useCallback(async (v?: string, l?: string) => {
     const searchVeg = v || vegetable;

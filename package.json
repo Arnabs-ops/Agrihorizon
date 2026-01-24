@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@convex-dev/auth": "^0.0.90",
+    "@types/crypto-js": "^4.2.2",
     "clsx": "^2.1.1",
     "convex": "^1.31.2",
+    "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "node-fetch": "^3.3.2",
     "qrcode": "^1.5.4",

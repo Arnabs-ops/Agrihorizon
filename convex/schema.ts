@@ -5,7 +5,7 @@ import { authTables } from "@convex-dev/auth/server";
 const applicationTables = {
   userProfiles: defineTable({
     userId: v.id("users"),
-    role: v.union(v.literal("seller"), v.literal("buyer")),
+    role: v.union(v.literal("seller"), v.literal("buyer"), v.literal("admin")),
     fullName: v.string(),
     phoneNumber: v.optional(v.string()),
     location: v.optional(v.string()),
@@ -41,6 +41,7 @@ const applicationTables = {
     imageEmoji: v.string(), // For now using emojis as images
     imageStorageId: v.optional(v.id("_storage")),
     priceTiers: v.optional(v.array(v.object({ minQuantity: v.number(), price: v.number() }))),
+    certificationIds: v.optional(v.array(v.id("qualityCertifications"))), // Certifications applicable to this product
   }).index("by_seller", ["sellerId"])
     .index("by_category", ["category"])
     .index("by_active", ["isActive"]),
@@ -163,6 +164,62 @@ const applicationTables = {
     timestamp: v.number(),
   }).index("by_order", ["orderId"])
     .index("by_user", ["userId"]),
+
+  paymentRateLimits: defineTable({
+    userId: v.id("users"),
+    orderId: v.id("orders"),
+    actionType: v.union(v.literal("initiate_payment"), v.literal("verify_payment")),
+    attemptCount: v.number(),
+    lastAttemptTime: v.number(),
+  }).index("by_user_order_action", ["userId", "orderId", "actionType"])
+    .index("by_user", ["userId"])
+    .index("by_order", ["orderId"]),
+
+  paymentErrorLogs: defineTable({
+    orderId: v.id("orders"),
+    userId: v.id("users"),
+    action: v.string(),
+    errorDetails: v.string(),
+    stackTrace: v.optional(v.string()),
+    metadata: v.optional(v.any()),
+    timestamp: v.number(),
+  }).index("by_order", ["orderId"])
+    .index("by_user", ["userId"])
+    .index("by_action", ["action"]),
+
+  qualityCertifications: defineTable({
+    sellerId: v.id("users"),
+    certificationType: v.union(
+      v.literal("organic"),
+      v.literal("fssai"),
+      v.literal("iso"),
+      v.literal("gmp"),
+      v.literal("halal"),
+      v.literal("custom")
+    ),
+    certificationName: v.string(),
+    issuerName: v.string(),
+    certificateNumber: v.string(),
+    issueDate: v.number(),
+    expiryDate: v.optional(v.number()),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("rejected"),
+      v.literal("expired"),
+      v.literal("revoked")
+    ),
+    documentStorageId: v.optional(v.id("_storage")),
+    verifiedBy: v.optional(v.id("users")),
+    verifiedAt: v.optional(v.number()),
+    rejectionReason: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_seller", ["sellerId"])
+    .index("by_status", ["status"])
+    .index("by_type", ["certificationType"])
+    .index("by_expiry", ["expiryDate"]),
 };
 
 export default defineSchema({

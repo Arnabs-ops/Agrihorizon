@@ -10,7 +10,9 @@
 
 import type * as advisor from "../advisor.js";
 import type * as auth from "../auth.js";
+import type * as certifications from "../certifications.js";
 import type * as community from "../community.js";
+import type * as crons from "../crons.js";
 import type * as files from "../files.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
@@ -23,6 +25,8 @@ import type * as products from "../products.js";
 import type * as reviews from "../reviews.js";
 import type * as router from "../router.js";
 import type * as users from "../users.js";
+import type * as utils_cryptoUtils from "../utils/cryptoUtils.js";
+import type * as vegActions from "../vegActions.js";
 import type * as vegPrices from "../vegPrices.js";
 
 import type {
@@ -34,7 +38,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   advisor: typeof advisor;
   auth: typeof auth;
+  certifications: typeof certifications;
   community: typeof community;
+  crons: typeof crons;
   files: typeof files;
   helpers: typeof helpers;
   http: typeof http;
@@ -47,6 +53,8 @@ declare const fullApi: ApiFromModules<{
   reviews: typeof reviews;
   router: typeof router;
   users: typeof users;
+  "utils/cryptoUtils": typeof utils_cryptoUtils;
+  vegActions: typeof vegActions;
   vegPrices: typeof vegPrices;
 }>;
 

@@ -2,6 +2,8 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Doc } from "./_generated/dataModel";
+import { decryptWithKey, encryptWithKey, deriveKey } from "./utils/cryptoUtils";
+import CryptoJS from "crypto-js";
 
 // Get current user's profile
 export const getCurrentUserProfile = query({
@@ -21,6 +23,18 @@ export const getCurrentUserProfile = query({
             .query("userProfiles")
             .withIndex("by_user_id", (q) => q.eq("userId", userId))
             .unique();
+
+        if (profile) {
+            const key = process.env.CONVEX_ENCRYPTION_KEY;
+            if (key && key.length >= 32) {
+                const salt = process.env.CONVEX_ENCRYPTION_SALT || "agrihorizon-salt-2024";
+                const derivedKey = deriveKey(key, salt);
+
+                if (profile.upiId) profile.upiId = decryptWithKey(profile.upiId, derivedKey);
+                if (profile.upiName) profile.upiName = decryptWithKey(profile.upiName, derivedKey);
+                if (profile.bankName) profile.bankName = decryptWithKey(profile.bankName, derivedKey);
+            }
+        }
 
         return {
             user,
@@ -52,6 +66,7 @@ export const getPublicProfile = query({
             },
             profile: {
                 _id: profile._id,
+                userId: profile.userId,
                 fullName: profile.fullName,
                 businessName: profile.businessName,
                 location: profile.location,
@@ -66,7 +81,7 @@ export const getPublicProfile = query({
 // Create user profile after registration
 export const createUserProfile = mutation({
     args: {
-        role: v.union(v.literal("seller"), v.literal("buyer")),
+        role: v.union(v.literal("seller"), v.literal("buyer"), v.literal("admin")),
         fullName: v.string(),
         phoneNumber: v.optional(v.string()),
         location: v.optional(v.string()),
@@ -94,6 +109,21 @@ export const createUserProfile = mutation({
             throw new Error("User profile already exists");
         }
 
+        // Encrypt payment details if provided
+        let upiId = args.upiId;
+        let upiName = args.upiName;
+        let bankName = args.bankName;
+
+        const key = process.env.CONVEX_ENCRYPTION_KEY;
+        if (key && key.length >= 32) {
+            const salt = process.env.CONVEX_ENCRYPTION_SALT || "agrihorizon-salt-2024";
+            const derivedKey = deriveKey(key, salt);
+
+            if (upiId) upiId = encryptWithKey(upiId, derivedKey);
+            if (upiName) upiName = encryptWithKey(upiName, derivedKey);
+            if (bankName) bankName = encryptWithKey(bankName, derivedKey);
+        }
+
         // Create new profile with default tutorial state
         const profileId = await ctx.db.insert("userProfiles", {
             userId,
@@ -105,9 +135,9 @@ export const createUserProfile = mutation({
             farmSize: args.farmSize,
             cropTypes: args.cropTypes,
             preferredProducts: args.preferredProducts,
-            upiId: args.upiId,
-            upiName: args.upiName,
-            bankName: args.bankName,
+            upiId,
+            upiName,
+            bankName,
             // Initialize tutorial progress
             tutorialProgress: {
                 hasSeenWelcome: false,

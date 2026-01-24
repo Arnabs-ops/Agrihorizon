@@ -10,7 +10,7 @@ import { SellerFields } from "./SellerFields";
 export function ProfileSetup() {
   const { t } = useLanguage();
   const { handleError, handleSuccess } = useErrorHandler();
-  const [role, setRole] = useState<"seller" | "buyer" | "">("");
+  const [role, setRole] = useState<"seller" | "buyer" | "admin" | "">("");
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [location, setLocation] = useState("");
@@ -35,7 +35,7 @@ export function ProfileSetup() {
     setIsSubmitting(true);
     try {
       await createProfile({
-        role: role as "seller" | "buyer",
+        role: role as "seller" | "buyer" | "admin",
         fullName,
         phoneNumber: phoneNumber || undefined,
         location: location || undefined,
@@ -95,6 +95,18 @@ export function ProfileSetup() {
               <div className={`text-4xl mb-3 transition-transform duration-500 ${role === "buyer" ? "scale-110" : "group-hover:scale-110"}`}>🛒</div>
               <div className="font-black text-lg mb-1">{t('buyerLabel')}</div>
               <div className="text-xs font-bold opacity-70 leading-relaxed px-2">{t('buyerDescription')}</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("admin")}
+              className={`p-6 border-2 rounded-[2rem] text-center transition-all duration-300 group ${role === "admin"
+                ? "border-primary bg-primary/5 text-primary shadow-lg shadow-primary/10 scale-[1.02]"
+                : "border-slate-100 dark:border-slate-800 hover:border-primary/30 text-slate-500 dark:text-slate-500"
+                }`}
+            >
+              <div className={`text-4xl mb-3 transition-transform duration-500 ${role === "admin" ? "scale-110" : "group-hover:scale-110"}`}>👮</div>
+              <div className="font-black text-lg mb-1">{t('adminLabel') || 'Administrator'}</div>
+              <div className="text-xs font-bold opacity-70 leading-relaxed px-2">{t('adminDescription') || 'Review certificates and moderate platform.'}</div>
             </button>
           </div>
         </div>
