@@ -8,7 +8,7 @@ import { format } from "date-fns";
 
 export function CertificationManagement() {
     const { t } = useLanguage();
-    const certifications = useQuery(api.certifications.getMyCertifications) || [];
+    const certifications = useQuery(api.certifications.getMyCertifications, {}) || [];
     const applyForCertification = useMutation(api.certifications.applyForCertification);
     const updateCertification = useMutation(api.certifications.updateCertification);
     const deleteCertification = useMutation(api.certifications.deleteCertification);
