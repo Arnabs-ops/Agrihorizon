@@ -27,45 +27,53 @@ export function SellerOverview({
         <div className="space-y-8 animate-entry">
             <div className="dashboard-grid">
                 {/* Marketplace Stat */}
-                <div className="bg-gradient-to-br from-indigo-950 to-indigo-900 dark:from-indigo-900 dark:to-indigo-800 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
-                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">
+                <div className="bg-gradient-to-br from-[#0f172a] to-[#020617] dark:from-[#1e293b] dark:to-[#020617] px-6 py-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden group hover:scale-[1.05] transition-all duration-300 border border-white/5 flex flex-col justify-between min-h-[160px]">
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">
                         {t('marketplace')}
                     </h3>
-                    <p className="text-6xl font-black mb-2">{analytics?.totalProducts || 0}</p>
-                    <p className="text-sm font-bold opacity-70">{t('activeListings')}</p>
+                    <div>
+                        <p className="text-5xl font-black mb-1">{analytics?.totalProducts || 0}</p>
+                        <p className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t('activeListings')}</p>
+                    </div>
                 </div>
 
                 {/* Pending Orders Stat */}
-                <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-700 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-slate-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
-                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">
+                <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] dark:from-[#334155] dark:to-[#0f172a] px-6 py-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden group hover:scale-[1.05] transition-all duration-300 border border-white/5 flex flex-col justify-between min-h-[160px]">
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">
                         {t('pending')}
                     </h3>
-                    <p className="text-6xl font-black mb-2">{analytics?.pendingOrders || 0}</p>
-                    <p className="text-sm font-bold opacity-70">{t('awaitingFulfillment')}</p>
+                    <div>
+                        <p className="text-5xl font-black mb-1">{analytics?.pendingOrders || 0}</p>
+                        <p className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t('awaitingFulfillment')}</p>
+                    </div>
                 </div>
 
                 {/* Monthly Revenue Stat */}
-                <div className="bg-gradient-to-br from-slate-950 to-slate-900 dark:from-slate-900 dark:to-slate-800 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-black/40 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
-                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">
+                <div className="bg-gradient-to-br from-[#334155] to-[#1e293b] dark:from-[#475569] dark:to-[#1e293b] px-6 py-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden group hover:scale-[1.05] transition-all duration-300 border border-white/5 flex flex-col justify-between min-h-[160px]">
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">
                         {t('monthlyRevenue')}
                     </h3>
-                    <p className="text-4xl font-black mb-2">
-                        {formatPrice(analytics?.monthlyRevenue || 0)}
-                    </p>
-                    <p className="text-sm font-bold opacity-70">{t('thisMonth')}</p>
+                    <div>
+                        <p className="text-4xl font-black mb-1">
+                            {formatPrice(analytics?.monthlyRevenue || 0).split('.')[0]}
+                        </p>
+                        <p className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t('thisMonth')}</p>
+                    </div>
                 </div>
 
                 {/* Delivered Stat */}
-                <div className="bg-gradient-to-br from-indigo-900 to-indigo-800 dark:from-emerald-900 dark:to-emerald-800 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-900/40 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
-                    <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">
+                <div className="bg-gradient-to-br from-[#475569] to-[#334155] dark:from-[#64748b] dark:to-[#334155] px-6 py-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden group hover:scale-[1.05] transition-all duration-300 border border-white/5 flex flex-col justify-between min-h-[160px]">
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">
                         {t('delivered')}
                     </h3>
-                    <p className="text-6xl font-black mb-2">{analytics?.completedOrders || 0}</p>
-                    <p className="text-sm font-bold opacity-70">{t('allTimeCompletion')}</p>
+                    <div>
+                        <p className="text-5xl font-black mb-1">{analytics?.completedOrders || 0}</p>
+                        <p className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t('allTimeCompletion')}</p>
+                    </div>
                 </div>
             </div>
 

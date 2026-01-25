@@ -31,26 +31,35 @@ export function OrdersView({
     if (activeTab === "overview") {
         return (
             <div className="space-y-8 animate-entry">
-                <div className="dashboard-grid">
-                    <div className="bg-gradient-to-br from-blue-950 to-blue-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-blue-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
-                        <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">{t('marketplace')}</h3>
-                        <p className="text-6xl font-black mb-2">{marketplaceProducts.length}</p>
-                        <p className="text-sm font-bold opacity-70">{t('verifiedProducts')}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Marketplace Stat */}
+                    <div className="bg-gradient-to-br from-[#0f172a] to-[#020617] dark:from-[#1e293b] dark:to-[#020617] px-6 py-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden group hover:scale-[1.05] transition-all duration-300 border border-white/5 flex flex-col justify-between min-h-[160px]">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">{t('marketplace')}</h3>
+                        <div>
+                            <p className="text-5xl font-black mb-1">{marketplaceProducts.length}</p>
+                            <p className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t('verifiedProducts')}</p>
+                        </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-slate-900/30 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
-                        <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">{t('myOrders')}</h3>
-                        <p className="text-6xl font-black mb-2">{activeOrders}</p>
-                        <p className="text-sm font-bold opacity-70">{t('currentlyProcessing')}</p>
+                    {/* My Orders Stat */}
+                    <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] dark:from-[#334155] dark:to-[#0f172a] px-6 py-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden group hover:scale-[1.05] transition-all duration-300 border border-white/5 flex flex-col justify-between min-h-[160px]">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">{t('myOrders')}</h3>
+                        <div>
+                            <p className="text-5xl font-black mb-1">{activeOrders}</p>
+                            <p className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t('currentlyProcessing')}</p>
+                        </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-slate-950 to-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-black/40 relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 border border-white/5">
-                        <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-4">{t('lifetimeRecords')}</h3>
-                        <p className="text-6xl font-black mb-2">{buyerOrders.length}</p>
-                        <p className="text-sm font-bold opacity-70">{t('allTimeRecords')}</p>
+                    {/* Lifetime Records Stat */}
+                    <div className="bg-gradient-to-br from-[#334155] to-[#1e293b] dark:from-[#475569] dark:to-[#1e293b] px-6 py-10 rounded-[2rem] text-white shadow-xl relative overflow-hidden group hover:scale-[1.05] transition-all duration-300 border border-white/5 flex flex-col justify-between min-h-[160px]">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">{t('lifetimeRecords')}</h3>
+                        <div>
+                            <p className="text-5xl font-black mb-1">{buyerOrders.length}</p>
+                            <p className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t('allTimeRecords')}</p>
+                        </div>
                     </div>
                 </div>
 

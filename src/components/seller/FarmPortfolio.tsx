@@ -17,7 +17,7 @@ export function FarmPortfolio({ userProfile, isReadOnly = false }: FarmPortfolio
     const { t } = useLanguage();
     const { profile } = userProfile;
     const updateProfile = useMutation(api.users.updateUserProfile);
-    const generateUploadUrl = useMutation(api.products.generateUploadUrl);
+    const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
     if (!profile) return null;
 

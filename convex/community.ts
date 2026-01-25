@@ -47,13 +47,6 @@ export const getPosts = query({
     },
 });
 
-// Generate an upload URL for images
-export const generateUploadUrl = mutation({
-    args: {},
-    handler: async (ctx) => {
-        return await ctx.storage.generateUploadUrl();
-    },
-});
 
 // Create a new post
 export const createPost = mutation({

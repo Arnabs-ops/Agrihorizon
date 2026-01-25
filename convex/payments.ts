@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import type { QueryCtx, MutationCtx } from "./_generated/server";
 import { requireAuth, getUserProfile } from "./helpers";
 import { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
@@ -20,7 +21,7 @@ const FRAUD_DETECTION_CONFIG = {
 /**
  * Check for fraudulent payment patterns
  */
-async function detectPaymentFraud(ctx: any, userId: Id<"users">, orderId: Id<"orders">, amount: number): Promise<{ isFraudulent: boolean; reason?: string }> {
+async function detectPaymentFraud(ctx: QueryCtx | MutationCtx, userId: Id<"users">, orderId: Id<"orders">, amount: number): Promise<{ isFraudulent: boolean; reason?: string }> {
     const now = Date.now();
 
     // 1. Check for rapid payment attempts (multiple attempts in short time)

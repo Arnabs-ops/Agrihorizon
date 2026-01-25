@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import type { QueryCtx, MutationCtx } from "./_generated/server";
 import { requireAuth, requireRole, getUserProfile, requireAdmin } from "./helpers";
 import { Id, Doc } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
@@ -146,12 +147,13 @@ export const getMyCertifications = query({
 /**
  * Helper logic for getting seller certifications
  */
-async function getSellerCertificationsLogic(ctx: any, sellerId: Id<"users">) {
-  const certifications = await ctx.db
+async function getSellerCertificationsLogic(ctx: QueryCtx | MutationCtx, sellerId: Id<"users">) {
+  const rawCertifications = await ctx.db
     .query("qualityCertifications")
     .withIndex("by_seller", (q: any) => q.eq("sellerId", sellerId))
     .filter((q: any) => q.eq(q.field("status"), "approved"))
     .collect();
+  const certifications = rawCertifications as Doc<"qualityCertifications">[];
 
   // Check for expired certifications
   const now = Date.now();
@@ -203,8 +205,8 @@ export const getProductCertifications = query({
     // Get product-specific certifications
     const productCertIds = product.certificationIds || [];
     const productCerts = await Promise.all(
-      productCertIds.map(async (certId: any) => {
-        const cert = await ctx.db.get(certId);
+      productCertIds.map(async (certId: Id<"qualityCertifications">) => {
+        const cert = (await ctx.db.get(certId)) as Doc<"qualityCertifications"> | null;
         if (!cert || cert.status !== "approved") {
           return null;
         }

@@ -21,7 +21,7 @@ http.route({
     }
 
     try {
-      const priceData = await ctx.runAction((api as any).vegActions.fetchCurrentPrice, {
+      const priceData = await ctx.runAction(api.vegActions.fetchCurrentPrice, {
         vegetable,
         location,
       });

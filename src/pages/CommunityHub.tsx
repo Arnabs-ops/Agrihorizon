@@ -24,7 +24,7 @@ export function CommunityHub() {
 
     const posts = useQuery(api.community.getPosts) || [];
     const userProfile = useQuery(api.users.getCurrentUserProfile);
-    const generateUploadUrl = useMutation(api.community.generateUploadUrl);
+    const generateUploadUrl = useMutation(api.files.generateUploadUrl);
     const createPost = useMutation(api.community.createPost);
     const addComment = useMutation(api.community.addComment);
     const toggleLike = useMutation(api.community.toggleLike);

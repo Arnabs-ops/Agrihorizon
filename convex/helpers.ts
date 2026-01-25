@@ -193,12 +193,8 @@ export async function isAdmin(
   ctx: QueryCtx | MutationCtx,
   userId: Id<"users">
 ): Promise<boolean> {
-  const adminUserIds = process.env.CONVEX_ADMIN_USER_IDS;
-  if (!adminUserIds) {
-    return false;
-  }
-  const adminIds = adminUserIds.split(",").map(id => id.trim());
-  return adminIds.includes(userId);
+  const profile = await getUserProfile(ctx, userId);
+  return profile?.role === "admin";
 }
 
 /**

@@ -306,12 +306,14 @@ export const updateOrderStatus = mutation({
       status: args.status,
     });
 
+    const product = await ctx.db.get(order.productId);
+
     // Notify buyer about status update
     await ctx.db.insert("notifications", {
       userId: order.buyerId,
       type: "order_status",
       title: "Order Status Updated",
-      content: `Your order for ${order.product?.name} is now ${args.status}.`,
+      content: `Your order for ${product?.name || "your item"} is now ${args.status}.`,
       isRead: false,
       link: "orders",
       timestamp: Date.now(),

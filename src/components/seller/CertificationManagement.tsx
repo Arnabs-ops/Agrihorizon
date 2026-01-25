@@ -13,7 +13,7 @@ export function CertificationManagement() {
     const updateCertification = useMutation(api.certifications.updateCertification);
     const deleteCertification = useMutation(api.certifications.deleteCertification);
     const renewCertification = useMutation(api.certifications.renewCertification);
-    const generateUploadUrl = useMutation(api.products.generateUploadUrl);
+    const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
     const [showForm, setShowForm] = useState(false);
     const [editingCert, setEditingCert] = useState<Id<"qualityCertifications"> | null>(null);
