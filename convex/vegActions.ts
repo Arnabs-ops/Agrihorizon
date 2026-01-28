@@ -101,7 +101,10 @@ async function performWebSearchLogic(vegetable: string, location: string) {
     }
 }
 
-async function predictWithAILogic(args: any) {
+async function predictWithAILogic(args: any, retryCount: number = 0): Promise<any> {
+    const MAX_RETRIES = 2;
+    const RETRY_DELAYS = [1000, 3000]; // 1s, 3s
+
     try {
         const aiApiKey = process.env.OPENROUTER_API_KEY;
         if (!aiApiKey) throw new Error("OPENROUTER_API_KEY not set");
@@ -145,12 +148,25 @@ ${languageInstruction}`;
                 "X-Title": "AgriHorizon"
             },
             body: JSON.stringify({
-                model: "xiaomi/mimo-v2-flash:free",
+                model: "meta-llama/llama-3.2-3b-instruct:free",
                 messages: [{ role: "user", content: prompt }],
                 max_tokens: 400,
                 temperature: 0.3
             })
         });
+
+        // Handle rate limiting with retry
+        if (response.status === 429) {
+            if (retryCount < MAX_RETRIES) {
+                const delay = RETRY_DELAYS[retryCount];
+                console.log(`Rate limited (429). Retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return predictWithAILogic(args, retryCount + 1);
+            } else {
+                console.warn("Max retries reached for AI API. Using fallback.");
+                throw new Error("Rate limit exceeded after retries");
+            }
+        }
 
         if (!response.ok) throw new Error(`AI API failed: ${response.status}`);
 
@@ -186,6 +202,11 @@ ${languageInstruction}`;
         console.error("AI Prediction Error:", error);
         const avgPrice = args.currentPrices.reduce((sum: number, p: any) => sum + p.price, 0) / args.currentPrices.length;
         const currentPrice = Math.round(avgPrice);
+
+        // Enhanced fallback with better messaging
+        const errorMsg = error instanceof Error ? error.message : "";
+        const isRateLimit = errorMsg.includes("429") || errorMsg.includes("Rate limit");
+
         return {
             currentPrice,
             tomorrowPrediction: {
@@ -193,10 +214,13 @@ ${languageInstruction}`;
                 max: Math.ceil(currentPrice * 1.05),
                 range: `₹${Math.floor(currentPrice * 0.95)}-${Math.ceil(currentPrice * 1.05)}/kg`
             },
-            analysis: "Statistical analysis based on current market data.",
+            analysis: isRateLimit
+                ? `Current market price for ${args.vegetable} is ₹${currentPrice}/kg. Analysis based on web search data. AI analysis temporarily unavailable due to high demand.`
+                : `Statistical analysis shows ${args.vegetable} trading at ₹${currentPrice}/kg in ${args.location}. Price estimate based on current market data.`,
             confidence: "Statistical Estimate",
             sources: args.currentPrices.map((p: any) => p.source),
-            aiPowered: false
+            aiPowered: false,
+            rateLimited: isRateLimit
         };
     }
 }
@@ -369,7 +393,7 @@ ${args.language === 'hi' ? "Provide response in HINDI." : ""}`;
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: "xiaomi/mimo-v2-flash:free",
+                    model: "meta-llama/llama-3.2-3b-instruct:free",
                     messages: [{ role: "user", content: prompt }],
                     max_tokens: 200
                 })
@@ -400,7 +424,7 @@ export const parseVoiceQuery = action({
                 method: "POST",
                 headers: { "Authorization": `Bearer ${aiApiKey}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    model: "xiaomi/mimo-v2-flash:free",
+                    model: "meta-llama/llama-3.2-3b-instruct:free",
                     messages: [{ role: "user", content: prompt }],
                     max_tokens: 150
                 })

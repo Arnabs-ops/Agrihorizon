@@ -68,7 +68,7 @@ export const getCropAdvice = action({
                     "X-Title": "AgriHorizon Advisor"
                 },
                 body: JSON.stringify({
-                    model: "xiaomi/mimo-v2-flash:free",
+                    model: "meta-llama/llama-3.2-3b-instruct:free",
                     messages: [{ role: "user", content: prompt }],
                     max_tokens: 500
                 })
