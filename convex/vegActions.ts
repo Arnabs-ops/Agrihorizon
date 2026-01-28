@@ -168,10 +168,25 @@ ${languageInstruction}`;
             }
         }
 
-        if (!response.ok) throw new Error(`AI API failed: ${response.status}`);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`AI API failed with status ${response.status}:`, errorText);
+            throw new Error(`AI API failed: ${response.status} - ${errorText.substring(0, 200)}`);
+        }
 
         const aiResult = await response.json();
-        const aiText = aiResult.choices[0]?.message?.content || "";
+
+        // Validate response structure
+        if (!aiResult || !aiResult.choices || !Array.isArray(aiResult.choices) || aiResult.choices.length === 0) {
+            console.error("Invalid AI response structure:", JSON.stringify(aiResult).substring(0, 500));
+            throw new Error("AI API returned invalid response structure");
+        }
+
+        const aiText = aiResult.choices[0]?.message?.content;
+        if (!aiText) {
+            console.error("AI response missing content:", JSON.stringify(aiResult.choices[0]));
+            throw new Error("AI API response missing content");
+        }
 
         const currentPriceMatch = aiText.match(/CURRENT_PRICE:\s*[^\d]*(\d+)/i);
         const tomorrowMinMatch = aiText.match(/TOMORROW_MIN:\s*[^\d]*(\d+)/i);

@@ -23,7 +23,6 @@ export function SellerNavigation({ activeTab, setActiveTab, showMoreMenu, setSho
         { id: "prices", label: t('marketIntelligence'), icon: "💹" },
         { id: "advisory", label: t('cropAdvisor'), icon: "🌾" },
         { id: "community", label: t('communityHub'), icon: "🌱" },
-        { id: "settings", label: "Payment Settings", icon: "💳" },
     ];
 
     return (

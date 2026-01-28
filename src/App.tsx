@@ -13,6 +13,7 @@ import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import { TutorialProvider } from "./components/onboarding/TutorialProvider";
 import { useTheme } from "./context/ThemeContext";
 import logo from "./assets/logo.png";
+import { SettingsPanel } from "./components/layout/SettingsPanel";
 
 export default function App() {
   return (
@@ -27,6 +28,8 @@ export default function App() {
 function AppContent() {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const [showSettings, setShowSettings] = useState(false);
+  const userProfile = useQuery(api.users.getCurrentUserProfile);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#020617] selection:bg-primary/20 transition-colors duration-500">
@@ -39,26 +42,12 @@ function AppContent() {
         </div>
         <div className="flex items-center gap-6">
           <button
-            onClick={toggleTheme}
+            onClick={() => setShowSettings(true)}
             className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xl hover:scale-105 transition-all active:scale-95"
-            title={theme === 'light' ? t('switchToDarkMode') : t('switchToLightMode')}
+            title={t('settings') || 'Settings'}
           >
-            {theme === 'light' ? '🌙' : '☀️'}
+            ⚙️
           </button>
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${language === 'en' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'}`}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLanguage('hi')}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${language === 'hi' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'}`}
-            >
-              हिन्दी
-            </button>
-          </div>
           <Authenticated>
             <div className="animate-fade-in">
               <SignOutButton />
@@ -72,6 +61,12 @@ function AppContent() {
         </div>
       </main>
       <Toaster position="top-center" richColors />
+      {showSettings && (
+        <SettingsPanel
+          onClose={() => setShowSettings(false)}
+          userRole={userProfile?.profile?.role}
+        />
+      )}
     </div>
   );
 }
