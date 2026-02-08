@@ -41,7 +41,7 @@ Built with a high-performance stack, AgriHorizon bridges the gap between traditi
 *   **Backend**: [Convex](https://convex.dev) (Real-time database, Auth, Actions)
 *   **Frontend**: [Vite](https://vitejs.dev/) + [React](https://reactjs.org/)
 *   **Styling**: Vanilla CSS + Tailwind-inspired utility layers
-*   **AI Models**: `xiaomi/mimo-v2-flash:free` via [OpenRouter](https://openrouter.ai/)
+*   **AI Models**: `nvidia/nemotron-nano-9b-v2:free` via [OpenRouter](https://openrouter.ai/)
 *   **Weather Data**: [Open-Meteo API](https://open-meteo.com/)
 *   **Search**: DuckDuckGo HTML 
 *   **Speech**: Web Speech API

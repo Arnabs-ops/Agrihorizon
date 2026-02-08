@@ -39,7 +39,7 @@ export function BuyerHeader({
     return (
         <div className="space-y-8">
             {/* Premium Welcome Header */}
-            <div className="rounded-3xl p-6 md:p-8 modern-shadow relative min-h-[200px] md:min-h-[220px] flex items-center transition-all duration-500 overflow-hidden">
+            <div className="rounded-3xl p-6 md:p-8 modern-shadow relative min-h-[200px] md:min-h-[220px] flex items-center transition-all duration-500 overflow-visible">
                 <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
                     <div
                         className="absolute inset-0 scale-105 animate-slow-zoom transition-all duration-700"

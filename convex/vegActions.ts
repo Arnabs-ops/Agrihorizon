@@ -148,7 +148,7 @@ ${languageInstruction}`;
                 "X-Title": "AgriHorizon"
             },
             body: JSON.stringify({
-                model: "meta-llama/llama-3.2-3b-instruct:free",
+                model: "nvidia/nemotron-nano-9b-v2:free",
                 messages: [{ role: "user", content: prompt }],
                 max_tokens: 400,
                 temperature: 0.3
@@ -182,8 +182,23 @@ ${languageInstruction}`;
             throw new Error("AI API returned invalid response structure");
         }
 
-        const aiText = aiResult.choices[0]?.message?.content;
-        if (!aiText) {
+        // Extract AI text - NVIDIA models may return in reasoning field instead of content
+        let aiText = aiResult.choices[0]?.message?.content;
+
+        // If content is empty, check reasoning field (NVIDIA Nemotron behavior)
+        if (!aiText || aiText.trim() === "") {
+            aiText = aiResult.choices[0]?.message?.reasoning;
+        }
+
+        // Also check reasoning_details array if still empty
+        if (!aiText || aiText.trim() === "") {
+            const reasoningDetails = aiResult.choices[0]?.message?.reasoning_details;
+            if (reasoningDetails && Array.isArray(reasoningDetails) && reasoningDetails.length > 0) {
+                aiText = reasoningDetails.map((detail: any) => detail.text || "").join("\n");
+            }
+        }
+
+        if (!aiText || aiText.trim() === "") {
             console.error("AI response missing content:", JSON.stringify(aiResult.choices[0]));
             throw new Error("AI API response missing content");
         }
@@ -408,14 +423,25 @@ ${args.language === 'hi' ? "Provide response in HINDI." : ""}`;
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: "meta-llama/llama-3.2-3b-instruct:free",
+                    model: "nvidia/nemotron-nano-9b-v2:free",
                     messages: [{ role: "user", content: prompt }],
                     max_tokens: 200
                 })
             });
 
             const result = await response.json();
-            const text = result.choices[0]?.message?.content || "";
+
+            // Extract AI text - Handle NVIDIA models
+            let text = result.choices[0]?.message?.content;
+            if (!text || text.trim() === "") {
+                text = result.choices[0]?.message?.reasoning || "";
+            }
+            if (!text || text.trim() === "") {
+                const reasoningDetails = result.choices[0]?.message?.reasoning_details;
+                if (reasoningDetails && Array.isArray(reasoningDetails) && reasoningDetails.length > 0) {
+                    text = reasoningDetails.map((detail: any) => detail.text || "").join("\n");
+                }
+            }
 
             return {
                 recommendation: text.match(/RECOMMENDATION:\s*(.+)/i)?.[1].trim() || (currentProfit > tomorrowProfit ? "SELL NOW" : "WAIT"),
@@ -439,13 +465,26 @@ export const parseVoiceQuery = action({
                 method: "POST",
                 headers: { "Authorization": `Bearer ${aiApiKey}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    model: "meta-llama/llama-3.2-3b-instruct:free",
+                    model: "nvidia/nemotron-nano-9b-v2:free",
                     messages: [{ role: "user", content: prompt }],
                     max_tokens: 150
                 })
             });
             const result = await response.json();
-            return JSON.parse(result.choices[0]?.message?.content.replace(/```json|```/g, '').trim() || "{}");
+
+            // Extract AI text - Handle NVIDIA models
+            let aiText = result.choices[0]?.message?.content;
+            if (!aiText || aiText.trim() === "") {
+                aiText = result.choices[0]?.message?.reasoning || "";
+            }
+            if (!aiText || aiText.trim() === "") {
+                const reasoningDetails = result.choices[0]?.message?.reasoning_details;
+                if (reasoningDetails && Array.isArray(reasoningDetails) && reasoningDetails.length > 0) {
+                    aiText = reasoningDetails.map((detail: any) => detail.text || "").join("\n");
+                }
+            }
+
+            return JSON.parse(aiText.replace(/```json|```/g, '').trim() || "{}");
         } catch (error) { return { vegetable: "", location: "" }; }
     }
 });

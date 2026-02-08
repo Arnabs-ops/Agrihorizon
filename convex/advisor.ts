@@ -118,7 +118,7 @@ export const getCropAdvice = action({
                     "X-Title": "AgriHorizon Advisor"
                 },
                 body: JSON.stringify({
-                    model: "meta-llama/llama-3.2-3b-instruct:free",
+                    model: "nvidia/nemotron-nano-9b-v2:free",
                     messages: [{ role: "user", content: prompt }],
                     max_tokens: 500
                 })
@@ -133,14 +133,19 @@ export const getCropAdvice = action({
 
             const aiData = await aiRes.json();
 
-            // Validate response structure
-            if (!aiData || !aiData.choices || !Array.isArray(aiData.choices) || aiData.choices.length === 0) {
-                console.error("Invalid AI response structure:", JSON.stringify(aiData).substring(0, 500));
-                throw new Error("AI API returned invalid response structure");
+            // Extract AI text - Handle NVIDIA models
+            let advice = aiData.choices[0]?.message?.content;
+            if (!advice || advice.trim() === "") {
+                advice = aiData.choices[0]?.message?.reasoning;
+            }
+            if (!advice || advice.trim() === "") {
+                const reasoningDetails = aiData.choices[0]?.message?.reasoning_details;
+                if (reasoningDetails && Array.isArray(reasoningDetails) && reasoningDetails.length > 0) {
+                    advice = reasoningDetails.map((detail: any) => detail.text || "").join("\n");
+                }
             }
 
-            const advice = aiData.choices[0]?.message?.content;
-            if (!advice) {
+            if (!advice || advice.trim() === "") {
                 console.error("AI response missing content:", JSON.stringify(aiData.choices[0]));
                 throw new Error("AI API response missing advice content");
             }

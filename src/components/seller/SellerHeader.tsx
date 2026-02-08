@@ -17,7 +17,7 @@ export function SellerHeader({ profile, setShowAddProduct, setShowMessaging, set
     if (!profile) return null;
 
     return (
-        <div className="rounded-3xl p-6 md:p-8 modern-shadow relative min-h-[200px] md:min-h-[220px] flex items-center transition-all duration-500 overflow-hidden">
+        <div className="rounded-3xl p-6 md:p-8 modern-shadow relative min-h-[200px] md:min-h-[220px] flex items-center transition-all duration-500 overflow-visible">
             {/* Dynamic Background Image with Overlay */}
             <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
                 <div
